@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Product — GadgetScout</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b5ea8'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,Arial' font-size='17' font-weight='800' fill='white' text-anchor='middle'%3EG%3C/text%3E%3C/svg%3E"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body data-page="produto">
+
+  <div id="app-header"></div>
+
+  <main class="container">
+    <nav class="crumb" id="crumb"></nav>
+
+    <div class="pg-layout">
+
+      <div>
+        <div class="gallery-img"><img id="foto-main" alt=""/></div>
+        <div class="thumbs" id="fotos-thumb"></div>
+      </div>
+
+      <div class="pg-info">
+        <div class="pg-catscreen">
+          <a class="chip" id="pg-categoria" href="catalog.html">All categories</a>
+          <span class="chip" id="pg-disponibilidade"><span data-dot></span>In stock</span>
+        </div>
+
+        <h1 class="pg-title" id="pg-titulo">—</h1>
+
+        <div class="pg-meta">
+          <span class="pg-rating" id="pg-rating"></span>
+          <span id="pg-merchant"></span>
+          <span class="ref" id="pg-marca"></span>
+          <span class="ref" id="pg-produto-id"></span>
+        </div>
+
+        <p class="pg-descricao" id="pg-descricao"></p>
+
+        <div class="pg-price" id="preco-bloco"></div>
+
+        <div class="comissao-note" id="comissao-note"></div>
+
+        <div class="buybox">
+          <button class="btn-buy-big" id="btn-comprar">Buy now</button>
+          <p class="redirect-note">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            You'll be redirected to <span id="parceiro-nome"></span> to complete your purchase securely. GadgetScout never processes payments.
+          </p>
+          <button class="btn-partner" id="btn-parceiro">View full offer on partner site ↗</button>
+        </div>
+
+        <div class="trust-row">
+          <div class="trust-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            <span><strong>Secure checkout</strong>Handled entirely by the partner store.</span>
+          </div>
+          <div class="trust-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="15" height="11" rx="2"/><path d="M16 9h3l3 3v5h-6"/><circle cx="6.5" cy="18.5" r="1.5"/><circle cx="17.5" cy="18.5" r="1.5"/></svg>
+            <span><strong>Shipping &amp; returns</strong>Terms set by the partner at checkout.</span>
+          </div>
+          <div class="trust-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+            <span><strong>Price comparison</strong>No extra cost to you. Ever.</span>
+          </div>
+        </div>
+
+        <div class="card-warn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+          <span><strong>Affiliate disclosure.</strong> GadgetScout is an affiliate storefront: we don't sell or stock products, and purchases are completed on the partner store's site. As an affiliate, we may earn a commission on qualifying purchases — at no extra cost to you. <a href="about.html#disclosure">Read our full disclosure</a>.</span>
+        </div>
+      </div>
+
+    </div>
+
+    <section class="detail-sec">
+      <h2><span class="bar"></span> Specifications</h2>
+      <table class="specs" id="specs-tabela"></table>
+    </section>
+
+    <section class="detail-sec" id="similares">
+      <h2><span class="bar"></span> Compare similar products</h2>
+      <div class="grid-cards" id="similares-grid"></div>
+      <div class="compare-wrap">
+        <table class="compare" id="compara-tabela"></table>
+      </div>
+    </section>
+
+    <section class="detail-sec">
+      <h2><span class="bar"></span> Frequently asked questions</h2>
+      <div id="faq-lista"></div>
+    </section>
+
+    <section class="section">
+      <div class="container" style="padding-inline:0">
+        <div class="section-head">
+          <h2>You may also like</h2>
+          <a class="link-all" href="catalog.html">View all ›</a>
+        </div>
+        <div class="grid-cards" id="relacionados-grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="app-footer"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>

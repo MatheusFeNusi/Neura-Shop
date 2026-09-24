@@ -1,0 +1,876 @@
+/* ============================================================
+   AISLE — app.js
+   US affiliate storefront. Data in products.json
+   (plus embedded fallback so the files work from file:// too).
+   ============================================================ */
+
+/* ---------- Embedded fallback (mirror of products.json) ---------- */
+var STORE_FALLBACK = {
+  "marca": { "nome": "GadgetScout", "tagline": "Smart finds. Fair prices." },
+  "categorias": [
+    { "slug": "audio", "nome": "Audio", "icone": "fone", "descricao": "Headphones, speakers and soundbars for music, calls and home theater." },
+    { "slug": "smarthome", "nome": "Smart Home", "icone": "lampada", "descricao": "Bulbs, plugs and robot vacuums that make your home work for you." },
+    { "slug": "wearables", "nome": "Wearables", "icone": "relogio", "descricao": "Smartwatches and trackers to keep up with your routine." },
+    { "slug": "accessories", "nome": "Accessories & PC", "icone": "teclado", "descricao": "Keyboards, chargers and peripherals for work and play." },
+    { "slug": "security", "nome": "Security", "icone": "camera", "descricao": "Cameras and gear to keep an eye on what matters." }
+  ],
+  "produtos": [
+    {
+      "id": "odyssey-air-2", "nome": "Odyssey Air 2 Wireless Noise-Canceling Headphones", "descricao": "The Odyssey Air 2 pairs hybrid active noise canceling with up to 40 hours of battery for everyday listening.", "marca": "Odyssey",
+      "merchant": "soundnest", "merchant_nome": "SoundNest", "product_id": "SN-AUD-8842",
+      "categoria": "audio", "categoria_nome": "Audio", "preco": 59.99, "preco_anterior": 79.99, "comissao": 2.4,
+      "url_afiliado": "https://partners.example.com/soundnest/odyssey-air-2?ref=gadgetscout",
+      "icone": "fone", "disponibilidade": "em_estoque", "rating": 4.7, "avaliacoes": 1284, "destaque": true,
+      "specs": [
+        { "rotulo": "Connection", "valor": "Bluetooth 5.3, multipoint" },
+        { "rotulo": "Battery", "valor": "Up to 40 hours with case" },
+        { "rotulo": "Active noise canceling", "valor": "Hybrid ANC" },
+        { "rotulo": "Warranty", "valor": "1 year via partner" }
+      ],
+      "faq": [
+        { "p": "Does this item have active noise canceling?", "a": "Yes. The Odyssey Air 2 uses hybrid ANC to reduce ambient noise and keep calls and music clear." },
+        { "p": "How long does the battery last?", "a": "Up to 40 hours of playback with the charging case, and about 9 hours per charge." },
+        { "p": "Does this site sell the product?", "a": "No. GadgetScout is an affiliate storefront: when you tap Buy, you're redirected to the partner store (SoundNest) to complete your purchase securely." }
+      ]
+    },
+    {
+      "id": "smart-360-speaker", "nome": "Smart 360 Portable Bluetooth Speaker", "descricao": "A compact 20W Bluetooth speaker with IPX6 splash protection and a 12-hour battery for poolside and patio audio.", "marca": "Odyssey",
+      "merchant": "soundnest", "merchant_nome": "SoundNest", "product_id": "SN-AUD-3410",
+      "categoria": "audio", "categoria_nome": "Audio", "preco": 39.99, "preco_anterior": 49.99, "comissao": 1.6,
+      "url_afiliado": "https://partners.example.com/soundnest/smart-360-speaker?ref=gadgetscout",
+      "icone": "caixa", "disponibilidade": "em_estoque", "rating": 4.5, "avaliacoes": 862, "destaque": true,
+      "specs": [
+        { "rotulo": "Power", "valor": "20W RMS" },
+        { "rotulo": "Connections", "valor": "Bluetooth 5.2, AUX" },
+        { "rotulo": "Battery", "valor": "12 hours of playback" },
+        { "rotulo": "Durability", "valor": "IPX6 splash resistant" }
+      ],
+      "faq": [
+        { "p": "Is the speaker waterproof?", "a": "It's IPX6 splash-resistant — fine for poolsides and light rain, but not for submersion." },
+        { "p": "Can I use it for hands-free calls?", "a": "Yes, it has an echo-canceling microphone for calls and meetings." }
+      ]
+    },
+    {
+      "id": "hometheater-21-soundbar", "nome": "HomeTheater 2.1 Soundbar with Wireless Subwoofer", "descricao": "A 2.1 soundbar with a wireless subwoofer and 160W of power, connecting via HDMI ARC, optical or Bluetooth.", "marca": "Odyssey",
+      "merchant": "soundnest", "merchant_nome": "SoundNest", "product_id": "SN-AUD-1290",
+      "categoria": "audio", "categoria_nome": "Audio", "preco": 129.99, "preco_anterior": 159.99, "comissao": 5.2,
+      "url_afiliado": "https://partners.example.com/soundnest/hometheater-soundbar?ref=gadgetscout",
+      "icone": "barra", "disponibilidade": "em_estoque", "rating": 4.6, "avaliacoes": 421, "destaque": false,
+      "specs": [
+        { "rotulo": "Channels", "valor": "2.1 with wireless subwoofer" },
+        { "rotulo": "Power", "valor": "160W RMS" },
+        { "rotulo": "Connections", "valor": "HDMI ARC, Bluetooth 5.0, AUX, optical" },
+        { "rotulo": "Warranty", "valor": "1 year via partner" }
+      ],
+      "faq": [
+        { "p": "Can I connect it to my TV?", "a": "Yes — via HDMI ARC, optical or Bluetooth, depending on your TV." },
+        { "p": "Is the subwoofer wireless?", "a": "Yes, the sub connects wirelessly to the bar, so placement is easy." }
+      ]
+    },
+    {
+      "id": "fitpulse-pro", "nome": "FitPulse Pro Smartwatch AMOLED", "descricao": "An always-on AMOLED smartwatch with up to 14 days of battery, 5 ATM water resistance and built-in GPS for tracking your routine.", "marca": "FitPulse",
+      "merchant": "wearhouse", "merchant_nome": "WearHouse", "product_id": "WH-WCH-0057",
+      "categoria": "wearables", "categoria_nome": "Wearables", "preco": 99.99, "preco_anterior": 129.99, "comissao": 4.0,
+      "url_afiliado": "https://partners.example.com/wearhouse/fitpulse-pro?ref=gadgetscout",
+      "icone": "relogio", "disponibilidade": "em_estoque", "rating": 4.8, "avaliacoes": 2031, "destaque": true,
+      "specs": [
+        { "rotulo": "Display", "valor": "1.43\" always-on AMOLED" },
+        { "rotulo": "Battery", "valor": "Up to 14 days" },
+        { "rotulo": "Water resistance", "valor": "5 ATM (swim-ready)" },
+        { "rotulo": "Sensors", "valor": "Heart rate, SpO2, built-in GPS" }
+      ],
+      "faq": [
+        { "p": "Does it work with iPhone and Android?", "a": "Yes — compatible with iOS 15+ and Android 9+ through the free companion app." },
+        { "p": "Is the display always on?", "a": "You can enable always-on mode; it drops battery life to about 8 days." }
+      ]
+    },
+    {
+      "id": "lumio-smart-bulb", "nome": "Lumio Smart LED Bulb (E26)", "descricao": "A tunable-white smart bulb for standard E26 sockets, working without a hub over Wi-Fi with Alexa and Google voice control.", "marca": "Lumio",
+      "merchant": "homehub", "merchant_nome": "HomeHub", "product_id": "HH-LMP-2211",
+      "categoria": "smarthome", "categoria_nome": "Smart Home", "preco": 17.99, "preco_anterior": null, "comissao": 0.7,
+      "url_afiliado": "https://partners.example.com/homehub/lumio-smart-bulb?ref=gadgetscout",
+      "icone": "lampada", "disponibilidade": "em_estoque", "rating": 4.6, "avaliacoes": 1105, "destaque": false,
+      "specs": [
+        { "rotulo": "Base", "valor": "E26 (standard US socket)" },
+        { "rotulo": "Output", "valor": "800 lumens (60W equivalent)" },
+        { "rotulo": "Color temperature", "valor": "2700K to 6500K, tunable white" },
+        { "rotulo": "Compatibility", "valor": "Wi-Fi 2.4GHz, Alexa, Google" }
+      ],
+      "faq": [
+        { "p": "Does it need a hub?", "a": "No — it connects straight to your Wi-Fi and works with Alexa and Google via the app." },
+        { "p": "Can I control it by voice?", "a": "Yes, if you have an Alexa or Google speaker, just link the account in the app." }
+      ]
+    },
+    {
+      "id": "conecta-smart-plug", "nome": "Conecta Smart Plug+ with Energy Monitoring", "descricao": "App-controlled smart plug with real-time energy monitoring, timers and scenes, working with Alexa and Google over Wi-Fi.", "marca": "Conecta",
+      "merchant": "homehub", "merchant_nome": "HomeHub", "product_id": "HH-PLG-0899",
+      "categoria": "smarthome", "categoria_nome": "Smart Home", "preco": 14.99, "preco_anterior": null, "comissao": 0.6,
+      "url_afiliado": "https://partners.example.com/homehub/conecta-smart-plug?ref=gadgetscout",
+      "icone": "tomada", "disponibilidade": "poucas_unidades", "rating": 4.3, "avaliacoes": 540, "destaque": false,
+      "specs": [
+        { "rotulo": "Type", "valor": "15A, app control" },
+        { "rotulo": "Compatibility", "valor": "Wi-Fi 2.4GHz, Alexa, Google" },
+        { "rotulo": "Monitoring", "valor": "Real-time energy usage" },
+        { "rotulo": "Scheduling", "valor": "Timers and scenes" }
+      ],
+      "faq": [
+        { "p": "What's the load limit?", "a": "Up to 15A — ideal for lamps, TVs and small appliances. Avoid high-draw heaters." },
+        { "p": "Do I need a hub?", "a": "No — it works directly over Wi-Fi with the manufacturer's app." }
+      ]
+    },
+    {
+      "id": "cleanbot-3000", "nome": "CleanBot 3000 Robot Vacuum and Mop", "descricao": "Laser-navigated robot vacuum and mop with a self-emptying, mop-washing dock, 3000 Pa of suction and 140 minutes of run time.", "marca": "CleanBot",
+      "merchant": "homehub", "merchant_nome": "HomeHub", "product_id": "HH-VAC-3477",
+      "categoria": "smarthome", "categoria_nome": "Smart Home", "preco": 299.99, "preco_anterior": 379.99, "comissao": 12.0,
+      "url_afiliado": "https://partners.example.com/homehub/cleanbot-3000?ref=gadgetscout",
+      "icone": "aspirador", "disponibilidade": "em_estoque", "rating": 4.7, "avaliacoes": 689, "destaque": true,
+      "specs": [
+        { "rotulo": "Suction", "valor": "3000 Pa" },
+        { "rotulo": "Run time", "valor": "Up to 140 minutes" },
+        { "rotulo": "Navigation", "valor": "Laser mapping" },
+        { "rotulo": "Base station", "valor": "Self-emptying and mop washing" }
+      ],
+      "faq": [
+        { "p": "Does it clean itself?", "a": "Yes — the dock empties the dustbin and washes the mop automatically after each run." },
+        { "p": "Does it map the home?", "a": "Laser navigation builds maps you can split by room and schedule through the app." }
+      ]
+    },
+    {
+      "id": "guardcam-2k", "nome": "GuardCam 2K Security Camera", "descricao": "A 2K QHD security camera with 33 ft of infrared night vision, local MicroSD or cloud storage, and live viewing from the app.", "marca": "GuardCam",
+      "merchant": "securestore", "merchant_nome": "SecureStore", "product_id": "SS-CAM-5563",
+      "categoria": "security", "categoria_nome": "Security", "preco": 79.99, "preco_anterior": 99.99, "comissao": 3.2,
+      "url_afiliado": "https://partners.example.com/securestore/guardcam-2k?ref=gadgetscout",
+      "icone": "camera", "disponibilidade": "em_estoque", "rating": 4.5, "avaliacoes": 778, "destaque": false,
+      "specs": [
+        { "rotulo": "Resolution", "valor": "2K QHD" },
+        { "rotulo": "Night vision", "valor": "Infrared up to 33 ft" },
+        { "rotulo": "Storage", "valor": "MicroSD and optional cloud" },
+        { "rotulo": "Compatibility", "valor": "Alexa, Google, iOS & Android app" }
+      ],
+      "faq": [
+        { "p": "Is a subscription required?", "a": "No — record locally to a MicroSD card (up to 256GB). Cloud is optional." },
+        { "p": "Can I view it live from my phone?", "a": "Yes, through the official app with remote access from anywhere." }
+      ]
+    },
+    {
+      "id": "k80-tkl-keyboard", "nome": "K80 TKL Mechanical Gaming Keyboard", "descricao": "A tenkeyless mechanical keyboard with quiet linear red switches, tri-mode connectivity and per-key RGB lighting.", "marca": "ClickPro",
+      "merchant": "clickco", "merchant_nome": "ClickCo", "product_id": "CC-KBD-7710",
+      "categoria": "accessories", "categoria_nome": "Accessories & PC", "preco": 69.99, "preco_anterior": 84.99, "comissao": 2.8,
+      "url_afiliado": "https://partners.example.com/clickco/k80-tkl-keyboard?ref=gadgetscout",
+      "icone": "teclado", "disponibilidade": "poucas_unidades", "rating": 4.6, "avaliacoes": 932, "destaque": false,
+      "specs": [
+        { "rotulo": "Switches", "valor": "Linear mechanical red" },
+        { "rotulo": "Layout", "valor": "TKL (no numpad), ANSI" },
+        { "rotulo": "Connectivity", "valor": "2.4GHz, Bluetooth, USB-C" },
+        { "rotulo": "Lighting", "valor": "Per-key RGB" }
+      ],
+      "faq": [
+        { "p": "Good for gaming and work?", "a": "Yes — linear red switches are quiet and smooth, great for long typing sessions and games." },
+        { "p": "How many wireless modes?", "a": "Three: 2.4GHz dongle, Bluetooth and USB-C, with quick device switching." }
+      ]
+    },
+    {
+      "id": "voltaway-wireless-charger", "nome": "VoltAway 15W Qi Wireless Charger", "descricao": "A 15W Qi wireless charger with MagSafe-aligned placement and built-in overload and temperature protection.", "marca": "VoltAway",
+      "merchant": "clickco", "merchant_nome": "ClickCo", "product_id": "CC-CHR-2216",
+      "categoria": "accessories", "categoria_nome": "Accessories & PC", "preco": 24.99, "preco_anterior": null, "comissao": 1.0,
+      "url_afiliado": "https://partners.example.com/clickco/voltaway-15w?ref=gadgetscout",
+      "icone": "carregador", "disponibilidade": "em_estoque", "rating": 4.4, "avaliacoes": 415, "destaque": false,
+      "specs": [
+        { "rotulo": "Standard", "valor": "Qi, MagSafe aligned" },
+        { "rotulo": "Output", "valor": "15W (iPhone & Android)" },
+        { "rotulo": "Input", "valor": "USB-C" },
+        { "rotulo": "Protection", "valor": "Overload and temperature" }
+      ],
+      "faq": [
+        { "p": "Will it charge my phone?", "a": "Any Qi-compatible phone; MagSafe-aligned models charge at up to 15W." },
+        { "p": "Does it include a cable?", "a": "Yes — a USB-C cable and a bivolt wall adapter are included." }
+      ]
+    }
+  ]
+};
+
+/* ---------- State ---------- */
+var DADOS = null;
+var PRODUTOS = [];
+var CATEGORIAS = [];
+
+function $(sel, ctx) { return (ctx || document).querySelector(sel); }
+function $$(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
+
+/* ---------- Utilities ---------- */
+function fmt(n) {
+  return (n == null) ? "" : n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
+function num(n) {
+  return (n == null) ? "" : n.toLocaleString("en-US");
+}
+function pctDesc(a, b) {
+  if (!a || !b || a >= b) return null;
+  return Math.round((1 - a / b) * 100);
+}
+function esc(s) {
+  return String(s || "").replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+function starsHTML(rating) {
+  var full = Math.floor(rating);
+  var frac = rating - full;
+  var half = (frac >= 0.25 && frac < 0.75);
+  var out = "";
+  for (var i = 0; i < full; i++) out += "\u2605";
+  if (half) out += '<span class="half">\u2605</span>';
+  for (var j = full + (half ? 1 : 0); j < 5; j++) out += '<span class="half">\u2605</span>';
+  return '<span class="stars">' + out + "</span>";
+}
+
+var ROTULOS_DISP = {
+  em_estoque: ["In stock", "stock"],
+  poucas_unidades: ["Only a few left", "soon"],
+  esgotado: ["Currently unavailable", "out"]
+};
+
+var SCHEMA_DISP = {
+  em_estoque: "https://schema.org/InStock",
+  poucas_unidades: "https://schema.org/LimitedAvailability",
+  esgotado: "https://schema.org/OutOfStock"
+};
+
+/* ---------- Neutral product icons (light-gray line art) ---------- */
+var ICON_STROKE = 'fill="none" stroke="#98a0a8" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"';
+var ICON_STROKE_SOFT = 'fill="none" stroke="#aab1b9" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"';
+
+function iconeSVG(icone, soft) {
+  var s = soft ? ICON_STROKE_SOFT : ICON_STROKE;
+  switch (icone) {
+    case "fone":
+      return '<path d="M150 360 v-60 a150 150 0 0 1 300 0 v60" ' + s + '/>' +
+        '<rect x="130" y="330" width="90" height="120" rx="45" ' + s + '/>' +
+        '<rect x="380" y="330" width="90" height="120" rx="45" ' + s + '/>';
+    case "caixa":
+      return '<rect x="185" y="150" width="230" height="300" rx="34" ' + s + '/>' +
+        '<circle cx="300" cy="300" r="92" ' + s + '/>' +
+        '<circle cx="300" cy="300" r="30" ' + s + '/>';
+    case "barra":
+      return '<rect x="110" y="190" width="380" height="120" rx="22" ' + s + '/>' +
+        '<circle cx="300" cy="400" r="58" ' + s + '/>';
+    case "relogio":
+      return '<rect x="252" y="70" width="96" height="150" rx="20" ' + s + '/>' +
+        '<rect x="252" y="380" width="96" height="150" rx="20" ' + s + '/>' +
+        '<rect x="215" y="215" width="170" height="170" rx="48" ' + s + '/>' +
+        '<circle cx="300" cy="300" r="52" ' + s + '/>';
+    case "lampada":
+      return '<circle cx="300" cy="280" r="105" ' + s + '/>' +
+        '<rect x="265" y="385" width="70" height="95" rx="12" ' + s + '/>' +
+        '<path d="M270 270 L300 240 M330 270 L300 240 M300 240 v40" ' + s + '/>';
+    case "tomada":
+      return '<rect x="190" y="165" width="220" height="270" rx="36" ' + s + '/>' +
+        '<circle cx="345" cy="250" r="24" ' + s + '/>' +
+        '<circle cx="345" cy="350" r="24" ' + s + '/>';
+    case "aspirador":
+      return '<rect x="175" y="255" width="250" height="130" rx="65" ' + s + '/>' +
+        '<ellipse cx="300" cy="225" rx="60" ry="45" ' + s + '/>' +
+        '<circle cx="300" cy="225" r="20" fill="#c2c8cf" stroke="none"/>';
+    case "camera":
+      return '<rect x="168" y="205" width="264" height="180" rx="32" ' + s + '/>' +
+        '<circle cx="300" cy="295" r="78" ' + s + '/>' +
+        '<circle cx="300" cy="295" r="34" fill="#c2c8cf" stroke="none"/>' +
+        '<rect x="262" y="75" width="76" height="130" rx="16" ' + s + '/>';
+    case "teclado":
+      var keys = "";
+      for (var r = 0; r < 4; r++) {
+        for (var c = 0; c < 8; c++) {
+          keys += '<rect x="' + (150 + c * 36) + '" y="' + (205 + r * 38) + '" width="26" height="26" rx="7" ' + s + '/>';
+        }
+      }
+      return '<rect x="128" y="175" width="344" height="235" rx="28" ' + s + '/>' + keys;
+    case "carregador":
+      return '<rect x="215" y="215" width="170" height="170" rx="85" ' + s + '/>' +
+        '<polygon points="315,190 245,320 298,320 288,410 358,282 305,282" fill="#c2c8cf" stroke="none"/>';
+    default:
+      return '<rect x="150" y="150" width="300" height="300" rx="60" ' + s + '/>' +
+        '<circle cx="300" cy="300" r="80" ' + s + '/>';
+  }
+}
+
+/* ---------- Neutral placeholder image (no gradient, no color) ---------- */
+var PH_BG = ["#edf0f2", "#e7ebee", "#eef0f2", "#e9edf1"];
+var PH_ROT = [-6, 5, 9, -3];
+
+function svgProduto(prod, variant) {
+  if (prod.img && /^https?:\/\//i.test(String(prod.img))) { return prod.img; }
+  var v = variant || 0;
+  var bg = PH_BG[v % 4], rot = PH_ROT[v % 4];
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">' +
+    '<rect width="600" height="600" fill="' + bg + '"/>' +
+    '<circle cx="300" cy="470" r="150" fill="rgba(20,28,36,0.05)"/>' +
+    '<ellipse cx="300" cy="465" rx="180" ry="24" fill="rgba(20,28,36,0.08)"/>' +
+    '<g transform="translate(300,300) rotate(' + rot + ') translate(-300,-300) translate(0,-24)">' +
+    iconeSVG(prod.icone) +
+    "</g></svg>";
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+function imgProd(prod, variant) { return svgProduto(prod, variant); }
+
+function tileIMG(cat) {
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">' +
+    '<ellipse cx="100" cy="150" rx="62" ry="9" fill="rgba(20,28,36,0.08)"/>' +
+    '<g transform="translate(100,86) translate(-100,-86) translate(0,-14) scale(0.30)">' +
+    iconeSVG(cat.icone) +
+    "</g></svg>";
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+
+/* ---------- Product card ---------- */
+function cardHTML(p) {
+  var pct = pctDesc(p.preco, p.preco_anterior);
+  var esgotado = p.disponibilidade === "esgotado";
+  var badge = pct != null ? '<span class="badge">-' + pct + "%</span>" : "";
+  var btn = esgotado
+    ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>'
+    : '<button class="btn-buy" onclick="abrirOferta(\'' + p.id + '\')">See deal</button>';
+  return '<article class="pcard">' +
+    '<a class="media" href="product.html?id=' + p.id + '">' + badge +
+    '<img src="' + imgProd(p, 0) + '" alt="' + esc(p.nome) + '" loading="lazy"/>' +
+    "</a>" +
+    '<div class="body">' +
+    '<a class="p-name" href="product.html?id=' + p.id + '">' + esc(p.nome) + "</a>" +
+    '<div class="rating">' + starsHTML(p.rating) + ' <span class="reviews">' + p.rating.toFixed(1) + " (" + num(p.avaliacoes) + ")</span></div>" +
+    '<div class="price">' +
+    (p.preco_anterior ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" : "") +
+    '<span class="now">' + fmt(p.preco) + "</span>" +
+    (p.preco_anterior ? '<span class="save">Save ' + fmt(p.preco_anterior - p.preco) + "</span>" : "") +
+    "</div>" +
+    '<div class="merchant">Shipped by ' + esc(p.merchant_nome) + "</div>" +
+    btn +
+    "</div></article>";
+}
+
+/* ---------- SEO: per-product meta description + JSON-LD ---------- */
+function setMetaDescricao(p) {
+  var metaDesc = $('meta[name="description"]');
+  if (!metaDesc) {
+    metaDesc = document.createElement("meta");
+    metaDesc.name = "description";
+    document.head.appendChild(metaDesc);
+  }
+  metaDesc.content = p.descricao + " Compare prices, ratings and specs across trusted US retailers. Check out securely on the partner store.";
+}
+
+function injetarSchema(p) {
+  var antigo = document.getElementById("ld-product");
+  if (antigo) antigo.remove();
+  var dados = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": p.nome,
+    "description": p.descricao,
+    "brand": { "@type": "Brand", "name": p.marca },
+    "sku": p.product_id,
+    "offers": {
+      "@type": "Offer",
+      "url": p.url_afiliado,
+      "priceCurrency": "USD",
+      "price": p.preco.toFixed(2),
+      "itemCondition": "https://schema.org/NewCondition",
+      "availability": SCHEMA_DISP[p.disponibilidade] || "https://schema.org/Unavailable",
+      "seller": { "@type": "Organization", "name": p.merchant_nome }
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": p.rating.toFixed(1),
+      "reviewCount": p.avaliacoes
+    }
+  };
+  var s = document.createElement("script");
+  s.type = "application/ld+json";
+  s.id = "ld-product";
+  s.textContent = JSON.stringify(dados);
+  document.head.appendChild(s);
+}
+
+/* ---------- Buy action (redirects to affiliate link) ---------- */
+function abrirOferta(id) {
+  var p = PRODUTOS.find(function (x) { return x.id === id; });
+  if (!p) return;
+  if (p.disponibilidade === "esgotado") { toast("This item is currently unavailable at the partner store."); return; }
+  toast("Taking you to " + p.merchant_nome + " to complete your purchase securely\u2026");
+  setTimeout(function () { window.open(p.url_afiliado, "_blank", "noopener"); }, 600);
+}
+
+function toast(msg) {
+  var t = $("#toast");
+  if (!t) {
+    t = document.createElement("div");
+    t.id = "toast";
+    t.className = "toast";
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  requestAnimationFrame(function () { t.classList.add("show"); });
+  clearTimeout(t._to);
+  t._to = setTimeout(function () { t.classList.remove("show"); }, 2600);
+}
+
+/* ---------- Header ---------- */
+function renderHeader() {
+  var catsHTML = '<a href="index.html">Home</a>';
+  CATEGORIAS.forEach(function (c) {
+    catsHTML += '<a href="catalog.html?cat=' + c.slug + '">' + esc(c.nome) + "</a>";
+  });
+  var h = document.createElement("div");
+  h.innerHTML =
+    '<header class="site-header">' +
+    '<div class="container">' +
+    '<div class="hdr-top">' +
+    '<a class="brand" href="index.html">' +
+    '<span class="brand-mark">G</span>' +
+    '<span><span class="brand-name">GadgetScout</span><span class="brand-tag">smart finds · fair prices</span></span>' +
+    '</a>' +
+    '<form class="search-box" id="busca-form" role="search">' +
+    '<label class="visually-hidden" for="busca-input">Search products</label>' +
+    '<input id="busca-input" type="search" placeholder="Search for products and brands" autocomplete="off"/>' +
+    '<button class="search-btn" type="submit" aria-label="Search">' + iconLupa() + "</button>" +
+    '<div class="sugest" id="busca-sugest"></div>' +
+    "</form>" +
+    '<nav class="hdr-links" id="hdr-links">' +
+    '<a class="ofertas" href="catalog.html?ofertas=1">Today\'s deals</a>' +
+    '<a href="about.html">About</a>' +
+    "</nav>" +
+    '<button class="menu-btn" id="menu-btn" aria-label="Menu">\u2630</button>' +
+    "</div>" +
+    '<nav class="cats">' + catsHTML + "</nav>" +
+    "</div>" +
+    "</header>";
+  var slot = $("#app-header");
+  slot.parentNode.insertBefore(h.firstElementChild || h, slot);
+  slot.parentNode.removeChild(slot);
+  anexarBusca();
+  var mb = $("#menu-btn"), links = $("#hdr-links");
+  if (mb) mb.addEventListener("click", function () { links.classList.toggle("open"); });
+}
+
+function iconLupa() {
+  return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+}
+
+/* ---------- Search with suggestions ---------- */
+function anexarBusca() {
+  var form = $("#busca-form"), input = $("#busca-input"), sugest = $("#busca-sugest");
+  if (!form) return;
+  var qp = new URLSearchParams(location.search);
+  if (qp.get("busca")) input.value = qp.get("busca");
+
+  input.addEventListener("input", function () {
+    var t = input.value.trim().toLowerCase();
+    if (!t) { sugest.classList.remove("open"); return; }
+    var hits = PRODUTOS
+      .filter(function (p) {
+        return (p.nome + " " + p.marca + " " + p.categoria_nome).toLowerCase().indexOf(t) > -1;
+      })
+      .slice(0, 6);
+    var html;
+    if (!hits.length) html = '<div class="s-empty">No products found. Try another search.</div>';
+    else html = hits.map(function (p) {
+      return '<a href="product.html?id=' + p.id + '">' +
+        '<span class="thumb"><img src="' + imgProd(p, 0) + '" alt=""/></span>' +
+        '<span class="s-name">' + esc(p.nome) + "</span>" +
+        '<span class="s-price">' + fmt(p.preco) + "</span></a>";
+    }).join("");
+    sugest.innerHTML = html;
+    sugest.classList.add("open");
+  });
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var t = input.value.trim();
+    if (!t) return;
+    sugest.classList.remove("open");
+    location.href = "catalog.html?busca=" + encodeURIComponent(t);
+  });
+  document.addEventListener("click", function (e) {
+    if (!sugest.contains(e.target)) sugest.classList.remove("open");
+  });
+}
+
+/* ---------- Footer ---------- */
+function renderFooter() {
+  var catLinks = "";
+  CATEGORIAS.forEach(function (c) {
+    catLinks += '<li><a href="catalog.html?cat=' + c.slug + '">' + esc(c.nome) + "</a></li>";
+  });
+  var f = document.createElement("div");
+  f.innerHTML =
+    '<footer class="site-footer">' +
+    '<div class="container">' +
+    '<div class="foot-top">' +
+    '<div class="foot-brand">' +
+    '<span class="brand"><span class="brand-mark">G</span><span><span class="brand-name">GadgetScout</span></span></span>' +
+    "<p>An independent storefront that compares prices across trusted US retailers, so you can shop one clean catalog and check out securely on our partner stores.</p>" +
+    "</div>" +
+    '<div class="foot-col"><h4>Categories</h4><ul>' + catLinks + "</ul></div>" +
+    '<div class="foot-col"><h4>Company</h4><ul>' +
+    '<li><a href="about.html">About GadgetScout</a></li>' +
+    '<li><a href="about.html#disclosure">Affiliate disclosure</a></li>' +
+    '<li><a href="about.html#how-it-works">How it works</a></li>' +
+    "</ul></div>" +
+    '<div class="foot-col"><h4>Transparency</h4>' +
+    '<div class="foot-disclose">This site participates in affiliate programs and may earn a commission on purchases made through our links, at no extra cost to you. Purchases are completed on the partner store\u2019s site.</div>' +
+    "</div>" +
+    "</div>" +
+    '<div class="foot-bottom"><span>© 2026 ' + esc(DADOS.marca.nome) + ' — demo storefront. All products and partner stores shown are fictional.</span><span>Built as an MVP to validate the affiliate-storefront model.</span></div>' +
+    "</div></footer>";
+  var slot = $("#app-footer");
+  slot.parentNode.insertBefore(f.firstElementChild || f, slot);
+  slot.parentNode.removeChild(slot);
+}
+
+/* ---------- Load data ---------- */
+function carregarDados() {
+  return fetch("products.json")
+    .then(function (r) { if (!r.ok) throw new Error("http"); return r.json(); })
+    .then(function (d) { DADOS = d; })
+    .catch(function () { DADOS = STORE_FALLBACK; })
+    .then(function () {
+      PRODUTOS = DADOS.produtos;
+      CATEGORIAS = DADOS.categorias;
+    });
+}
+
+/* ============================================================
+   PAGE: HOME
+   ============================================================ */
+function initHome() {
+  var catsCount = {};
+  PRODUTOS.forEach(function (p) {
+    catsCount[p.categoria] = (catsCount[p.categoria] || 0) + 1;
+  });
+  var tiles = $("#cat-tiles");
+  if (tiles) {
+    tiles.innerHTML = CATEGORIAS.map(function (c) {
+      return '<a class="cat-tile" href="catalog.html?cat=' + c.slug + '">' +
+        '<span class="ico"><img src="' + tileIMG(c) + '" alt="' + esc(c.nome) + '"/></span>' +
+        "<h3>" + esc(c.nome) + "</h3>" +
+        "<p>" + (catsCount[c.slug] || 0) + " products</p></a>";
+    }).join("");
+  }
+
+  var deals = $("#deals-grid");
+  if (deals) {
+    var comDesconto = PRODUTOS.filter(function (p) { return p.preco_anterior != null; })
+      .sort(function (a, b) { return pctDesc(b.preco, b.preco_anterior) - pctDesc(a.preco, a.preco_anterior); });
+    deals.innerHTML = comDesconto.map(cardHTML).join("");
+  }
+
+  var feat = $("#destaques-grid");
+  if (feat) {
+    var destaques = PRODUTOS
+      .filter(function (p) { return p.destaque || p.preco_anterior != null; })
+      .slice(0, 8);
+    feat.innerHTML = destaques.map(cardHTML).join("");
+  }
+}
+
+/* ============================================================
+   PAGE: CATALOG
+   ============================================================ */
+var CAT_STATE = { cat: null, ofertas: false, busca: "", ordena: "rel", min: null, max: null, notaMin: 0, soDisponiveis: false, soOfertas: false };
+
+function produtosFiltrados() {
+  var s = CAT_STATE;
+  var lista = PRODUTOS.filter(function (p) {
+    if (s.cat && p.categoria !== s.cat) return false;
+    if (s.ofertas && p.preco_anterior == null) return false;
+    if (s.busca) {
+      var t = (p.nome + " " + p.marca + " " + p.categoria_nome).toLowerCase();
+      if (t.indexOf(s.busca) === -1) return false;
+    }
+    if (s.min != null && p.preco < s.min) return false;
+    if (s.max != null && p.preco > s.max) return false;
+    if (p.rating < s.notaMin) return false;
+    if (s.soDisponiveis && p.disponibilidade === "esgotado") return false;
+    if (s.soOfertas && p.preco_anterior == null) return false;
+    return true;
+  });
+  switch (s.ordena) {
+    case "menor": lista.sort(function (a, b) { return a.preco - b.preco; }); break;
+    case "maior": lista.sort(function (a, b) { return b.preco - a.preco; }); break;
+    case "nota": lista.sort(function (a, b) { return b.rating - a.rating; }); break;
+    default: lista.sort(function (a, b) { return (b.destaque ? 1 : 0) - (a.destaque ? 1 : 0) || b.avaliacoes - a.avaliacoes; });
+  }
+  return lista;
+}
+
+function initCategoria() {
+  var qp = new URLSearchParams(location.search);
+  var catSlug = qp.get("cat") || null;
+  var ofertas = qp.get("ofertas") === "1";
+  var busca = (qp.get("busca") || "").trim().toLowerCase();
+
+  var cat = CATEGORIAS.find(function (c) { return c.slug === catSlug; }) || null;
+
+  CAT_STATE.cat = cat ? cat.slug : null;
+  CAT_STATE.ofertas = ofertas;
+  CAT_STATE.busca = busca;
+
+  var head = $("#cat-head");
+  if (head) {
+    var kicker = ofertas ? "Daily deals" : (cat ? cat.nome : "Browse catalog");
+    var titulo = ofertas ? "Today's deals" : (cat ? cat.nome : (busca ? "Results for \u201c" + esc(busca) + "\u201d" : "All products"));
+    var desc = ofertas ? "Discounted finds selected by our partner stores this week." : (cat ? cat.descricao : "Compare prices across trusted US retailers and check out securely on the partner store.");
+    head.innerHTML = '<p class="kicker">' + kicker + "</p><h1>" + titulo + "</h1><p>" + desc + "</p>";
+  }
+
+  var fCat = $("#filtro-cat");
+  if (fCat) {
+    fCat.innerHTML = '<label><input type="radio" name="rcat" value="" ' + (!cat ? "checked" : "") + "/> All categories</label>" +
+      CATEGORIAS.map(function (c) {
+        return '<label><input type="radio" name="rcat" value="' + c.slug + '" ' + (cat && cat.slug === c.slug ? "checked" : "") + "/> " + esc(c.nome) + "</label>";
+      }).join("");
+  }
+
+  var fRend = $("#filtro-rend");
+  if (fRend) {
+    fRend.innerHTML =
+      '<label><input type="checkbox" name="rmin" value="4"> Rating 4.0 &amp; up</label>' +
+      '<label><input type="checkbox" name="rmin" value="4.5"> Rating 4.5 &amp; up</label>';
+  }
+
+  var fDisp = $("#filtro-disp");
+  if (fDisp) {
+    fDisp.innerHTML =
+      '<label><input type="checkbox" name="sdisp" value="1"> In stock only</label>' +
+      '<label><input type="checkbox" name="sofertas" value="1"> On sale only</label>';
+  }
+
+  $$(".cats a").forEach(function (a) {
+    if (cat && a.getAttribute("href").indexOf("cat=" + cat.slug) > -1) a.classList.add("active");
+    if (ofertas && a.className.indexOf("ofertas") > -1) a.classList.add("active");
+  });
+
+  var sel = $("#ordenar");
+  if (sel) sel.addEventListener("change", function () { CAT_STATE.ordena = sel.value; renderLista(); });
+
+  $("#filtros-form").addEventListener("change", aplicarFiltros);
+  $("#filtros-form").addEventListener("input", aplicarFiltros);
+
+  var tgl = $("#filtros-toggle");
+  if (tgl) tgl.addEventListener("click", function () {
+    var f = $("#filtros");
+    f.classList.toggle("open");
+    tgl.textContent = f.classList.contains("open") ? "Hide filters" : "Show filters";
+  });
+
+  renderLista();
+}
+
+function aplicarFiltros() {
+  var s = CAT_STATE;
+  var rcat = document.querySelector('input[name="rcat"]:checked');
+  if (rcat) s.cat = rcat.value || null;
+  s.min = $("#fmin").value === "" ? null : Number($("#fmin").value);
+  s.max = $("#fmax").value === "" ? null : Number($("#fmax").value);
+  var rmin = document.querySelector('input[name="rmin"]:checked');
+  s.notaMin = rmin ? Number(rmin.value) : 0;
+  s.soDisponiveis = !!document.querySelector('input[name="sdisp"]:checked');
+  s.soOfertas = !!document.querySelector('input[name="sofertas"]:checked');
+  renderLista();
+}
+
+function renderLista() {
+  var lista = produtosFiltrados();
+  var grid = $("#cat-grid");
+  var count = $("#cat-count");
+  if (count) count.textContent = lista.length + " " + (lista.length === 1 ? "product" : "products");
+  if (!lista.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>No products found</h3><p>Try adjusting your filters or search terms.</p></div>';
+    return;
+  }
+  grid.innerHTML = lista.map(cardHTML).join("");
+}
+
+/* ============================================================
+   PAGE: PRODUCT
+   ============================================================ */
+function initProduto() {
+  var id = new URLSearchParams(location.search).get("id");
+  var p = PRODUTOS.find(function (x) { return x.id === id; });
+  if (!p) {
+    var main = $("main");
+    if (main) main.innerHTML = '<div class="container"><div class="empty" style="margin-top:60px"><h3>Product not found</h3><p>The link you followed may be out of date.</p></div></div>';
+    return;
+  }
+
+  var pct = pctDesc(p.preco, p.preco_anterior);
+  var disp = ROTULOS_DISP[p.disponibilidade] || ROTULOS_DISP.em_estoque;
+  var esgotado = p.disponibilidade === "esgotado";
+
+  var crumb = $("#crumb");
+  if (crumb) {
+    crumb.innerHTML =
+      '<a href="index.html">Home</a><span class="sep">›</span>' +
+      '<a href="catalog.html?cat=' + p.categoria + '">' + esc(p.categoria_nome) + "</a>" +
+      '<span class="sep">›</span><span>' + esc(p.marca) + "</span>";
+  }
+
+  var mainImg = $("#foto-main");
+  var thumbs = $("#fotos-thumb");
+  var variantes = [0, 1, 2, 3];
+  mainImg.src = imgProd(p, 0);
+  mainImg.alt = p.nome;
+  thumbs.innerHTML = variantes.map(function (v, i) {
+    return '<button data-v="' + v + '" class="' + (i === 0 ? "on" : "") + '"><img src="' + imgProd(p, v) + '" alt="View ' + (i + 1) + '"/></button>';
+  }).join("");
+  thumbs.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    mainImg.src = imgProd(p, Number(b.dataset.v));
+    $$("button", thumbs).forEach(function (x) { x.classList.remove("on"); });
+    b.classList.add("on");
+  });
+
+  $("#pg-titulo").textContent = p.nome;
+  var descEl = $("#pg-descricao");
+  if (descEl && p.descricao) descEl.textContent = p.descricao;
+  setMetaDescricao(p);
+  injetarSchema(p);
+  var chipCat = $("#pg-categoria");
+  if (chipCat) {
+    chipCat.textContent = p.categoria_nome;
+    chipCat.href = "catalog.html?cat=" + p.categoria;
+    chipCat.classList.add("cat");
+  }
+  var chipDisp = $("#pg-disponibilidade");
+  chipDisp.className = "chip " + disp[1];
+  chipDisp.innerHTML = '<span data-dot></span>' + disp[0];
+
+  $("#pg-rating").innerHTML = starsHTML(p.rating) + ' <strong>' + p.rating.toFixed(1) + "</strong> out of 5 <span class=\"count\">(" + num(p.avaliacoes) + " ratings)</span>";
+  $("#pg-merchant").innerHTML = "Offered by <span class=\"merchant-chip\">" + esc(p.merchant_nome) + "</span>";
+  $("#pg-marca").textContent = "Brand: " + p.marca;
+  $("#pg-produto-id").textContent = "Partner SKU: " + p.product_id;
+
+  var precoHTML = "";
+  if (p.preco_anterior) {
+    precoHTML =
+      '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" +
+      '<div class="row"><span class="now">' + fmt(p.preco) + "</span>" +
+      '<span class="pct">-' + pct + '%</span>' +
+      '<span class="save">You save ' + fmt(p.preco_anterior - p.preco) + "</span></div>";
+  } else {
+    precoHTML = '<div class="row"><span class="now">' + fmt(p.preco) + "</span></div>";
+  }
+  $("#preco-bloco").innerHTML = precoHTML + '<div class="cash">Reference price from the partner store — final price is confirmed at checkout.</div>';
+
+  if (p.comissao) {
+    $("#comissao-note").innerHTML = "<strong>Transparency:</strong> as an affiliate, GadgetScout may earn a commission on this purchase — at no extra cost to you.";
+  }
+
+  var btn = $("#btn-comprar");
+  btn.innerHTML = esgotado ? "Currently unavailable" : "Buy now — secure checkout on partner site";
+  btn.disabled = esgotado;
+  btn.addEventListener("click", function () { abrirOferta(p.id); });
+
+  $("#btn-parceiro").addEventListener("click", function () { abrirOferta(p.id); });
+  var parceiroNome = $("#parceiro-nome");
+  if (parceiroNome) parceiroNome.textContent = p.merchant_nome;
+
+  $("#specs-tabela").innerHTML = p.specs.map(function (s) {
+    return "<tr><th>" + esc(s.rotulo) + "</th><td>" + esc(s.valor) + "</td></tr>";
+  }).join("");
+
+  renderSimilares(p);
+
+  var faq = $("#faq-lista");
+  var genericas = [
+    { p: "Does GadgetScout sell this product?", a: "No. GadgetScout is an affiliate storefront — the Buy button takes you to the partner store, where your purchase is completed securely. GadgetScout never processes payments." },
+    { p: "Is the displayed price final?", a: "Prices shown are references collected from partners and can change. Please confirm the price on the partner's page before completing your order." },
+    { p: "Who handles shipping and returns?", a: "Shipping, delivery dates and return policies are set by the partner store. Review those terms on the partner's product page." }
+  ];
+  faq.innerHTML = p.faq.concat(genericas).map(function (f) {
+    return '<div class="faq-item"><button class="faq-q" type="button">' + esc(f.p) +
+      '<span class="chev">\u25BC</span></button><div class="faq-a">' + esc(f.a) + "</div></div>";
+  }).join("");
+  faq.addEventListener("click", function (e) {
+    var b = e.target.closest(".faq-q");
+    if (!b) return;
+    var item = b.parentNode;
+    var estavaAberto = item.classList.contains("open");
+    $$(".faq-item", faq).forEach(function (x) { x.classList.remove("open"); });
+    if (!estavaAberto) item.classList.add("open");
+  });
+
+  var rel = $("#relacionados-grid");
+  var relacionados = PRODUTOS.filter(function (x) { return x.id !== p.id; })
+    .sort(function (a, b) {
+      var sameA = a.categoria === p.categoria ? 0 : 1;
+      var sameB = b.categoria === p.categoria ? 0 : 1;
+      return sameA - sameB || b.rating - a.rating;
+    })
+    .slice(0, 4);
+  rel.innerHTML = relacionados.map(cardHTML).join("");
+
+  document.title = p.nome + " · GadgetScout";
+}
+
+function renderSimilares(principal) {
+  var sim = PRODUTOS.filter(function (x) {
+    return x.id !== principal.id && x.categoria === principal.categoria;
+  }).slice(0, 3);
+  if (sim.length < 2) {
+    PRODUTOS.forEach(function (x) {
+      if (sim.length >= 2) return;
+      if (x.id !== principal.id && sim.indexOf(x) === -1) sim.push(x);
+    });
+  }
+  var alvo = $("#similares");
+  if (sim.length) {
+    alvo.style.display = "";
+    $("#similares-grid").innerHTML = sim.map(osCardHTML).join("");
+
+    var labels = principal.specs.map(function (s) { return s.rotulo; });
+    var rowsSel = labels.filter(function (r) {
+      return sim.some(function (x) { return x.specs.some(function (s) { return s.rotulo === r; }); });
+    }).slice(0, 5);
+
+    var headRow = "<tr><th>Feature</th><th>This product</th>" +
+      sim.map(function (x) { return "<th>" + esc(x.nome.split(" ").slice(0, 3).join(" ")) + "</th>"; }).join("") + "</tr>";
+    var bodyRows = rowsSel.map(function (r) {
+      var val = function (x) {
+        var v = x.specs.find(function (s) { return s.rotulo === r; });
+        return v ? esc(v.valor) : "<span style='color:#aab1b9'>—</span>";
+      };
+      return "<tr><td class=\"spec-k\">" + esc(r) + "</td><td>" + val(principal) + "</td>" +
+        sim.map(function (x) { return "<td>" + val(x) + "</td>"; }).join("") + "</tr>";
+    }).join("");
+    $("#compara-tabela").innerHTML = headRow + bodyRows;
+  } else {
+    alvo.style.display = "none";
+  }
+}
+
+function osCardHTML(p) {
+  var esgotado = p.disponibilidade === "esgotado";
+  return '<article class="pcard">' +
+    '<a class="media" href="product.html?id=' + p.id + '">' +
+    (pctDesc(p.preco, p.preco_anterior) != null ? '<span class="badge">-' + pctDesc(p.preco, p.preco_anterior) + "%</span>" : "") +
+    '<img src="' + imgProd(p, 1) + '" alt="' + esc(p.nome) + '" loading="lazy"/></a>' +
+    '<div class="body">' +
+    '<a class="p-name" href="product.html?id=' + p.id + '">' + esc(p.nome) + "</a>" +
+    '<div class="rating">' + starsHTML(p.rating) + " <span class=\"reviews\">" + p.rating.toFixed(1) + " (" + num(p.avaliacoes) + ")</span></div>" +
+    '<div class="price"><span class="now">' + fmt(p.preco) + "</span></div>" +
+    '<div class="merchant">Shipped by ' + esc(p.merchant_nome) + "</div>" +
+    (esgotado ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>' : '<button class="btn-buy" onclick="abrirOferta(\'' + p.id + '\')">See deal</button>') +
+    "</div></article>";
+}
+
+/* ---------- Boot ---------- */
+document.addEventListener("DOMContentLoaded", function () {
+  carregarDados().then(function () {
+    renderHeader();
+    renderFooter();
+    var page = document.body.dataset.page;
+    if (page === "home") initHome();
+    else if (page === "categoria") initCategoria();
+    else if (page === "produto") initProduto();
+  });
+});

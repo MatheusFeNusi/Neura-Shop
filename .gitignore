@@ -1,0 +1,8 @@
+node_modules/
+produtos csv/
+tools/
+*.bak*
+products.json.bak*
+*.log
+.DS_Store
+Thumbs.db
