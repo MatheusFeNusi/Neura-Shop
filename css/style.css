@@ -116,6 +116,10 @@ button { font-family: inherit; }
 .hdr-links a:hover { background: var(--surface-2); color: var(--brand); }
 .hdr-links a.ofertas { color: var(--spot); }
 .hdr-links a.ofertas:hover { background: var(--spot); color: #fff; }
+.hdr-links a.hdr-admin {
+  background: var(--brand); color: #fff; border-radius: 8px; margin-left: 6px;
+}
+.hdr-links a.hdr-admin:hover { background: var(--brand-2); color: #fff; }
 
 .menu-btn {
   display: none; background: var(--surface-2); border: 0; color: var(--ink);

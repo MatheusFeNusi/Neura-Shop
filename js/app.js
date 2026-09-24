@@ -437,6 +437,7 @@ function renderHeader() {
     '<nav class="hdr-links" id="hdr-links">' +
     '<a class="ofertas" href="catalog.html?ofertas=1">Today\'s deals</a>' +
     '<a href="about.html">About</a>' +
+    '<a class="hdr-admin" href="admin.html">Entrar</a>' +
     "</nav>" +
     '<button class="menu-btn" id="menu-btn" aria-label="Menu">\u2630</button>' +
     "</div>" +
@@ -518,7 +519,7 @@ function renderFooter() {
     '<div class="foot-disclose">This site participates in affiliate programs and may earn a commission on purchases made through our links, at no extra cost to you. Purchases are completed on the partner store\u2019s site.</div>' +
     "</div>" +
     "</div>" +
-    '<div class="foot-bottom"><span>© 2026 ' + esc(DADOS.marca.nome) + ' — demo storefront. All products and partner stores shown are fictional.</span><span>Built as an MVP to validate the affiliate-storefront model.</span></div>' +
+    '<div class="foot-bottom"><span>© 2026 ' + esc((DADOS.marca && DADOS.marca.nome) ? DADOS.marca.nome : String(DADOS.marca || "GadgetScout")) + ' — demo storefront. All products and partner stores shown are fictional.</span><span>Built as an MVP to validate the affiliate-storefront model.</span></div>' +
     "</div></footer>";
   var slot = $("#app-footer");
   slot.parentNode.insertBefore(f.firstElementChild || f, slot);
