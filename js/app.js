@@ -6,184 +6,151 @@
 
 /* ---------- Embedded fallback (mirror of products.json) ---------- */
 var STORE_FALLBACK = {
-  "marca": { "nome": "GadgetScout", "tagline": "Smart finds. Fair prices." },
+  "marca": { "nome": "DroneDeck", "tagline": "Drone parts. Fair prices." },
   "categorias": [
-    { "slug": "audio", "nome": "Audio", "icone": "fone", "descricao": "Headphones, speakers and soundbars for music, calls and home theater." },
-    { "slug": "smarthome", "nome": "Smart Home", "icone": "lampada", "descricao": "Bulbs, plugs and robot vacuums that make your home work for you." },
-    { "slug": "wearables", "nome": "Wearables", "icone": "relogio", "descricao": "Smartwatches and trackers to keep up with your routine." },
-    { "slug": "accessories", "nome": "Accessories & PC", "icone": "teclado", "descricao": "Keyboards, chargers and peripherals for work and play." },
-    { "slug": "security", "nome": "Security", "icone": "camera", "descricao": "Cameras and gear to keep an eye on what matters." }
+    { "slug": "baterias-rc", "nome": "Batteries", "icone": "carregador", "descricao": "LiPo and LiHV packs for quadcopters, whoops and planes." },
+    { "slug": "motores-esc", "nome": "Motors & ESCs", "icone": "barra", "descricao": "Brushless motors, ESCs and speed controllers for your build." },
+    { "slug": "fpv-camera", "nome": "FPV & Cameras", "icone": "camera", "descricao": "FPV cameras, gimbals, video transmitters and antennas." },
+    { "slug": "helices-rc", "nome": "Propellers", "icone": "caixa", "descricao": "Props and blades for racing, freestyle and scale models." },
+    { "slug": "rc-transmissores", "nome": "RC Transmitters", "icone": "teclado", "descricao": "Radios, transmitters, gimbals and controller accessories." }
   ],
   "produtos": [
     {
-      "id": "odyssey-air-2", "nome": "Odyssey Air 2 Wireless Noise-Canceling Headphones", "descricao": "The Odyssey Air 2 pairs hybrid active noise canceling with up to 40 hours of battery for everyday listening.", "marca": "Odyssey",
-      "merchant": "soundnest", "merchant_nome": "SoundNest", "product_id": "SN-AUD-8842",
-      "categoria": "audio", "categoria_nome": "Audio", "preco": 59.99, "preco_anterior": 79.99, "comissao": 2.4,
-      "url_afiliado": "https://partners.example.com/soundnest/odyssey-air-2?ref=gadgetscout",
-      "icone": "fone", "disponibilidade": "em_estoque", "rating": 4.7, "avaliacoes": 1284, "destaque": true,
+      "id": "bg-fallback-lipo-1500", "nome": "ZOP Power 7.4V 1500mAh 40C 2S Lipo Battery XT60 Plug", "descricao": "A 2S 7.4V LiPo pack with XT60 plug — a solid pick for your RC build, picked from the partner catalog with live price and real ratings.", "marca": "ZOP Power",
+      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-LIPO-1500",
+      "categoria": "baterias-rc", "categoria_nome": "Batteries", "preco": 12.99, "preco_anterior": 15.99, "comissao": 0.4,
+      "url_afiliado": "https://partners.example.com/dronedeck/lipo-1500?ref=dronedeck",
+      "icone": "carregador", "disponibilidade": "em_estoque", "rating": 4.8, "avaliacoes": 920, "destaque": true,
       "specs": [
-        { "rotulo": "Connection", "valor": "Bluetooth 5.3, multipoint" },
-        { "rotulo": "Battery", "valor": "Up to 40 hours with case" },
-        { "rotulo": "Active noise canceling", "valor": "Hybrid ANC" },
-        { "rotulo": "Warranty", "valor": "1 year via partner" }
+        { "rotulo": "Brand", "valor": "ZOP Power" },
+        { "rotulo": "Category", "valor": "Batteries" },
+        { "rotulo": "Package", "valor": "1 PCS" },
+        { "rotulo": "Availability", "valor": "In stock" }
       ],
       "faq": [
-        { "p": "Does this item have active noise canceling?", "a": "Yes. The Odyssey Air 2 uses hybrid ANC to reduce ambient noise and keep calls and music clear." },
-        { "p": "How long does the battery last?", "a": "Up to 40 hours of playback with the charging case, and about 9 hours per charge." },
-        { "p": "Does this site sell the product?", "a": "No. GadgetScout is an affiliate storefront: when you tap Buy, you're redirected to the partner store (SoundNest) to complete your purchase securely." }
+        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an affiliate demo storefront: the buy button takes you to the secure page of the partner store, where the item is sold and processed by that store." },
+        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged). Since this is a static demo, confirm price, rating and availability before buying." },
+        { "p": "Does DroneDeck earn a commission?", "a": "If you buy through the button, this affiliate demo may receive a small commission from the partner store, at no extra cost to you." }
       ]
     },
     {
-      "id": "smart-360-speaker", "nome": "Smart 360 Portable Bluetooth Speaker", "descricao": "A compact 20W Bluetooth speaker with IPX6 splash protection and a 12-hour battery for poolside and patio audio.", "marca": "Odyssey",
-      "merchant": "soundnest", "merchant_nome": "SoundNest", "product_id": "SN-AUD-3410",
-      "categoria": "audio", "categoria_nome": "Audio", "preco": 39.99, "preco_anterior": 49.99, "comissao": 1.6,
-      "url_afiliado": "https://partners.example.com/soundnest/smart-360-speaker?ref=gadgetscout",
-      "icone": "caixa", "disponibilidade": "em_estoque", "rating": 4.5, "avaliacoes": 862, "destaque": true,
+      "id": "bg-fallback-motor-2200kv", "nome": "RacerStar BR2304 1850KV 2-3S Brushless Motor", "descricao": "A race-tuned brushless motor for 2-3S whoop builds, picked from the partner catalog with live price and ratings.", "marca": "RacerStar",
+      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-MOTOR-2304",
+      "categoria": "motores-esc", "categoria_nome": "Motors & ESCs", "preco": 9.99, "preco_anterior": 12.99, "comissao": 0.3,
+      "url_afiliado": "https://partners.example.com/dronedeck/br2304?ref=dronedeck",
+      "icone": "barra", "disponibilidade": "em_estoque", "rating": 4.7, "avaliacoes": 640, "destaque": true,
       "specs": [
-        { "rotulo": "Power", "valor": "20W RMS" },
-        { "rotulo": "Connections", "valor": "Bluetooth 5.2, AUX" },
-        { "rotulo": "Battery", "valor": "12 hours of playback" },
-        { "rotulo": "Durability", "valor": "IPX6 splash resistant" }
+        { "rotulo": "Brand", "valor": "RacerStar" },
+        { "rotulo": "Category", "valor": "Motors & ESCs" },
+        { "rotulo": "Availability", "valor": "In stock" }
       ],
       "faq": [
-        { "p": "Is the speaker waterproof?", "a": "It's IPX6 splash-resistant — fine for poolsides and light rain, but not for submersion." },
-        { "p": "Can I use it for hands-free calls?", "a": "Yes, it has an echo-canceling microphone for calls and meetings." }
+        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an affiliate demo storefront: the buy button takes you to the secure page of the partner store." },
+        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
+        { "p": "Does DroneDeck earn a commission?", "a": "If you buy through the button, this affiliate demo may receive a small commission from the partner store, at no extra cost to you." }
       ]
     },
     {
-      "id": "hometheater-21-soundbar", "nome": "HomeTheater 2.1 Soundbar with Wireless Subwoofer", "descricao": "A 2.1 soundbar with a wireless subwoofer and 160W of power, connecting via HDMI ARC, optical or Bluetooth.", "marca": "Odyssey",
-      "merchant": "soundnest", "merchant_nome": "SoundNest", "product_id": "SN-AUD-1290",
-      "categoria": "audio", "categoria_nome": "Audio", "preco": 129.99, "preco_anterior": 159.99, "comissao": 5.2,
-      "url_afiliado": "https://partners.example.com/soundnest/hometheater-soundbar?ref=gadgetscout",
-      "icone": "barra", "disponibilidade": "em_estoque", "rating": 4.6, "avaliacoes": 421, "destaque": false,
+      "id": "bg-fallback-cam", "nome": "Caddx Nebula Pro Vista FPV Camera Unit", "descricao": "A high-quality FPV camera unit with low latency, fitted for racing and freestyle quads, picked from the partner catalog.", "marca": "Caddx",
+      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-CAM-NEB",
+      "categoria": "fpv-camera", "categoria_nome": "FPV & Cameras", "preco": 89.99, "preco_anterior": 109.99, "comissao": 2.7,
+      "url_afiliado": "https://partners.example.com/dronedeck/nebula-pro?ref=dronedeck",
+      "icone": "camera", "disponibilidade": "em_estoque", "rating": 4.6, "avaliacoes": 388, "destaque": false,
       "specs": [
-        { "rotulo": "Channels", "valor": "2.1 with wireless subwoofer" },
-        { "rotulo": "Power", "valor": "160W RMS" },
-        { "rotulo": "Connections", "valor": "HDMI ARC, Bluetooth 5.0, AUX, optical" },
-        { "rotulo": "Warranty", "valor": "1 year via partner" }
+        { "rotulo": "Brand", "valor": "Caddx" },
+        { "rotulo": "Category", "valor": "FPV & Cameras" },
+        { "rotulo": "Availability", "valor": "In stock" }
       ],
       "faq": [
-        { "p": "Can I connect it to my TV?", "a": "Yes — via HDMI ARC, optical or Bluetooth, depending on your TV." },
-        { "p": "Is the subwoofer wireless?", "a": "Yes, the sub connects wirelessly to the bar, so placement is easy." }
+        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an affiliate demo storefront: the buy button takes you to the secure page of the partner store." },
+        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
+        { "p": "Does DroneDeck earn a commission?", "a": "If you buy through the button, this affiliate demo may receive a small commission from the partner store, at no extra cost to you." }
       ]
     },
     {
-      "id": "fitpulse-pro", "nome": "FitPulse Pro Smartwatch AMOLED", "descricao": "An always-on AMOLED smartwatch with up to 14 days of battery, 5 ATM water resistance and built-in GPS for tracking your routine.", "marca": "FitPulse",
-      "merchant": "wearhouse", "merchant_nome": "WearHouse", "product_id": "WH-WCH-0057",
-      "categoria": "wearables", "categoria_nome": "Wearables", "preco": 99.99, "preco_anterior": 129.99, "comissao": 4.0,
-      "url_afiliado": "https://partners.example.com/wearhouse/fitpulse-pro?ref=gadgetscout",
-      "icone": "relogio", "disponibilidade": "em_estoque", "rating": 4.8, "avaliacoes": 2031, "destaque": true,
+      "id": "bg-fallback-props", "nome": "Gemfan GF 5040 2-Blade Propeller CW CCW (4 Pack)", "descricao": "Lightweight 5-inch 2-blade props in CW and CCW pairs — a favorite for 5\" racing and freestyle quads.", "marca": "Gemfan",
+      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-PROPS-5040",
+      "categoria": "helices-rc", "categoria_nome": "Propellers", "preco": 3.49, "preco_anterior": 4.99, "comissao": 0.1,
+      "url_afiliado": "https://partners.example.com/dronedeck/gf5040?ref=dronedeck",
+      "icone": "caixa", "disponibilidade": "em_estoque", "rating": 4.9, "avaliacoes": 1510, "destaque": true,
       "specs": [
-        { "rotulo": "Display", "valor": "1.43\" always-on AMOLED" },
-        { "rotulo": "Battery", "valor": "Up to 14 days" },
-        { "rotulo": "Water resistance", "valor": "5 ATM (swim-ready)" },
-        { "rotulo": "Sensors", "valor": "Heart rate, SpO2, built-in GPS" }
+        { "rotulo": "Brand", "valor": "Gemfan" },
+        { "rotulo": "Category", "valor": "Propellers" },
+        { "rotulo": "Package", "valor": "4 PCS" },
+        { "rotulo": "Availability", "valor": "In stock" }
       ],
       "faq": [
-        { "p": "Does it work with iPhone and Android?", "a": "Yes — compatible with iOS 15+ and Android 9+ through the free companion app." },
-        { "p": "Is the display always on?", "a": "You can enable always-on mode; it drops battery life to about 8 days." }
+        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an affiliate demo storefront: the buy button takes you to the secure page of the partner store." },
+        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
+        { "p": "Does DroneDeck earn a commission?", "a": "If you buy through the button, this affiliate demo may receive a small commission from the partner store, at no extra cost to you." }
       ]
     },
     {
-      "id": "lumio-smart-bulb", "nome": "Lumio Smart LED Bulb (E26)", "descricao": "A tunable-white smart bulb for standard E26 sockets, working without a hub over Wi-Fi with Alexa and Google voice control.", "marca": "Lumio",
-      "merchant": "homehub", "merchant_nome": "HomeHub", "product_id": "HH-LMP-2211",
-      "categoria": "smarthome", "categoria_nome": "Smart Home", "preco": 17.99, "preco_anterior": null, "comissao": 0.7,
-      "url_afiliado": "https://partners.example.com/homehub/lumio-smart-bulb?ref=gadgetscout",
-      "icone": "lampada", "disponibilidade": "em_estoque", "rating": 4.6, "avaliacoes": 1105, "destaque": false,
+      "id": "bg-fallback-tx", "nome": "RadioMaster Pocket 2.4GHz 16CH ELRS Radio Controller", "descricao": "A compact 2.4GHz 16-channel ELRS radio built for FPV — picked from the partner catalog with live price and ratings.", "marca": "RadioMaster",
+      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-TX-POCKET",
+      "categoria": "rc-transmissores", "categoria_nome": "RC Transmitters", "preco": 79.99, "preco_anterior": 99.99, "comissao": 2.4,
+      "url_afiliado": "https://partners.example.com/dronedeck/pocket-elrs?ref=dronedeck",
+      "icone": "teclado", "disponibilidade": "em_estoque", "rating": 4.8, "avaliacoes": 1200, "destaque": true,
       "specs": [
-        { "rotulo": "Base", "valor": "E26 (standard US socket)" },
-        { "rotulo": "Output", "valor": "800 lumens (60W equivalent)" },
-        { "rotulo": "Color temperature", "valor": "2700K to 6500K, tunable white" },
-        { "rotulo": "Compatibility", "valor": "Wi-Fi 2.4GHz, Alexa, Google" }
+        { "rotulo": "Brand", "valor": "RadioMaster" },
+        { "rotulo": "Category", "valor": "RC Transmitters" },
+        { "rotulo": "Availability", "valor": "In stock" }
       ],
       "faq": [
-        { "p": "Does it need a hub?", "a": "No — it connects straight to your Wi-Fi and works with Alexa and Google via the app." },
-        { "p": "Can I control it by voice?", "a": "Yes, if you have an Alexa or Google speaker, just link the account in the app." }
+        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an affiliate demo storefront: the buy button takes you to the secure page of the partner store." },
+        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
+        { "p": "Does DroneDeck earn a commission?", "a": "If you buy through the button, this affiliate demo may receive a small commission from the partner store, at no extra cost to you." }
       ]
     },
     {
-      "id": "conecta-smart-plug", "nome": "Conecta Smart Plug+ with Energy Monitoring", "descricao": "App-controlled smart plug with real-time energy monitoring, timers and scenes, working with Alexa and Google over Wi-Fi.", "marca": "Conecta",
-      "merchant": "homehub", "merchant_nome": "HomeHub", "product_id": "HH-PLG-0899",
-      "categoria": "smarthome", "categoria_nome": "Smart Home", "preco": 14.99, "preco_anterior": null, "comissao": 0.6,
-      "url_afiliado": "https://partners.example.com/homehub/conecta-smart-plug?ref=gadgetscout",
-      "icone": "tomada", "disponibilidade": "poucas_unidades", "rating": 4.3, "avaliacoes": 540, "destaque": false,
+      "id": "bg-fallback-esc", "nome": "Flycolor Beast Pro 45A ESC 6S BLHeli_32 4-in-1", "descricao": "A 45A 6S 4-in-1 ESC with BLHeli_32 firmware for racing and freestyle quads.", "marca": "Flycolor",
+      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-ESC-45A",
+      "categoria": "motores-esc", "categoria_nome": "Motors & ESCs", "preco": 42.99, "preco_anterior": 49.99, "comissao": 1.3,
+      "url_afiliado": "https://partners.example.com/dronedeck/beastpro45?ref=dronedeck",
+      "icone": "barra", "disponibilidade": "em_estoque", "rating": 4.5, "avaliacoes": 255, "destaque": false,
       "specs": [
-        { "rotulo": "Type", "valor": "15A, app control" },
-        { "rotulo": "Compatibility", "valor": "Wi-Fi 2.4GHz, Alexa, Google" },
-        { "rotulo": "Monitoring", "valor": "Real-time energy usage" },
-        { "rotulo": "Scheduling", "valor": "Timers and scenes" }
+        { "rotulo": "Brand", "valor": "Flycolor" },
+        { "rotulo": "Category", "valor": "Motors & ESCs" },
+        { "rotulo": "Availability", "valor": "In stock" }
       ],
       "faq": [
-        { "p": "What's the load limit?", "a": "Up to 15A — ideal for lamps, TVs and small appliances. Avoid high-draw heaters." },
-        { "p": "Do I need a hub?", "a": "No — it works directly over Wi-Fi with the manufacturer's app." }
+        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an affiliate demo storefront: the buy button takes you to the secure page of the partner store." },
+        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
+        { "p": "Does DroneDeck earn a commission?", "a": "If you buy through the button, this affiliate demo may receive a small commission from the partner store, at no extra cost to you." }
       ]
     },
     {
-      "id": "cleanbot-3000", "nome": "CleanBot 3000 Robot Vacuum and Mop", "descricao": "Laser-navigated robot vacuum and mop with a self-emptying, mop-washing dock, 3000 Pa of suction and 140 minutes of run time.", "marca": "CleanBot",
-      "merchant": "homehub", "merchant_nome": "HomeHub", "product_id": "HH-VAC-3477",
-      "categoria": "smarthome", "categoria_nome": "Smart Home", "preco": 299.99, "preco_anterior": 379.99, "comissao": 12.0,
-      "url_afiliado": "https://partners.example.com/homehub/cleanbot-3000?ref=gadgetscout",
-      "icone": "aspirador", "disponibilidade": "em_estoque", "rating": 4.7, "avaliacoes": 689, "destaque": true,
+      "id": "bg-fallback-servo", "nome": "DSServo DS3225 25KG Metal Gear Digital Servo", "descricao": "A 25kg metal-gear digital servo for planes, cars and robots — a robust choice at a fair price.", "marca": "DSServo",
+      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-SERVO-3225",
+      "categoria": "servos-rc", "categoria_nome": "Servos", "preco": 14.99, "preco_anterior": 17.99, "comissao": 0.5,
+      "url_afiliado": "https://partners.example.com/dronedeck/ds3225?ref=dronedeck",
+      "icone": "caixa", "disponibilidade": "em_estoque", "rating": 4.7, "avaliacoes": 810, "destaque": true,
       "specs": [
-        { "rotulo": "Suction", "valor": "3000 Pa" },
-        { "rotulo": "Run time", "valor": "Up to 140 minutes" },
-        { "rotulo": "Navigation", "valor": "Laser mapping" },
-        { "rotulo": "Base station", "valor": "Self-emptying and mop washing" }
+        { "rotulo": "Brand", "valor": "DSServo" },
+        { "rotulo": "Category", "valor": "Servos" },
+        { "rotulo": "Availability", "valor": "In stock" }
       ],
       "faq": [
-        { "p": "Does it clean itself?", "a": "Yes — the dock empties the dustbin and washes the mop automatically after each run." },
-        { "p": "Does it map the home?", "a": "Laser navigation builds maps you can split by room and schedule through the app." }
+        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an affiliate demo storefront: the buy button takes you to the secure page of the partner store." },
+        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
+        { "p": "Does DroneDeck earn a commission?", "a": "If you buy through the button, this affiliate demo may receive a small commission from the partner store, at no extra cost to you." }
       ]
     },
     {
-      "id": "guardcam-2k", "nome": "GuardCam 2K Security Camera", "descricao": "A 2K QHD security camera with 33 ft of infrared night vision, local MicroSD or cloud storage, and live viewing from the app.", "marca": "GuardCam",
-      "merchant": "securestore", "merchant_nome": "SecureStore", "product_id": "SS-CAM-5563",
-      "categoria": "security", "categoria_nome": "Security", "preco": 79.99, "preco_anterior": 99.99, "comissao": 3.2,
-      "url_afiliado": "https://partners.example.com/securestore/guardcam-2k?ref=gadgetscout",
-      "icone": "camera", "disponibilidade": "em_estoque", "rating": 4.5, "avaliacoes": 778, "destaque": false,
+      "id": "bg-fallback-frame", "nome": "iFlight Nazgul CineSpeed Cinematic FPV Frame 5-inch", "descricao": "A durable 5-inch cinematic FPV frame with mounting options for an easily serviceable build.", "marca": "iFlight",
+      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-FRAME-5",
+      "categoria": "estruturas-rc", "categoria_nome": "Frames & Bodies", "preco": 34.99, "preco_anterior": 41.99, "comissao": 1.1,
+      "url_afiliado": "https://partners.example.com/dronedeck/nazgul-frame?ref=dronedeck",
+      "icone": "caixa", "disponibilidade": "em_estoque", "rating": 4.6, "avaliacoes": 310, "destaque": false,
       "specs": [
-        { "rotulo": "Resolution", "valor": "2K QHD" },
-        { "rotulo": "Night vision", "valor": "Infrared up to 33 ft" },
-        { "rotulo": "Storage", "valor": "MicroSD and optional cloud" },
-        { "rotulo": "Compatibility", "valor": "Alexa, Google, iOS & Android app" }
+        { "rotulo": "Brand", "valor": "iFlight" },
+        { "rotulo": "Category", "valor": "Frames & Bodies" },
+        { "rotulo": "Availability", "valor": "In stock" }
       ],
       "faq": [
-        { "p": "Is a subscription required?", "a": "No — record locally to a MicroSD card (up to 256GB). Cloud is optional." },
-        { "p": "Can I view it live from my phone?", "a": "Yes, through the official app with remote access from anywhere." }
-      ]
-    },
-    {
-      "id": "k80-tkl-keyboard", "nome": "K80 TKL Mechanical Gaming Keyboard", "descricao": "A tenkeyless mechanical keyboard with quiet linear red switches, tri-mode connectivity and per-key RGB lighting.", "marca": "ClickPro",
-      "merchant": "clickco", "merchant_nome": "ClickCo", "product_id": "CC-KBD-7710",
-      "categoria": "accessories", "categoria_nome": "Accessories & PC", "preco": 69.99, "preco_anterior": 84.99, "comissao": 2.8,
-      "url_afiliado": "https://partners.example.com/clickco/k80-tkl-keyboard?ref=gadgetscout",
-      "icone": "teclado", "disponibilidade": "poucas_unidades", "rating": 4.6, "avaliacoes": 932, "destaque": false,
-      "specs": [
-        { "rotulo": "Switches", "valor": "Linear mechanical red" },
-        { "rotulo": "Layout", "valor": "TKL (no numpad), ANSI" },
-        { "rotulo": "Connectivity", "valor": "2.4GHz, Bluetooth, USB-C" },
-        { "rotulo": "Lighting", "valor": "Per-key RGB" }
-      ],
-      "faq": [
-        { "p": "Good for gaming and work?", "a": "Yes — linear red switches are quiet and smooth, great for long typing sessions and games." },
-        { "p": "How many wireless modes?", "a": "Three: 2.4GHz dongle, Bluetooth and USB-C, with quick device switching." }
-      ]
-    },
-    {
-      "id": "voltaway-wireless-charger", "nome": "VoltAway 15W Qi Wireless Charger", "descricao": "A 15W Qi wireless charger with MagSafe-aligned placement and built-in overload and temperature protection.", "marca": "VoltAway",
-      "merchant": "clickco", "merchant_nome": "ClickCo", "product_id": "CC-CHR-2216",
-      "categoria": "accessories", "categoria_nome": "Accessories & PC", "preco": 24.99, "preco_anterior": null, "comissao": 1.0,
-      "url_afiliado": "https://partners.example.com/clickco/voltaway-15w?ref=gadgetscout",
-      "icone": "carregador", "disponibilidade": "em_estoque", "rating": 4.4, "avaliacoes": 415, "destaque": false,
-      "specs": [
-        { "rotulo": "Standard", "valor": "Qi, MagSafe aligned" },
-        { "rotulo": "Output", "valor": "15W (iPhone & Android)" },
-        { "rotulo": "Input", "valor": "USB-C" },
-        { "rotulo": "Protection", "valor": "Overload and temperature" }
-      ],
-      "faq": [
-        { "p": "Will it charge my phone?", "a": "Any Qi-compatible phone; MagSafe-aligned models charge at up to 15W." },
-        { "p": "Does it include a cable?", "a": "Yes — a USB-C cable and a bivolt wall adapter are included." }
+        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an affiliate demo storefront: the buy button takes you to the secure page of the partner store." },
+        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
+        { "p": "Does DroneDeck earn a commission?", "a": "If you buy through the button, this affiliate demo may receive a small commission from the partner store, at no extra cost to you." }
       ]
     }
   ]
@@ -368,7 +335,7 @@ function setMetaDescricao(p) {
     metaDesc.name = "description";
     document.head.appendChild(metaDesc);
   }
-  metaDesc.content = p.descricao + " Compare prices, ratings and specs across trusted US retailers. Check out securely on the partner store.";
+  metaDesc.content = p.descricao + " Compare prices, ratings and specs for this drone or RC part across partner stores. Check out securely on the partner store.";
 }
 
 function injetarSchema(p) {
@@ -439,11 +406,11 @@ function renderHeader() {
     '<div class="hdr-top">' +
     '<a class="brand" href="index.html">' +
     '<span class="brand-mark">G</span>' +
-    '<span><span class="brand-name">GadgetScout</span><span class="brand-tag">compare prices · find your best offer</span></span>' +
+    '<span><span class="brand-name">DroneDeck</span><span class="brand-tag">drone &amp; RC parts · compare prices</span></span>' +
     '</a>' +
     '<form class="search-box" id="busca-form" role="search">' +
     '<label class="visually-hidden" for="busca-input">Search products</label>' +
-    '<input id="busca-input" type="search" placeholder="What are you looking for?" autocomplete="off"/>' +
+    '<input id="busca-input" type="search" placeholder="Search parts… (e.g. LiPo battery, FPV camera, motor, prop)" autocomplete="off"/>' +
     '<button class="search-btn" type="submit" aria-label="Search">' + iconLupa() + "</button>" +
     '<div class="sugest" id="busca-sugest"></div>' +
     "</form>" +
@@ -527,12 +494,12 @@ function renderFooter() {
     '<div class="container">' +
     '<div class="foot-top">' +
     '<div class="foot-brand">' +
-    '<span class="brand"><span class="brand-mark">G</span><span><span class="brand-name">GadgetScout</span></span></span>' +
-    "<p>An independent storefront that compares prices across trusted US retailers, so you can shop one clean catalog and check out securely on our partner stores.</p>" +
+    '<span class="brand"><span class="brand-mark">G</span><span><span class="brand-name">DroneDeck</span></span></span>' +
+    "<p>An affiliate storefront that compares prices for drone and RC parts across partner retailers, so you can build your quad from one clean catalog and check out securely on the partner store.</p>" +
     "</div>" +
     '<div class="foot-col"><h4>Categories</h4><ul>' + catLinks + "</ul></div>" +
     '<div class="foot-col"><h4>Company</h4><ul>' +
-    '<li><a href="about.html">About GadgetScout</a></li>' +
+    '<li><a href="about.html">About DroneDeck</a></li>' +
     '<li><a href="about.html#disclosure">Affiliate disclosure</a></li>' +
     '<li><a href="about.html#how-it-works">How it works</a></li>' +
     '<li><a href="store.html">Partner stores</a></li>' +
@@ -541,7 +508,7 @@ function renderFooter() {
     '<div class="foot-disclose">This site participates in affiliate programs and may earn a commission on purchases made through our links, at no extra cost to you. Purchases are completed on the partner store\u2019s site.</div>' +
     "</div>" +
     "</div>" +
-    '<div class="foot-bottom"><span>© 2026 ' + esc((DADOS.marca && DADOS.marca.nome) ? DADOS.marca.nome : String(DADOS.marca || "GadgetScout")) + ' — demo storefront. All products and partner stores shown are fictional.</span><span>Built as an MVP to validate the affiliate-storefront model.</span></div>' +
+    '<div class="foot-bottom"><span>© 2026 ' + esc((DADOS.marca && DADOS.marca.nome) ? DADOS.marca.nome : String(DADOS.marca || "DroneDeck")) + ' — drone-parts demo storefront. All products and partner stores shown are fictional.</span><span>Built as an MVP to validate the affiliate-storefront model for drone parts.</span></div>' +
     "</div></footer>";
   var slot = $("#app-footer");
   if (!slot) return;
@@ -597,7 +564,7 @@ function carregarDoSupabase() {
       }
     });
     var categorias = Object.keys(cats).map(function (k) { return cats[k]; });
-    return { "marca": "GadgetScout", "categorias": categorias, "produtos": produtos };
+    return { "marca": "DroneDeck", "categorias": categorias, "produtos": produtos };
   });
 }
 
@@ -875,8 +842,8 @@ function initCategoria() {
   var head = $("#cat-head");
   if (head) {
     var kicker = ofertas ? "Best deals" : (cat ? cat.nome : "Compare catalog");
-    var titulo = ofertas ? "Best deals right now" : (cat ? cat.nome : (busca ? "Results for \u201c" + esc(busca) + "\u201d" : "Compare all products"));
-    var desc = ofertas ? "The biggest discounts we're tracking right now — verified live from partner stores." : (cat ? cat.descricao : "Compare prices, brands and ratings from our partner stores, then buy securely on the store of your choice.");
+    var titulo = ofertas ? "Best deals right now" : (cat ? cat.nome : (busca ? "Results for \u201c" + esc(busca) + "\u201d" : "Compare all drone parts"));
+    var desc = ofertas ? "The biggest discounts we're tracking right now — verified live from partner stores." : (cat ? cat.descricao : "Compare prices, brands and ratings for drone and RC parts from our partner stores, then buy securely on the store of your choice.");
     head.innerHTML = '<p class="kicker">' + kicker + "</p><h1>" + titulo + "</h1><p>" + desc + "</p>";
   }
 
@@ -1076,7 +1043,7 @@ function initProduto() {
   $("#preco-bloco").innerHTML = precoHTML + '<div class="cash">Reference price from the partner store — final price is confirmed at checkout.</div>';
 
   if (p.comissao) {
-    $("#comissao-note").innerHTML = "<strong>Transparency:</strong> as an affiliate, GadgetScout may earn a commission on this purchase — at no extra cost to you.";
+    $("#comissao-note").innerHTML = "<strong>Transparency:</strong> as an affiliate, DroneDeck may earn a commission on this purchase — at no extra cost to you.";
   }
 
   var btn = $("#btn-comprar");
@@ -1096,7 +1063,7 @@ function initProduto() {
 
   var faq = $("#faq-lista");
   var genericas = [
-    { p: "Does GadgetScout sell this product?", a: "No. GadgetScout is an affiliate storefront — the Buy button takes you to the partner store, where your purchase is completed securely. GadgetScout never processes payments." },
+    { p: "Does DroneDeck sell this part?", a: "No. DroneDeck is an affiliate storefront — the Buy button takes you to the partner store, where your purchase is completed securely. DroneDeck never processes payments." },
     { p: "Is the displayed price final?", a: "Prices shown are references collected from partners and can change. Please confirm the price on the partner's page before completing your order." },
     { p: "Who handles shipping and returns?", a: "Shipping, delivery dates and return policies are set by the partner store. Review those terms on the partner's product page." }
   ];
@@ -1126,7 +1093,7 @@ function initProduto() {
   renderOfertas(p);
   renderHistorico(p);
 
-  document.title = p.nome + " · GadgetScout";
+  document.title = p.nome + " · DroneDeck";
 }
 
 /* ---------- Where to buy (offer comparison) ---------- */
