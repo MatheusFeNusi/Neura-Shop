@@ -459,6 +459,7 @@ function renderHeader() {
     "</div>" +
     "</header>";
   var slot = $("#app-header");
+  if (!slot) return;
   slot.parentNode.insertBefore(h.firstElementChild || h, slot);
   slot.parentNode.removeChild(slot);
   anexarBusca();
@@ -543,6 +544,7 @@ function renderFooter() {
     '<div class="foot-bottom"><span>© 2026 ' + esc((DADOS.marca && DADOS.marca.nome) ? DADOS.marca.nome : String(DADOS.marca || "GadgetScout")) + ' — demo storefront. All products and partner stores shown are fictional.</span><span>Built as an MVP to validate the affiliate-storefront model.</span></div>' +
     "</div></footer>";
   var slot = $("#app-footer");
+  if (!slot) return;
   slot.parentNode.insertBefore(f.firstElementChild || f, slot);
   slot.parentNode.removeChild(slot);
 }
@@ -558,23 +560,29 @@ function supaHeaders(token) {
 function carregarDoSupabase() {
   var url = (window.SUPA_CONFIG && SUPA_CONFIG.url) ? SUPA_CONFIG.url : null;
   if (!url) return Promise.reject(new Error("sem-supabase"));
-  function page(offset) {
-    return fetch(url + "/rest/v1/produtos?select=id,dados", {
+  var base = url + "/rest/v1/produtos?select=id,dados";
+  function getPagina(offset) {
+    return fetch(base, {
       headers: Object.assign(supaHeaders(), { "Range-Unit": "items", "Range": offset + "-" + (offset + 999) })
     }).then(function (r) {
       if (!r.ok) throw new Error("supa " + r.status);
       return r.json();
-    }).then(function (rows) {
-      if (rows.length === 1000) {
-        return page(offset + 1000).then(function (mais) {
-          return rows.concat(mais);
-        });
-      }
-      return rows;
     });
   }
-  return page(0).then(function (rows) {
-    var produtos = rows.map(function (row) { return row.dados; });
+  return getPagina(0).then(function (primeira) {
+    if (primeira.length === 0) return [];
+    if (primeira.length < 1000) return primeira;
+    var paginas = [];
+    for (var o = 1000; o <= 6000; o += 1000) paginas.push(o);
+    var todas = paginas.map(getPagina);
+    return Promise.all(todas).then(function (outras) {
+      var rows = primeira.slice();
+      outras.forEach(function (r) { if (r.length) rows = rows.concat(r); });
+      return rows;
+    });
+  }).then(function (rows) {
+    var produtos = [];
+    for (var i = 0; i < rows.length; i++) produtos.push(rows[i].dados);
     var cats = {};
     var CAT_ICONE = { lanternas: "lanterna", camping: "barraca", energia: "tomada", ferramentas: "chave", automotivo: "carro", casa: "casa", iluminacao: "lampada", mobiliario: "sofa", outros: "loja", jardinagem: "planta" };
     produtos.forEach(function (p) {
@@ -593,31 +601,109 @@ function carregarDoSupabase() {
   });
 }
 
-function carregarDados() {
-  return carregarDoSupabase()
-    .catch(function () {
-      return fetch("products.json")
-        .then(function (r) { if (!r.ok) throw new Error("http"); return r.json(); });
-    })
-    .then(function (d) {
-      DADOS = d;
-      if (!d.produtos) d.produtos = [];
-      for (var _a = 0; _a < d.produtos.length; _a++) {
-        var _p = d.produtos[_a];
-        var _r = Number(_p.rating);
-        var _av = Number(_p.avaliacoes);
-        var _pc = Number(_p.preco);
-        if (isFinite(_r)) _p.rating = _r;
-        if (isFinite(_av)) _p.avaliacoes = _av;
-        if (isFinite(_pc)) _p.preco = _pc;
-        if (_p.preco_anterior != null && isFinite(Number(_p.preco_anterior))) _p.preco_anterior = Number(_p.preco_anterior);
-      }
-    })
-    .catch(function () { DADOS = STORE_FALLBACK; })
-    .then(function () {
-      PRODUTOS = DADOS.produtos;
-      CATEGORIAS = DADOS.categorias || [];
+function saneiaProdutos_(produtos) {
+  for (var _a = 0; _a < produtos.length; _a++) {
+    var _p = produtos[_a];
+    var _r = Number(_p.rating);
+    var _av = Number(_p.avaliacoes);
+    var _pc = Number(_p.preco);
+    if (isFinite(_r)) _p.rating = _r;
+    if (isFinite(_av)) _p.avaliacoes = _av;
+    if (isFinite(_pc)) _p.preco = _pc;
+    if (_p.preco_anterior != null && isFinite(Number(_p.preco_anterior))) _p.preco_anterior = Number(_p.preco_anterior);
+  }
+  return produtos;
+}
+
+/* ---------- IndexedDB cache (paint instantaneo + refresh em background) ---------- */
+var CACHE_DB = "nshop-cache", CACHE_STORE = "dados", CACHE_KEY = "catalogo-v1";
+function idbAbre() {
+  return new Promise(function (resolve, reject) {
+    if (!(window.indexedDB)) { reject(new Error("no-idb")); return; }
+    var req = indexedDB.open(CACHE_DB, 1);
+    req.onupgradeneeded = function (e) {
+      var db = e.target.result;
+      if (!db.objectStoreNames.contains(CACHE_STORE)) db.createObjectStore(CACHE_STORE);
+    };
+    req.onsuccess = function () { resolve(req.result); };
+    req.onerror = function () { reject(req.error); };
+  });
+}
+function cacheLe() {
+  return idbAbre().then(function (db) {
+    return new Promise(function (resolve) {
+      var tx = db.transaction(CACHE_STORE, "readonly");
+      var got = tx.objectStore(CACHE_STORE).get(CACHE_KEY);
+      got.onsuccess = function () { db.close(); resolve(got.result || null); };
+      got.onerror = function () { db.close(); resolve(null); };
     });
+  }).catch(function () { return null; });
+}
+function cacheGrava(dados) {
+  return idbAbre().then(function (db) {
+    return new Promise(function (resolve) {
+      var tx = db.transaction(CACHE_STORE, "readwrite");
+      tx.objectStore(CACHE_STORE).put(dados, CACHE_KEY);
+      tx.oncomplete = function () { db.close(); resolve(); };
+      tx.onerror = function () { db.close(); resolve(); };
+    });
+  }).catch(function () {});
+}
+function assinaDados(d) {
+  if (!d || !d.produtos || !d.produtos.length) return "0";
+  return String(d.produtos.length) + ":" + String(d.produtos[0].id) + ":" + String(d.produtos[d.produtos.length - 1].id);
+}
+function aplicarDados(d) {
+  DADOS = d;
+  PRODUTOS = DADOS.produtos;
+  CATEGORIAS = DADOS.categorias || [];
+  renderHeader();
+  renderFooter();
+  if (typeof document !== "undefined") {
+    var page = document.body && document.body.dataset.page;
+    if (page === "home") initHome();
+    else if (page === "categoria") initCategoria();
+    else if (page === "produto") initProduto();
+    else if (page === "loja") initLoja();
+    else if (page === "admin") initAdmin();
+  }
+}
+
+var CACHE_TTL_MS = 30 * 60 * 1000;
+function carregarDados() {
+  var carregarRede = function () {
+    return carregarDoSupabase()
+      .catch(function () {
+        return fetch("products.json")
+          .then(function (r) { if (!r.ok) throw new Error("http"); return r.json(); });
+      })
+      .then(function (d) {
+        if (!d.produtos) d.produtos = [];
+        saneiaProdutos_(d.produtos);
+        aplicarDados(d);
+        cacheGrava({ dados: d, ts: Date.now() });
+        return d;
+      });
+  };
+  return cacheLe().then(function (c) {
+    if (c && c.dados && c.dados.produtos && c.dados.produtos.length) {
+      if ((Date.now() - (c.ts || 0)) < CACHE_TTL_MS) {
+        aplicarDados(c.dados);
+        return c.dados;
+      }
+      return carregarRede();
+    }
+    return carregarRede();
+  }).catch(function () {
+    return cacheLe().then(function (c) {
+      if (c && c.dados && c.dados.produtos && c.dados.produtos.length) {
+        aplicarDados(c.dados);
+        return c.dados;
+      }
+      aplicarDados(STORE_FALLBACK);
+      return STORE_FALLBACK;
+    });
+  });
 }
 
 /* ============================================================
@@ -1291,15 +1377,6 @@ function renderLojaOverview() {
 /* ---------- Boot ---------- */
 if (typeof document !== "undefined") {
   document.addEventListener("DOMContentLoaded", function () {
-    carregarDados().then(function () {
-      renderHeader();
-      renderFooter();
-      var page = document.body.dataset.page;
-      if (page === "home") initHome();
-      else if (page === "categoria") initCategoria();
-      else if (page === "produto") initProduto();
-      else if (page === "loja") initLoja();
-      else if (page === "admin") initAdmin();
-    });
+    carregarDados();
   });
 }
