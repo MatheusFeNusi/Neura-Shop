@@ -255,6 +255,7 @@ function abrirModal(id) {
   f.nome.value = p.nome || "";
   f.url_afiliado.value = p.url_afiliado || "";
   f.img.value = p.img || "";
+  f.imagens.value = (p.fotos && p.fotos.length) ? p.fotos.join("\n") : "";
   f.preco.value = p.preco != null ? p.preco : "";
   f.preco_anterior.value = p.preco_anterior != null ? p.preco_anterior : "";
   f.rating.value = p.rating != null ? p.rating : "";
@@ -283,6 +284,9 @@ function salvarEdicao() {
     nome: f.nome.value.trim() || p.nome,
     url_afiliado: f.url_afiliado.value.trim(),
     img: f.img.value.trim(),
+    fotos: (f.imagens.value || "")
+      .split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s, i, arr) { return s && !(s === f.img.value.trim() && i === arr.indexOf(s)); }),
     preco: Number(f.preco.value),
     preco_anterior: f.preco_anterior.value === "" ? null : Number(f.preco_anterior.value),
     rating: Number(f.rating.value),

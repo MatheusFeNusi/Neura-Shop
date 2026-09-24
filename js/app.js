@@ -311,7 +311,19 @@ function svgProduto(prod, variant) {
     "</g></svg>";
   return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
-function imgProd(prod, variant) { return svgProduto(prod, variant); }
+function imgProd(prod, variant) {
+  var v = variant || 0;
+  var fotos = (prod.fotos && prod.fotos.length) ? prod.fotos : null;
+  if (fotos) {
+    if (fotos[v] && /^https?:\/\//i.test(String(fotos[v]))) return fotos[v];
+    for (var i = 0; i < fotos.length; i++) {
+      if (fotos[i] && /^https?:\/\//i.test(String(fotos[i]))) return fotos[i];
+    }
+  } else if (prod.img && /^https?:\/\//i.test(String(prod.img))) {
+    return prod.img;
+  }
+  return svgProduto(prod, variant);
+}
 
 function tileIMG(cat) {
   var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">' +
@@ -778,7 +790,8 @@ function initProduto() {
 
   var mainImg = $("#foto-main");
   var thumbs = $("#fotos-thumb");
-  var variantes = [0, 1, 2, 3];
+  var fotosReais = (p.fotos && p.fotos.length) ? p.fotos : null;
+  var variantes = fotosReais ? fotosReais.map(function (_, i) { return i; }) : [0, 1, 2, 3];
   mainImg.src = imgProd(p, 0);
   mainImg.alt = p.nome;
   thumbs.innerHTML = variantes.map(function (v, i) {
