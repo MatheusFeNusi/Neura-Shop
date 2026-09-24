@@ -518,6 +518,8 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
   background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
   padding: 12px 14px; font-size: 12px; line-height: 1.6; color: var(--muted);
 }
+.foot-legal { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
+.foot-legal a { font-size: 12.5px; }
 .foot-bottom { border-top: 1px solid #dfe1e5; padding: 14px 0; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--faint); }
 
 /* ---------- States ---------- */
