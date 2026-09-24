@@ -47,6 +47,15 @@ function supaPatch(id, dados) {
     return r;
   });
 }
+function supaDelete(id) {
+  return fetch(supaURL("/rest/v1/produtos?id=eq." + encodeURIComponent(id)), {
+    method: "DELETE",
+    headers: Object.assign(supaHeaders(false), { "Prefer": "return=minimal" })
+  }).then(function (r) {
+    if (!r.ok) throw new Error("supaDELETE " + r.status);
+    return r;
+  });
+}
 function supaBulkUpsert(rows, onProgress) {
   var CHUNK = 120;
   var i = 0;
@@ -211,6 +220,9 @@ function renderAdmin() {
   $$(".btn-edit", list).forEach(function (b) {
     b.addEventListener("click", function () { abrirModal(b.dataset.edit); });
   });
+  $$(".btn-del", list).forEach(function (b) {
+    b.addEventListener("click", function () { excluirProduto(b.dataset.del); });
+  });
 
   var pager = document.getElementById("admin-pager");
   if (totalPaginas <= 1) {
@@ -238,7 +250,10 @@ function linhaProduto(p) {
     "</div>" +
     '<div class="admin-row-preco">' + fmt(p.preco) + "</div>" +
     '<span class="admin-avail ' + esc(p.disponibilidade) + '">' + chipDispTexto(p.disponibilidade) + "</span>" +
+    '<div class="admin-acoes">' +
     '<button class="btn btn-light btn-edit" type="button" data-edit="' + esc(p.id) + '">Editar</button>' +
+    '<button class="btn btn-del" type="button" data-del="' + esc(p.id) + '">Excluir</button>' +
+    "</div>" +
     "</div>";
 }
 function chipDispTexto(v) {
@@ -336,6 +351,21 @@ function reverterProduto() {
     toast("Registro original não encontrado.");
     fecharModal();
   }
+}
+
+function excluirProduto(id) {
+  var p = PRODUTOS.find(function (x) { return x.id === id; });
+  if (!p) return;
+  var nome = p.nome || id;
+  if (!confirm("Excluir \"" + nome + "\" (" + id + ")?\n\nO produto será removido do banco e deixará de aparecer no site. Esta ação não pode ser desfeita.")) return;
+  supaDelete(id).then(function () {
+    PRODUTOS = PRODUTOS.filter(function (x) { return x.id !== id; });
+    listaOriginal = listaOriginal.filter(function (x) { return x.id !== id; });
+    renderAdmin();
+    toast("Produto " + id + " excluído do banco.");
+  }).catch(function (e) {
+    toast("Falha ao excluir: " + e.message);
+  });
 }
 
 function resetTotal() {

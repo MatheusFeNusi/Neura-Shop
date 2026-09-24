@@ -63,6 +63,11 @@
 .admin-avail.esgotado { background: #fde8e8; color: #b03535; }
 .admin-feat { color: #e8a000; font-size: 15px; }
 .btn-edit { white-space: nowrap; }
+.admin-acoes { display: flex; gap: 8px; }
+.btn-del {
+  white-space: nowrap; background: #fde8e8; color: #b03535; border-color: #efd0d0;
+}
+.btn-del:hover { background: #f6d4d4; border-color: #e8b9b9; }
 .admin-empty { text-align: center; padding: 46px 12px; color: var(--faint); font-size: 14px; }
 
 .admin-pager {
@@ -111,8 +116,8 @@
   .admin-row {
     grid-template-columns: 44px 1fr auto; grid-template-areas:
       "thumb main preco"
-      "thumb avail edit"
-      "thumb link link";
+      "thumb acoes acoes"
+      "thumb avail link";
     gap: 8px 10px;
   }
   .admin-thumb { width: 44px; height: 44px; grid-area: thumb; }
@@ -120,7 +125,7 @@
   .admin-row-preco { grid-area: preco; }
   .admin-avail { grid-area: avail; }
   .admin-feat { display: none; }
-  .btn-edit { grid-area: edit; }
+  .admin-acoes { grid-area: acoes; flex-wrap: wrap; }
   .admin-row-link { grid-area: link; max-width: none; white-space: normal; }
   .admin-modal-box form { grid-template-columns: 1fr; }
 }
