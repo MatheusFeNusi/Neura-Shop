@@ -190,6 +190,13 @@ button { font-family: inherit; }
 
 /* ---------- Product cards ---------- */
 .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+.grid-home { grid-template-columns: repeat(5, 1fr); }
+@media (max-width: 1060px) {
+  .grid-home { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 880px) {
+  .grid-home { grid-template-columns: repeat(3, 1fr); }
+}
 
 .pcard {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);

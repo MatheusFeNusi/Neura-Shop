@@ -542,6 +542,15 @@ function carregarDados() {
           if (isFinite(_pc)) _p.preco = _pc;
           if (_p.preco_anterior != null && isFinite(Number(_p.preco_anterior))) _p.preco_anterior = Number(_p.preco_anterior);
         }
+        try {
+          var _edit = JSON.parse(localStorage.getItem("nshop_edicoes") || "{}");
+          for (var _k in _edit) {
+            var _pp = d.produtos.find(function (x) { return x.id === _k; });
+            if (_pp && _edit[_k] && typeof _edit[_k] === "object") {
+              for (var _f in _edit[_k]) _pp[_f] = _edit[_k][_f];
+            }
+          }
+        } catch (_e) {}
       }
     })
     .catch(function () { DADOS = STORE_FALLBACK; })
@@ -572,7 +581,8 @@ function initHome() {
   var deals = $("#deals-grid");
   if (deals) {
     var comDesconto = PRODUTOS.filter(function (p) { return p.preco_anterior != null; })
-      .sort(function (a, b) { return pctDesc(b.preco, b.preco_anterior) - pctDesc(a.preco, a.preco_anterior); });
+      .sort(function (a, b) { return pctDesc(b.preco, b.preco_anterior) - pctDesc(a.preco, a.preco_anterior); })
+      .slice(0, 15);
     deals.innerHTML = comDesconto.map(cardHTML).join("");
   }
 
@@ -580,7 +590,7 @@ function initHome() {
   if (feat) {
     var destaques = PRODUTOS
       .filter(function (p) { return p.destaque || p.preco_anterior != null; })
-      .slice(0, 8);
+      .slice(0, 5);
     feat.innerHTML = destaques.map(cardHTML).join("");
   }
 }
@@ -886,5 +896,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (page === "home") initHome();
     else if (page === "categoria") initCategoria();
     else if (page === "produto") initProduto();
+    else if (page === "admin") initAdmin();
   });
 });
