@@ -529,7 +529,21 @@ function renderFooter() {
 function carregarDados() {
   return fetch("products.json")
     .then(function (r) { if (!r.ok) throw new Error("http"); return r.json(); })
-    .then(function (d) { DADOS = d; })
+    .then(function (d) {
+      DADOS = d;
+      if (d && d.produtos && d.produtos.length) {
+        for (var _a = 0; _a < d.produtos.length; _a++) {
+          var _p = d.produtos[_a];
+          var _r = Number(_p.rating);
+          var _av = Number(_p.avaliacoes);
+          var _pc = Number(_p.preco);
+          if (isFinite(_r)) _p.rating = _r;
+          if (isFinite(_av)) _p.avaliacoes = _av;
+          if (isFinite(_pc)) _p.preco = _pc;
+          if (_p.preco_anterior != null && isFinite(Number(_p.preco_anterior))) _p.preco_anterior = Number(_p.preco_anterior);
+        }
+      }
+    })
     .catch(function () { DADOS = STORE_FALLBACK; })
     .then(function () {
       PRODUTOS = DADOS.produtos;
