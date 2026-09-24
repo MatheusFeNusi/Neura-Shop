@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>GadgetScout — Smart finds. Fair prices.</title>
-  <meta name="description" content="GadgetScout is an independent affiliate storefront. We compare prices across trusted US retailers so you can shop one clean catalog and check out securely on the partner store."/>
+  <title>Compare prices &amp; find the best deals — GadgetScout</title>
+  <meta name="description" content="GadgetScout is an independent price comparison platform. Search any product, compare offers and prices across stores, and complete your purchase securely on the store of your choice."/>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b5ea8'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,Arial' font-size='17' font-weight='800' fill='white' text-anchor='middle'%3EG%3C/text%3E%3C/svg%3E"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -17,32 +17,36 @@
 
   <div class="notice">
     <div class="container">
-      <p><span class="dot"></span><span>We're an affiliate storefront — your purchase is completed securely on the partner store. When you buy through our links, we may earn a commission at no extra cost to you. <a href="about.html">Learn more</a>.</span></p>
+      <p><span class="dot"></span><span>We help you compare prices across stores — your purchase is completed securely on the store you choose. When you buy through our links, we may earn a commission at no extra cost to you. <a href="about.html">Learn more</a>.</span></p>
     </div>
   </div>
 
-  <section class="hero">
+  <!-- Search ring: the hero of a price-comparison front page -->
+  <section class="hero hero-search">
     <div class="container">
       <div class="hero-inner">
-        <span class="hero-eyebrow">Independent price-comparison storefront</span>
-        <h1>Everyday tech and smart home picks, compared across trusted stores.</h1>
-        <p class="lead">We research tech, audio and smart-home gear, compare prices across US retailers and bring the best finds together in one clean catalog. You shop here — and check out securely on the partner store.</p>
-        <div class="hero-cta">
-          <a class="btn btn-brand" href="catalog.html?ofertas=1">Shop today's deals</a>
-          <a class="btn btn-light" href="catalog.html">Browse all products</a>
-        </div>
+        <span class="hero-eyebrow">Independent price-comparison platform</span>
+        <h1>Search any product. Compare prices across stores.</h1>
+        <p class="lead">Find the product you want, see the best offers in one place and buy at the store of your choice — all deals are tracked in real time from partner retailers.</p>
+        <form class="hero-search-box" id="hbusca-form" role="search">
+          <label class="visually-hidden" for="hbusca-input">What are you looking for?</label>
+          <input id="hbusca-input" type="search" placeholder="What are you looking for? (e.g. LED flashlight, solar panel, e-scooter battery…)" autocomplete="off"/>
+          <button class="hero-search-btn" type="submit" aria-label="Search">Search</button>
+          <div class="sugest" id="hbusca-sugest"></div>
+        </form>
+        <div class="pop-searches" id="pop-searches"></div>
         <ul class="trust-badges">
           <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+            Prices compared across stores
+          </li>
+          <li>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-            Secure checkout on partner site
+            Secure checkout on the store
           </li>
           <li>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h6a2 2 0 0 1 4 0h8"/><rect x="2" y="8" width="20" height="7" rx="2"/></svg>
-            Prices compared across retailers
-          </li>
-          <li>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
-            No extra cost to you
+            Best offer highlighted for you
           </li>
         </ul>
       </div>
@@ -54,6 +58,7 @@
       <div class="container">
         <div class="section-head">
           <h2>Shop by category</h2>
+          <a class="link-all" href="catalog.html">Browse all ›</a>
         </div>
         <div class="cat-tiles" id="cat-tiles"></div>
       </div>
@@ -62,19 +67,37 @@
     <section class="section">
       <div class="container">
         <div class="section-head">
-          <h2>Today's deals</h2>
-          <a class="link-all" href="catalog.html?ofertas=1">View all ›</a>
+          <h2>Biggest discounts right now</h2>
+          <a class="link-all" href="catalog.html?ofertas=1">View all deals ›</a>
         </div>
-        <div class="deals">
-          <div class="grid-cards grid-home" id="deals-grid"></div>
-        </div>
+        <div class="grid-cards grid-home" id="deals-grid"></div>
       </div>
     </section>
 
     <section class="section">
       <div class="container">
         <div class="section-head">
-          <h2>Featured products</h2>
+          <h2>Most popular products</h2>
+          <a class="link-all" href="catalog.html?ordenar=pop">View all ›</a>
+        </div>
+        <div class="grid-cards grid-home" id="populares-grid"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Partner stores</h2>
+          <a class="link-all" href="catalog.html">Compare offers ›</a>
+        </div>
+        <div class="store-strip" id="store-strip"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Editor favorites</h2>
           <a class="link-all" href="catalog.html">View all ›</a>
         </div>
         <div class="grid-cards grid-home" id="destaques-grid"></div>

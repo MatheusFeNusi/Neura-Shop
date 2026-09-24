@@ -341,12 +341,13 @@ function cardHTML(p) {
   var badge = pct != null ? '<span class="badge">-' + pct + "%</span>" : "";
   var btn = esgotado
     ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>'
-    : '<button class="btn-buy" onclick="abrirOferta(\'' + p.id + '\')">See deal</button>';
+    : '<button class="btn-buy" onclick="abrirOferta(\'' + p.id + '\')">View offer</button>';
   return '<article class="pcard">' +
     '<a class="media" href="product.html?id=' + p.id + '">' + badge +
     '<img src="' + imgProd(p, 0) + '" alt="' + esc(p.nome) + '" loading="lazy"/>' +
     "</a>" +
     '<div class="body">' +
+    '<span class="p-brand">' + esc(p.marca) + "</span>" +
     '<a class="p-name" href="product.html?id=' + p.id + '">' + esc(p.nome) + "</a>" +
     '<div class="rating">' + starsHTML(p.rating) + ' <span class="reviews">' + p.rating.toFixed(1) + " (" + num(p.avaliacoes) + ")</span></div>" +
     '<div class="price">' +
@@ -354,7 +355,7 @@ function cardHTML(p) {
     '<span class="now">' + fmt(p.preco) + "</span>" +
     (p.preco_anterior ? '<span class="save">Save ' + fmt(p.preco_anterior - p.preco) + "</span>" : "") +
     "</div>" +
-    '<div class="merchant">Shipped by ' + esc(p.merchant_nome) + "</div>" +
+    '<div class="merchant"><a href="store.html?loja=' + encodeURIComponent(p.merchant) + '">' + esc(p.merchant_nome) + "</a></div>" +
     btn +
     "</div></article>";
 }
@@ -438,16 +439,17 @@ function renderHeader() {
     '<div class="hdr-top">' +
     '<a class="brand" href="index.html">' +
     '<span class="brand-mark">G</span>' +
-    '<span><span class="brand-name">GadgetScout</span><span class="brand-tag">smart finds · fair prices</span></span>' +
+    '<span><span class="brand-name">GadgetScout</span><span class="brand-tag">compare prices · find your best offer</span></span>' +
     '</a>' +
     '<form class="search-box" id="busca-form" role="search">' +
     '<label class="visually-hidden" for="busca-input">Search products</label>' +
-    '<input id="busca-input" type="search" placeholder="Search for products and brands" autocomplete="off"/>' +
+    '<input id="busca-input" type="search" placeholder="What are you looking for?" autocomplete="off"/>' +
     '<button class="search-btn" type="submit" aria-label="Search">' + iconLupa() + "</button>" +
     '<div class="sugest" id="busca-sugest"></div>' +
     "</form>" +
     '<nav class="hdr-links" id="hdr-links">' +
-    '<a class="ofertas" href="catalog.html?ofertas=1">Today\'s deals</a>' +
+    '<a class="ofertas" href="catalog.html?ofertas=1">Deals</a>' +
+    '<a href="store.html">Stores</a>' +
     '<a href="about.html">About</a>' +
     '<a class="hdr-admin" href="admin.html">Entrar</a>' +
     "</nav>" +
@@ -468,41 +470,47 @@ function iconLupa() {
   return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
 }
 
-/* ---------- Search with suggestions ---------- */
+/* ---------- Search with suggestions (works for header + hero) ---------- */
 function anexarBusca() {
-  var form = $("#busca-form"), input = $("#busca-input"), sugest = $("#busca-sugest");
-  if (!form) return;
   var qp = new URLSearchParams(location.search);
-  if (qp.get("busca")) input.value = qp.get("busca");
+  $$("#busca-form, #hbusca-form").forEach(function (form) {
+    var input = form.querySelector('input[type="search"]');
+    var sugest = form.querySelector(".sugest");
+    if (!form || !input) return;
+    if (qp.get("busca")) input.value = qp.get("busca");
 
-  input.addEventListener("input", function () {
-    var t = input.value.trim().toLowerCase();
-    if (!t) { sugest.classList.remove("open"); return; }
-    var hits = PRODUTOS
-      .filter(function (p) {
-        return (p.nome + " " + p.marca + " " + p.categoria_nome).toLowerCase().indexOf(t) > -1;
-      })
-      .slice(0, 6);
-    var html;
-    if (!hits.length) html = '<div class="s-empty">No products found. Try another search.</div>';
-    else html = hits.map(function (p) {
-      return '<a href="product.html?id=' + p.id + '">' +
-        '<span class="thumb"><img src="' + imgProd(p, 0) + '" alt=""/></span>' +
-        '<span class="s-name">' + esc(p.nome) + "</span>" +
-        '<span class="s-price">' + fmt(p.preco) + "</span></a>";
-    }).join("");
-    sugest.innerHTML = html;
-    sugest.classList.add("open");
-  });
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-    var t = input.value.trim();
-    if (!t) return;
-    sugest.classList.remove("open");
-    location.href = "catalog.html?busca=" + encodeURIComponent(t);
+    var sugerir = function () {
+      var t = input.value.trim().toLowerCase();
+      if (!t) { sugest.classList.remove("open"); return; }
+      var hits = PRODUTOS
+        .filter(function (p) {
+          return (p.nome + " " + p.marca + " " + p.categoria_nome).toLowerCase().indexOf(t) > -1;
+        })
+        .slice(0, 6);
+      var html;
+      if (!hits.length) html = '<div class="s-empty">No products found. Try another search.</div>';
+      else html = hits.map(function (p) {
+        return '<a href="product.html?id=' + p.id + '">' +
+          '<span class="thumb"><img src="' + imgProd(p, 0) + '" alt=""/></span>' +
+          '<span class="s-name">' + esc(p.nome) + "</span>" +
+          '<span class="s-price">' + fmt(p.preco) + "</span></a>";
+      }).join("");
+      sugest.innerHTML = html;
+      sugest.classList.add("open");
+    };
+    input.addEventListener("input", sugerir);
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var t = input.value.trim();
+      if (!t) return;
+      sugest.classList.remove("open");
+      location.href = "catalog.html?busca=" + encodeURIComponent(t);
+    });
   });
   document.addEventListener("click", function (e) {
-    if (!sugest.contains(e.target)) sugest.classList.remove("open");
+    $$(".sugest").forEach(function (s) {
+      if (!s.contains(e.target)) s.classList.remove("open");
+    });
   });
 }
 
@@ -526,6 +534,7 @@ function renderFooter() {
     '<li><a href="about.html">About GadgetScout</a></li>' +
     '<li><a href="about.html#disclosure">Affiliate disclosure</a></li>' +
     '<li><a href="about.html#how-it-works">How it works</a></li>' +
+    '<li><a href="store.html">Partner stores</a></li>' +
     "</ul></div>" +
     '<div class="foot-col"><h4>Transparency</h4>' +
     '<div class="foot-disclose">This site participates in affiliate programs and may earn a commission on purchases made through our links, at no extra cost to you. Purchases are completed on the partner store\u2019s site.</div>' +
@@ -614,6 +623,7 @@ function carregarDados() {
 /* ============================================================
    PAGE: HOME
    ============================================================ */
+
 function initHome() {
   var catsCount = {};
   PRODUTOS.forEach(function (p) {
@@ -631,28 +641,87 @@ function initHome() {
 
   var deals = $("#deals-grid");
   if (deals) {
-    var comDesconto = PRODUTOS.filter(function (p) { return p.preco_anterior != null; })
+    var comDesconto = PRODUTOS.filter(function (p) { return p.preco_anterior != null && p.preco_anterior > p.preco; })
       .sort(function (a, b) { return pctDesc(b.preco, b.preco_anterior) - pctDesc(a.preco, a.preco_anterior); })
       .slice(0, 15);
     deals.innerHTML = comDesconto.map(cardHTML).join("");
+  }
+
+  var pop = $("#populares-grid");
+  if (pop) {
+    var populares = PRODUTOS.slice()
+      .sort(function (a, b) { return b.avaliacoes - a.avaliacoes; })
+      .slice(0, 15);
+    pop.innerHTML = populares.map(cardHTML).join("");
   }
 
   var feat = $("#destaques-grid");
   if (feat) {
     var destaques = PRODUTOS
       .filter(function (p) { return p.destaque || p.preco_anterior != null; })
-      .slice(0, 5);
+      .sort(function (a, b) { return (b.destaque ? 1 : 0) - (a.destaque ? 1 : 0) || b.avaliacoes - a.avaliacoes; })
+      .slice(0, 10);
     feat.innerHTML = destaques.map(cardHTML).join("");
   }
+
+  renderStoreStrip();
+  renderPopSearches();
+}
+
+function renderStoreStrip() {
+  var el = $("#store-strip");
+  if (!el) return;
+  var lojas = {};
+  PRODUTOS.forEach(function (p) {
+    var k = p.merchant || p.merchant_nome || "Partner store";
+    var nome = p.merchant_nome || k;
+    if (!lojas[k]) lojas[k] = { nome: nome, qtd: 0, menor: Infinity, maior: 0 };
+    lojas[k].qtd++;
+    if (p.preco < lojas[k].menor) lojas[k].menor = p.preco;
+    if (p.preco > lojas[k].maior) lojas[k].maior = p.preco;
+  });
+  var itens = Object.keys(lojas).sort(function (a, b) { return lojas[b].qtd - lojas[a].qtd; });
+  if (!itens.length) { el.style.display = "none"; return; }
+  el.innerHTML = itens.map(function (k) {
+    var l = lojas[k];
+    var iniciais = String(l.nome).split(/\s+/).map(function (w) { return w.charAt(0); }).join("").slice(0, 2).toUpperCase();
+    return '<a class="store-card" href="store.html?loja=' + encodeURIComponent(k) + '">' +
+      '<span class="store-logo">' + esc(iniciais) + "</span>" +
+      '<span class="store-meta"><strong>' + esc(l.nome) + "</strong>" +
+      "<span>" + l.qtd + " offer" + (l.qtd === 1 ? "" : "s") + " · from " + fmt(l.menor) + "</span>" +
+      "</span><span class=\"store-link\">Compare prices ›</span></a>";
+  }).join("");
+}
+
+function renderPopSearches() {
+  var el = $("#pop-searches");
+  if (!el) return;
+  var contagem = {};
+  PRODUTOS.forEach(function (p) {
+    var m = p.marca || "Unknown brand";
+    if (/sem marca/i.test(m)) return;
+    contagem[m] = (contagem[m] || 0) + 1;
+  });
+  var marcas = Object.keys(contagem).sort(function (a, b) { return contagem[b] - contagem[a]; }).slice(0, 4);
+  var sugestoes = CATEGORIAS.slice(0, 4).map(function (c) { return { t: c.nome, q: c.slug }; })
+    .concat(marcas.map(function (m) { return { t: m, q: m }; }));
+  el.innerHTML = '<span class="pop-label">Popular:</span> ' +
+    sugestoes.map(function (s) {
+      return '<a href="catalog.html?busca=' + encodeURIComponent(s.q) + '">' + esc(s.t) + "</a>";
+    }).join("");
+  el.style.display = "";
 }
 
 /* ============================================================
    PAGE: CATALOG
    ============================================================ */
-var CAT_STATE = { cat: null, ofertas: false, busca: "", ordena: "rel", min: null, max: null, notaMin: 0, soDisponiveis: false, soOfertas: false };
+var CAT_STATE = { cat: null, ofertas: false, busca: "", ordena: "rel", min: null, max: null, notaMin: 0, soDisponiveis: false, soOfertas: false, marcas: [], lojas: [], descMin: 0, pag: 1 };
+var CAT_POR_PAGINA = 24;
 
 function produtosFiltrados() {
   var s = CAT_STATE;
+  var marcas = s.marcas.length ? s.marcas.map(function (m) { return m.toLowerCase(); }) : [];
+  var lojas = s.lojas.length ? s.lojas.map(function (x) { return x.toLowerCase(); }) : [];
   var lista = PRODUTOS.filter(function (p) {
     if (s.cat && p.categoria !== s.cat) return false;
     if (s.ofertas && p.preco_anterior == null) return false;
@@ -665,15 +734,41 @@ function produtosFiltrados() {
     if (p.rating < s.notaMin) return false;
     if (s.soDisponiveis && p.disponibilidade === "esgotado") return false;
     if (s.soOfertas && p.preco_anterior == null) return false;
+    if (marcas.length) {
+      var mTxt = String(p.marca || "").trim();
+      var passa = (marcas.indexOf("__none__") > -1 && !mTxt) || marcas.indexOf(mTxt.toLowerCase()) > -1;
+      if (!passa) return false;
+    }
+    if (lojas.length && lojas.indexOf(String(p.merchant || "").toLowerCase()) === -1) return false;
+    if (s.descMin && pctDesc(p.preco, p.preco_anterior) < s.descMin) return false;
     return true;
   });
   switch (s.ordena) {
     case "menor": lista.sort(function (a, b) { return a.preco - b.preco; }); break;
     case "maior": lista.sort(function (a, b) { return b.preco - a.preco; }); break;
     case "nota": lista.sort(function (a, b) { return b.rating - a.rating; }); break;
+    case "pop": lista.sort(function (a, b) { return b.avaliacoes - a.avaliacoes; }); break;
+    case "desc": lista.sort(function (a, b) { return (pctDesc(b.preco, b.preco_anterior) || -1) - (pctDesc(a.preco, a.preco_anterior) || -1); }); break;
     default: lista.sort(function (a, b) { return (b.destaque ? 1 : 0) - (a.destaque ? 1 : 0) || b.avaliacoes - a.avaliacoes; });
   }
   return lista;
+}
+
+function opcoesMarcaLoja() {
+  var lojas = {}, marcas = {};
+  PRODUTOS.forEach(function (p) {
+    if (p.merchant) lojas[p.merchant.toLowerCase()] = { nome: p.merchant_nome || p.merchant, v: p.merchant };
+    if (p.marca) marcas[p.marca.toLowerCase()] = { nome: p.marca, v: p.marca, n: (marcas[p.marca.toLowerCase()] || { n: 0 }).n + 1 };
+    else marcas["{sem}"] = { nome: "No brand", v: "__none__", n: (marcas["{sem}"] || { n: 0 }).n + 1 };
+  });
+  var topMarcas = Object.keys(marcas).map(function (k) { return marcas[k]; })
+    .sort(function (a, b) { return b.n - a.n; })
+    .filter(function (m, i) { return i < 12; });
+  return {
+    marcas: topMarcas,
+    lojas: Object.keys(lojas).map(function (k) { return lojas[k]; })
+      .sort(function (a, b) { return a.nome.localeCompare(b.nome); })
+  };
 }
 
 function initCategoria() {
@@ -681,18 +776,21 @@ function initCategoria() {
   var catSlug = qp.get("cat") || null;
   var ofertas = qp.get("ofertas") === "1";
   var busca = (qp.get("busca") || "").trim().toLowerCase();
+  var sortParam = qp.get("ordenar") || null;
 
   var cat = CATEGORIAS.find(function (c) { return c.slug === catSlug; }) || null;
 
   CAT_STATE.cat = cat ? cat.slug : null;
   CAT_STATE.ofertas = ofertas;
   CAT_STATE.busca = busca;
+  CAT_STATE.pag = 1;
+  if (sortParam && ["menor", "maior", "nota", "pop", "desc"].indexOf(sortParam) > -1) CAT_STATE.ordena = sortParam;
 
   var head = $("#cat-head");
   if (head) {
-    var kicker = ofertas ? "Daily deals" : (cat ? cat.nome : "Browse catalog");
-    var titulo = ofertas ? "Today's deals" : (cat ? cat.nome : (busca ? "Results for \u201c" + esc(busca) + "\u201d" : "All products"));
-    var desc = ofertas ? "Discounted finds selected by our partner stores this week." : (cat ? cat.descricao : "Compare prices across trusted US retailers and check out securely on the partner store.");
+    var kicker = ofertas ? "Best deals" : (cat ? cat.nome : "Compare catalog");
+    var titulo = ofertas ? "Best deals right now" : (cat ? cat.nome : (busca ? "Results for \u201c" + esc(busca) + "\u201d" : "Compare all products"));
+    var desc = ofertas ? "The biggest discounts we're tracking right now — verified live from partner stores." : (cat ? cat.descricao : "Compare prices, brands and ratings from our partner stores, then buy securely on the store of your choice.");
     head.innerHTML = '<p class="kicker">' + kicker + "</p><h1>" + titulo + "</h1><p>" + desc + "</p>";
   }
 
@@ -704,18 +802,32 @@ function initCategoria() {
       }).join("");
   }
 
+  var opcoes = opcoesMarcaLoja();
+  var fMarca = $("#filtro-marca");
+  if (fMarca) {
+    fMarca.innerHTML = opcoes.marcas.map(function (m) {
+      return '<label class="chk"><input type="checkbox" name="marca" value="' + esc(m.v) + '"/><span>' + esc(m.nome) + " (" + m.n + ")</span></label>";
+    }).join("");
+  }
+  var fLoja = $("#filtro-loja");
+  if (fLoja) {
+    fLoja.innerHTML = opcoes.lojas.map(function (l) {
+      return '<label class="chk"><input type="checkbox" name="loja" value="' + esc(l.v) + '"/><span>' + esc(l.nome) + "</span></label>";
+    }).join("");
+  }
+
   var fRend = $("#filtro-rend");
   if (fRend) {
     fRend.innerHTML =
-      '<label><input type="checkbox" name="rmin" value="4"> Rating 4.0 &amp; up</label>' +
-      '<label><input type="checkbox" name="rmin" value="4.5"> Rating 4.5 &amp; up</label>';
+      '<label class="chk"><input type="checkbox" name="rmin" value="4"><span>Rating 4.0 &amp; up</span></label>' +
+      '<label class="chk"><input type="checkbox" name="rmin" value="4.5"><span>Rating 4.5 &amp; up</span></label>';
   }
 
   var fDisp = $("#filtro-disp");
   if (fDisp) {
     fDisp.innerHTML =
-      '<label><input type="checkbox" name="sdisp" value="1"> In stock only</label>' +
-      '<label><input type="checkbox" name="sofertas" value="1"> On sale only</label>';
+      '<label class="chk"><input type="checkbox" name="sdisp" value="1"><span>In stock only</span></label>' +
+      '<label class="chk"><input type="checkbox" name="sofertas" value="1"><span>On sale only</span></label>';
   }
 
   $$(".cats a").forEach(function (a) {
@@ -724,7 +836,10 @@ function initCategoria() {
   });
 
   var sel = $("#ordenar");
-  if (sel) sel.addEventListener("change", function () { CAT_STATE.ordena = sel.value; renderLista(); });
+  if (sel) {
+    if (CAT_STATE.ordena) sel.value = CAT_STATE.ordena;
+    sel.addEventListener("change", function () { CAT_STATE.ordena = sel.value; CAT_STATE.pag = 1; renderLista(); });
+  }
 
   $("#filtros-form").addEventListener("change", aplicarFiltros);
   $("#filtros-form").addEventListener("input", aplicarFiltros);
@@ -749,7 +864,40 @@ function aplicarFiltros() {
   s.notaMin = rmin ? Number(rmin.value) : 0;
   s.soDisponiveis = !!document.querySelector('input[name="sdisp"]:checked');
   s.soOfertas = !!document.querySelector('input[name="sofertas"]:checked');
+  s.marcas = $$('#filtro-marca input[name="marca"]:checked').map(function (i) { return i.value; });
+  s.lojas = $$('#filtro-loja input[name="loja"]:checked').map(function (i) { return i.value; });
+  var desc = document.querySelector('input[name="desc"]:checked');
+  s.descMin = desc ? Number(desc.value) : 0;
+  s.pag = 1;
   renderLista();
+}
+
+function renderPager() {
+  var el = $("#cat-pager");
+  if (!el) return;
+  var lista = produtosFiltrados();
+  var paginas = Math.ceil(lista.length / CAT_POR_PAGINA);
+  if (paginas <= 1) { el.innerHTML = ""; return; }
+  var html = '<span class="pager-info">Page ' + CAT_STATE.pag + " of " + paginas + "</span>";
+  var prev = 0;
+  var ultimoFoiDot = false;
+  for (var i = 1; i <= paginas; i++) {
+    if (i !== 1 && i !== paginas && Math.abs(i - CAT_STATE.pag) > 2) {
+      if (!ultimoFoiDot) { html += '<span class="pager-dots">…</span>'; ultimoFoiDot = true; }
+      prev = i;
+      continue;
+    }
+    html += '<button class="pager-btn' + (i === CAT_STATE.pag ? " on" : "") + '" data-p="' + i + '">' + i + "</button>";
+    ultimoFoiDot = false;
+    prev = i;
+  }
+  el.innerHTML = html;
+  $$(".pager-btn", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      CAT_STATE.pag = Number(b.dataset.p);
+      renderLista();
+    });
+  });
 }
 
 function renderLista() {
@@ -759,9 +907,13 @@ function renderLista() {
   if (count) count.textContent = lista.length + " " + (lista.length === 1 ? "product" : "products");
   if (!lista.length) {
     grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>No products found</h3><p>Try adjusting your filters or search terms.</p></div>';
+    renderPager();
     return;
   }
-  grid.innerHTML = lista.map(cardHTML).join("");
+  var ini = (CAT_STATE.pag - 1) * CAT_POR_PAGINA;
+  var pagina = lista.slice(ini, ini + CAT_POR_PAGINA);
+  grid.innerHTML = pagina.map(cardHTML).join("");
+  renderPager();
 }
 
 /* ============================================================
@@ -885,7 +1037,84 @@ function initProduto() {
     .slice(0, 4);
   rel.innerHTML = relacionados.map(cardHTML).join("");
 
+  renderOfertas(p);
+  renderHistorico(p);
+
   document.title = p.nome + " · GadgetScout";
+}
+
+/* ---------- Where to buy (offer comparison) ---------- */
+/* Groups offers for the same product by a real identifier only.
+   No invented matches: if only this store carries the item, it is the single offer. */
+function ofertasDoProduto(p) {
+  var chave = p.product_id || p.nome.toLowerCase().trim();
+  var ofertas = PRODUTOS.filter(function (x) { return (x.product_id || x.nome.toLowerCase().trim()) === chave; });
+  if (!ofertas.length) ofertas = [p];
+  return ofertas;
+}
+
+function renderOfertas(p) {
+  var sec = $("#ofertas-sec");
+  var alvo = $("#ofertas-tabela");
+  var countEl = $("#ofertas-count");
+  if (!alvo) return;
+  var ofertas = ofertasDoProduto(p);
+  var melhorPreco = Math.min.apply(null, ofertas.map(function (o) { return o.preco; }));
+  var best = melhorPreco === p.preco;
+  if (countEl) countEl.textContent = "(" + ofertas.length + " offer" + (ofertas.length === 1 ? "" : "s") + ")";
+  if (ofertas.length === 1) {
+    var o = ofertas[0];
+    var pct = pctDesc(o.preco, o.preco_anterior);
+    alvo.innerHTML =
+      '<div class="oferta-row best">' +
+      '<span class="oferta-badge">Best offer</span>' +
+      '<span class="oferta-loja"><span class="store-logo sm">' + esc(String(o.merchant_nome || "Store").split(/\s+/).map(function (w) { return w.charAt(0); }).join("").slice(0, 2).toUpperCase()) + "</span>" +
+      '<span class="oferta-loja-nome"><a href="store.html?loja=' + encodeURIComponent(o.merchant) + '">' + esc(o.merchant_nome) + "</a><small>" + esc(o.marca) + "</small></span></span>" +
+      '<span class="oferta-prazo">' + (ROTULOS_DISP[o.disponibilidade] ? ROTULOS_DISP[o.disponibilidade][0] : "In stock") + "</span>" +
+      '<span class="oferta-preco">' +
+      (pct != null ? '<span class="pct">-' + pct + "%</span>" : "") +
+      '<span class="now">' + fmt(o.preco) + "</span>" +
+      (o.preco_anterior ? '<span class="was">' + fmt(o.preco_anterior) + "</span>" : "") +
+      "</span>" +
+      (o.disponibilidade === "esgotado"
+        ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>'
+        : '<button class="btn-buy" onclick="abrirOferta(\'' + o.id + '\')">View offer</button>') +
+      "</div>" +
+      '<p class="ofertas-extra">This product is offered by one partner store right now. As more stores carry it, all offers will appear here automatically.</p>';
+  } else {
+    alvo.innerHTML = ofertas.map(function (o, i) {
+      var isBest = o.preco === melhorPreco;
+      var pct = pctDesc(o.preco, o.preco_anterior);
+      return '<div class="oferta-row' + (isBest ? " best" : "") + '">' +
+        (isBest ? '<span class="oferta-badge">Best offer</span>' : "") +
+        '<span class="oferta-loja"><span class="store-logo sm">' + esc(String(o.merchant_nome || "Store").split(/\s+/).map(function (w) { return w.charAt(0); }).join("").slice(0, 2).toUpperCase()) + "</span>" +
+        '<span class="oferta-loja-nome"><a href="store.html?loja=' + encodeURIComponent(o.merchant) + '">' + esc(o.merchant_nome) + "</a><small>" + esc(o.marca) + "</small></span></span>" +
+        '<span class="oferta-prazo">' + (ROTULOS_DISP[o.disponibilidade] ? ROTULOS_DISP[o.disponibilidade][0] : "In stock") + "</span>" +
+        '<span class="oferta-preco">' +
+        (pct != null ? '<span class="pct">-' + pct + "%</span>" : "") +
+        '<span class="now">' + fmt(o.preco) + "</span>" +
+        (o.preco_anterior ? '<span class="was">' + fmt(o.preco_anterior) + "</span>" : "") +
+        "</span>" +
+        (o.disponibilidade === "esgotado"
+          ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>'
+          : '<button class="btn-buy" onclick="abrirOferta(\'' + o.id + '\')">View offer</button>') +
+        "</div>";
+    }).join("");
+  }
+  if (!best && sec) sec.classList.add("not-best");
+}
+
+/* ---------- Price history (interface only — no invented data) ---------- */
+function renderHistorico(p) {
+  var alvo = $("#historico-box");
+  if (!alvo) return;
+  alvo.innerHTML =
+    '<div class="historico-empty">' +
+    '<svg class="historico-ico" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>' +
+    "<h3>Price tracking is starting</h3>" +
+    "<p>We record prices for this product over time. This section will show the price history (current price, lowest and highest recorded) as soon as real data is collected. We never show estimated history.</p>" +
+    '<p class="historico-fato">Current price: <strong>' + fmt(p.preco) + "</strong> at " + esc(p.merchant_nome) + ".</p>" +
+    "</div>";
 }
 
 function renderSimilares(principal) {
@@ -931,23 +1160,146 @@ function osCardHTML(p) {
     (pctDesc(p.preco, p.preco_anterior) != null ? '<span class="badge">-' + pctDesc(p.preco, p.preco_anterior) + "%</span>" : "") +
     '<img src="' + imgProd(p, 1) + '" alt="' + esc(p.nome) + '" loading="lazy"/></a>' +
     '<div class="body">' +
+    '<span class="p-brand">' + esc(p.marca) + "</span>" +
     '<a class="p-name" href="product.html?id=' + p.id + '">' + esc(p.nome) + "</a>" +
     '<div class="rating">' + starsHTML(p.rating) + " <span class=\"reviews\">" + p.rating.toFixed(1) + " (" + num(p.avaliacoes) + ")</span></div>" +
-    '<div class="price"><span class="now">' + fmt(p.preco) + "</span></div>" +
-    '<div class="merchant">Shipped by ' + esc(p.merchant_nome) + "</div>" +
-    (esgotado ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>' : '<button class="btn-buy" onclick="abrirOferta(\'' + p.id + '\')">See deal</button>') +
+    '<div class="price">' +
+    (p.preco_anterior ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" : "") +
+    '<span class="now">' + fmt(p.preco) + "</span>" +
+    (p.preco_anterior ? '<span class="save">Save ' + fmt(p.preco_anterior - p.preco) + "</span>" : "") +
+    "</div>" +
+    '<div class="merchant"><a href="store.html?loja=' + encodeURIComponent(p.merchant) + '">' + esc(p.merchant_nome) + "</a></div>" +
+    (esgotado ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>' : '<button class="btn-buy" onclick="abrirOferta(\'' + p.id + '\')">View offer</button>') +
     "</div></article>";
 }
 
-/* ---------- Boot ---------- */
-document.addEventListener("DOMContentLoaded", function () {
-  carregarDados().then(function () {
-    renderHeader();
-    renderFooter();
-    var page = document.body.dataset.page;
-    if (page === "home") initHome();
-    else if (page === "categoria") initCategoria();
-    else if (page === "produto") initProduto();
-    else if (page === "admin") initAdmin();
+/* ============================================================
+   PAGE: STORE (loja)
+   ============================================================ */
+var LOJA_STATE = { loja: null, ordena: "menor", pag: 1 };
+var LOJA_POR_PAGINA = 24;
+
+function initLoja() {
+  var qp = new URLSearchParams(location.search);
+  var lojaParam = qp.get("loja") || "";
+
+  var loja = null;
+  PRODUTOS.forEach(function (p) {
+    if ((p.merchant && p.merchant.toLowerCase() === lojaParam.toLowerCase()) ||
+        (p.merchant_nome && p.merchant_nome.toLowerCase() === lojaParam.toLowerCase())) {
+      loja = { merchant: p.merchant, nome: p.merchant_nome };
+    }
   });
-});
+
+  var sel = $("#loja-ordenar");
+  if (sel) sel.addEventListener("change", function () { LOJA_STATE.ordena = sel.value; LOJA_STATE.pag = 1; renderLoja(loja); });
+
+  if (!loja) { renderLojaOverview(); return; }
+
+  LOJA_STATE.loja = loja.merchant;
+  var nomeEl = $("#loja-nome");
+  var head = $("#loja-head");
+  var produtos = PRODUTOS.filter(function (p) { return p.merchant === loja.merchant; });
+  var menor = Math.min.apply(null, produtos.map(function (p) { return p.preco; }));
+  var menorPct = 0;
+  produtos.forEach(function (p) { var d = pctDesc(p.preco, p.preco_anterior); if (d != null && d > menorPct) menorPct = d; });
+  if (nomeEl) nomeEl.textContent = loja.nome;
+  if (head) {
+    head.innerHTML =
+      '<p class="kicker">Store profile · partner store</p>' +
+      '<h1>' + esc(loja.nome) + "</h1>" +
+      "<p>" + produtos.length + " offer" + (produtos.length === 1 ? "" : "s") + " tracked · prices from " + fmt(menor) +
+      (menorPct ? " · biggest discount " + menorPct + "%" : "") + ". Buying through our partner links supports the comparison at no extra cost to you.</p>";
+  }
+  renderLoja(loja);
+}
+
+function renderLoja(loja) {
+  var produtos = PRODUTOS.filter(function (p) { return p.merchant === loja.merchant; });
+  switch (LOJA_STATE.ordena) {
+    case "menor": produtos.sort(function (a, b) { return a.preco - b.preco; }); break;
+    case "maior": produtos.sort(function (a, b) { return b.preco - a.preco; }); break;
+    case "nota": produtos.sort(function (a, b) { return b.rating - a.rating; }); break;
+    case "pop": produtos.sort(function (a, b) { return b.avaliacoes - a.avaliacoes; }); break;
+    case "desc": produtos.sort(function (a, b) { return (pctDesc(b.preco, b.preco_anterior) || -1) - (pctDesc(a.preco, a.preco_anterior) || -1); }); break;
+    default: produtos.sort(function (a, b) { return a.preco - b.preco; });
+  }
+  var grid = $("#loja-grid");
+  var count = $("#loja-count");
+  var pager = $("#loja-pager");
+  if (count) count.textContent = produtos.length + " " + (produtos.length === 1 ? "offer" : "offers") + " from " + esc(loja.nome);
+  if (!produtos.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>No offers found</h3><p>Try another store.</p></div>';
+    if (pager) pager.innerHTML = "";
+    return;
+  }
+  var paginas = Math.ceil(produtos.length / LOJA_POR_PAGINA);
+  if (LOJA_STATE.pag > paginas) LOJA_STATE.pag = 1;
+  var ini = (LOJA_STATE.pag - 1) * LOJA_POR_PAGINA;
+  grid.innerHTML = produtos.slice(ini, ini + LOJA_POR_PAGINA).map(cardHTML).join("");
+  if (pager) {
+    pager.innerHTML = paginas <= 1 ? "" : '<span class="pager-info">Page ' + LOJA_STATE.pag + " of " + paginas + "</span>";
+    for (var i = 1; i <= paginas; i++) {
+      pager.innerHTML += '<button class="pager-btn' + (i === LOJA_STATE.pag ? " on" : "") + '" data-p="' + i + '">' + i + "</button>";
+    }
+    $$(".pager-btn", pager).forEach(function (b) {
+      b.addEventListener("click", function () {
+        LOJA_STATE.pag = Number(b.dataset.p);
+        renderLoja(loja);
+      });
+    });
+  }
+}
+
+function renderLojaOverview() {
+  var lojas = {};
+  PRODUTOS.forEach(function (p) {
+    if (!p.merchant) return;
+    var k = p.merchant.toLowerCase();
+    if (!lojas[k]) lojas[k] = { merchant: p.merchant, nome: p.merchant_nome || p.merchant, qtd: 0, menor: Infinity };
+    lojas[k].qtd++;
+    if (p.preco < lojas[k].menor) lojas[k].menor = p.preco;
+  });
+  var itens = Object.keys(lojas).sort(function (a, b) { return lojas[b].qtd - lojas[a].qtd; });
+  var head = $("#loja-head");
+  if (head) {
+    head.innerHTML = '<p class="kicker">Store profiles</p><h1>All partner stores</h1>' +
+      "<p>Every store we compare offers from. Pick a store to see its full catalog with prices, ratings and deals.</p>";
+  }
+  var grid = $("#loja-grid");
+  var count = $("#loja-count");
+  var pager = $("#loja-pager");
+  var nomeEl = $("#loja-nome");
+  if (nomeEl) nomeEl.textContent = "All partner stores";
+  if (count) count.textContent = itens.length + " " + (itens.length === 1 ? "store" : "stores");
+  if (pager) pager.innerHTML = "";
+  if (grid) {
+    grid.innerHTML = itens.length
+      ? '<div class="store-grid">' + itens.map(function (k) {
+          var l = lojas[k];
+          var iniciais = String(l.nome).split(/\s+/).map(function (w) { return w.charAt(0); }).join("").slice(0, 2).toUpperCase();
+          return '<a class="store-card big" href="store.html?loja=' + encodeURIComponent(l.merchant) + '">' +
+            '<span class="store-logo">' + esc(iniciais) + "</span>" +
+            '<span class="store-meta"><strong>' + esc(l.nome) + "</strong>" +
+            "<span>" + l.qtd + " offer" + (l.qtd === 1 ? "" : "s") + " · from " + fmt(l.menor) + "</span>" +
+            "</span><span class=\"store-link\">View store ›</span></a>";
+        }).join("") + "</div>"
+      : '<div class="empty" style="grid-column:1/-1"><h3>No stores found</h3><p>Store profiles appear here when offers are loaded.</p></div>';
+  }
+}
+
+/* ---------- Boot ---------- */
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", function () {
+    carregarDados().then(function () {
+      renderHeader();
+      renderFooter();
+      var page = document.body.dataset.page;
+      if (page === "home") initHome();
+      else if (page === "categoria") initCategoria();
+      else if (page === "produto") initProduto();
+      else if (page === "loja") initLoja();
+      else if (page === "admin") initAdmin();
+    });
+  });
+}
