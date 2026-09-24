@@ -68,12 +68,7 @@ button { font-family: inherit; }
 .hdr-top { display: flex; align-items: center; gap: 22px; padding: 14px 0; }
 
 .brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.brand-mark {
-  width: 34px; height: 34px; border-radius: 8px;
-  background: var(--buy);
-  display: grid; place-items: center;
-  font-weight: 800; font-size: 19px; color: #fff;
-}
+.brand-logo { width: 36px; height: 36px; border-radius: 8px; display: block; object-fit: contain; }
 .brand-name { font-size: 23px; font-weight: 700; letter-spacing: -0.4px; }
 .brand-name em { font-style: normal; }
 .brand-tag { display: block; font-size: 11px; font-weight: 500; color: var(--faint); margin-top: 0; }
@@ -544,7 +539,7 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
 
 @media (max-width: 880px) {
   .hdr-top { flex-wrap: wrap; gap: 12px; padding: 12px 0; }
-  .brand-mark { width: 30px; height: 30px; font-size: 16px; border-radius: 7px; }
+  .brand-logo { width: 30px; height: 30px; border-radius: 7px; }
   .brand-name { font-size: 19px; }
   .brand-tag { font-size: 10px; }
   .search-box { order: 3; flex-basis: 100%; max-width: none; }

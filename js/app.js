@@ -406,7 +406,7 @@ function renderHeader() {
     '<div class="container">' +
     '<div class="hdr-top">' +
     '<a class="brand" href="index.html">' +
-    '<span class="brand-mark">D</span>' +
+    '<img class="brand-logo" src="img/logo.png" alt="DroneDeck logo" width="36" height="36"/>' +
     '<span><span class="brand-name">DroneDeck</span><span class="brand-tag">discover curated drone &amp; RC parts</span></span>' +
     '</a>' +
     '<form class="search-box" id="busca-form" role="search">' +
@@ -495,7 +495,7 @@ function renderFooter() {
     '<div class="container">' +
     '<div class="foot-top">' +
     '<div class="foot-brand">' +
-    '<span class="brand"><span class="brand-mark">G</span><span><span class="brand-name">DroneDeck</span></span></span>' +
+    '<span class="brand"><img class="brand-logo" src="img/logo.png" alt="DroneDeck logo" width="36" height="36"/><span><span class="brand-name">DroneDeck</span></span></span>' +
     "<p>Independent product discovery and curation for drone and RC parts. We research and organize products, deals and coupons from partner retailers — purchases are completed directly with the retailer, never with us.</p>" +
     "</div>" +
     '<div class="foot-col"><h4>Explore</h4><ul>' + catLinks + "</ul></div>" +
