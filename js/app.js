@@ -525,38 +525,76 @@ function renderFooter() {
   slot.parentNode.removeChild(slot);
 }
 
-/* ---------- Load data ---------- */
+/* ---------- Load data (Supabase -> products.json -> fallback) ---------- */
+function supaHeaders(token) {
+  var k = (window.SUPA_CONFIG && SUPA_CONFIG.url) ? SUPA_CONFIG.anon : "";
+  var h = { "apikey": k };
+  h["Authorization"] = "Bearer " + (token || k);
+  return h;
+}
+
+function carregarDoSupabase() {
+  var url = (window.SUPA_CONFIG && SUPA_CONFIG.url) ? SUPA_CONFIG.url : null;
+  if (!url) return Promise.reject(new Error("sem-supabase"));
+  function page(offset) {
+    return fetch(url + "/rest/v1/produtos?select=id,dados", {
+      headers: Object.assign(supaHeaders(), { "Range-Unit": "items", "Range": offset + "-" + (offset + 999) })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("supa " + r.status);
+      return r.json();
+    }).then(function (rows) {
+      if (rows.length === 1000) {
+        return page(offset + 1000).then(function (mais) {
+          return rows.concat(mais);
+        });
+      }
+      return rows;
+    });
+  }
+  return page(0).then(function (rows) {
+    var produtos = rows.map(function (row) { return row.dados; });
+    var cats = {};
+    var CAT_ICONE = { lanternas: "lanterna", camping: "barraca", energia: "tomada", ferramentas: "chave", automotivo: "carro", casa: "casa", iluminacao: "lampada", mobiliario: "sofa", outros: "loja", jardinagem: "planta" };
+    produtos.forEach(function (p) {
+      if (!p || !p.categoria) return;
+      if (!cats[p.categoria]) {
+        cats[p.categoria] = {
+          slug: p.categoria,
+          nome: p.categoria_nome || p.categoria,
+          icone: (p.icone || CAT_ICONE[p.categoria] || "loja"),
+          descricao: "Produtos da categoria " + (p.categoria_nome || p.categoria) + "."
+        };
+      }
+    });
+    var categorias = Object.keys(cats).map(function (k) { return cats[k]; });
+    return { "marca": "GadgetScout", "categorias": categorias, "produtos": produtos };
+  });
+}
+
 function carregarDados() {
-  return fetch("products.json")
-    .then(function (r) { if (!r.ok) throw new Error("http"); return r.json(); })
+  return carregarDoSupabase()
+    .catch(function () {
+      return fetch("products.json")
+        .then(function (r) { if (!r.ok) throw new Error("http"); return r.json(); });
+    })
     .then(function (d) {
       DADOS = d;
-      if (d && d.produtos && d.produtos.length) {
-        for (var _a = 0; _a < d.produtos.length; _a++) {
-          var _p = d.produtos[_a];
-          var _r = Number(_p.rating);
-          var _av = Number(_p.avaliacoes);
-          var _pc = Number(_p.preco);
-          if (isFinite(_r)) _p.rating = _r;
-          if (isFinite(_av)) _p.avaliacoes = _av;
-          if (isFinite(_pc)) _p.preco = _pc;
-          if (_p.preco_anterior != null && isFinite(Number(_p.preco_anterior))) _p.preco_anterior = Number(_p.preco_anterior);
-        }
-        try {
-          var _edit = JSON.parse(localStorage.getItem("nshop_edicoes") || "{}");
-          for (var _k in _edit) {
-            var _pp = d.produtos.find(function (x) { return x.id === _k; });
-            if (_pp && _edit[_k] && typeof _edit[_k] === "object") {
-              for (var _f in _edit[_k]) _pp[_f] = _edit[_k][_f];
-            }
-          }
-        } catch (_e) {}
+      if (!d.produtos) d.produtos = [];
+      for (var _a = 0; _a < d.produtos.length; _a++) {
+        var _p = d.produtos[_a];
+        var _r = Number(_p.rating);
+        var _av = Number(_p.avaliacoes);
+        var _pc = Number(_p.preco);
+        if (isFinite(_r)) _p.rating = _r;
+        if (isFinite(_av)) _p.avaliacoes = _av;
+        if (isFinite(_pc)) _p.preco = _pc;
+        if (_p.preco_anterior != null && isFinite(Number(_p.preco_anterior))) _p.preco_anterior = Number(_p.preco_anterior);
       }
     })
     .catch(function () { DADOS = STORE_FALLBACK; })
     .then(function () {
       PRODUTOS = DADOS.produtos;
-      CATEGORIAS = DADOS.categorias;
+      CATEGORIAS = DADOS.categorias || [];
     });
 }
 

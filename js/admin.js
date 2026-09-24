@@ -1,75 +1,185 @@
 "use strict";
 
-var EDICOES_KEY = "nshop_edicoes";
-var PG_POR_PAGINA = 50;
-var EDICOES = {};
+var PG_POR_PAGINA = 60;
+var SUPA = window.SUPA_CONFIG || {};
+var sessao = null;
 var paginaAtual = 0;
 var listaFiltrada = [];
 var idEmEdicao = null;
+var listaOriginal = [];
+var buscarTimer = null;
 
-function carregarEdicoesArmazenadas() {
-  try {
-    EDICOES = JSON.parse(localStorage.getItem(EDICOES_KEY) || "{}") || {};
-  } catch (e) {
-    EDICOES = {};
+/* ---------- Supabase helpers ---------- */
+function supaURL(path) {
+  return SUPA.url + path;
+}
+function supaHeaders(usarRole) {
+  var h = { "Content-Type": "application/json", "apikey": SUPA.anon };
+  var tok = SUPA.anon;
+  if (sessao && sessao.access_token) tok = sessao.access_token;
+  h["Authorization"] = "Bearer " + tok;
+  return h;
+}
+function supaGet(path) {
+  return fetch(supaURL(path), { headers: supaHeaders(false), body: undefined })
+    .then(function (r) {
+      if (!r.ok) throw new Error("supa " + r.status);
+      return r.json();
+    });
+}
+function supaPost(path, payload) {
+  return fetch(supaURL(path), {
+    method: "POST",
+    headers: supaHeaders(false),
+    body: JSON.stringify(payload)
+  }).then(function (r) {
+    if (!r.ok) throw new Error("supa " + r.status);
+    return r.json();
+  });
+}
+function supaPatch(id, dados) {
+  return fetch(supaURL("/rest/v1/produtos?id=eq." + encodeURIComponent(id)), {
+    method: "PATCH",
+    headers: Object.assign(supaHeaders(false), { "Prefer": "return=minimal" }),
+    body: JSON.stringify({ dados: dados })
+  }).then(function (r) {
+    if (!r.ok) throw new Error("supaPATCH " + r.status);
+    return r;
+  });
+}
+function supaBulkUpsert(rows, onProgress) {
+  var CHUNK = 120;
+  var i = 0;
+  function prox() {
+    if (i >= rows.length) return Promise.resolve(rows.length);
+    var chunk = rows.slice(i, i + CHUNK);
+    i += CHUNK;
+    return fetch(supaURL("/rest/v1/produtos?on_conflict=id"), {
+      method: "POST",
+      headers: Object.assign(supaHeaders(false), { "Prefer": "resolution=merge-duplicates" }),
+      body: JSON.stringify(chunk)
+    }).then(function (r) {
+      if (!r.ok) throw new Error("supaUpsert " + r.status);
+      if (onProgress) onProgress(i, rows.length);
+      return prox();
+    });
   }
+  return prox();
+}
+function authLogin(email, pass) {
+  return fetch(supaURL("/auth/v1/token?grant_type=password"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPA.anon },
+    body: JSON.stringify({ email: email, password: pass })
+  }).then(function (r) {
+    if (!r.ok) {
+      return r.json().then(function (b) {
+        throw new Error((b && (b.msg || b.error_description)) || "Falha ao entrar.");
+      });
+    }
+    return r.json();
+  }).then(function (s) {
+    sessao = s;
+    try { localStorage.setItem("nshop_sessao", JSON.stringify(s)); } catch (e) {}
+    return s;
+  });
+}
+function authLogout() {
+  sessao = null;
+  try { localStorage.removeItem("nshop_sessao"); } catch (e) {}
+  mostrarLogin();
+}
+function restaurarSessao() {
+  try {
+    var s = localStorage.getItem("nshop_sessao") || "";
+    if (s) sessao = JSON.parse(s);
+  } catch (e) { sessao = null; }
 }
 
-function gravarEdicoes() {
-  try {
-    localStorage.setItem(EDICOES_KEY, JSON.stringify(EDICOES));
-  } catch (e) {
-    toast("Não foi possível salvar no navegador.");
-  }
+/* ---------- UI ---------- */
+function mostrarLogin() {
+  var ed = $("#editor-box");
+  var lg = $("#login-box");
+  if (ed) ed.hidden = true;
+  if (lg) lg.hidden = false;
+  var out = $("#btn-logout");
+  if (out) out.style.display = "none";
 }
-
-function aplicarEdicoes(prod) {
-  var ed = EDICOES[prod.id];
-  if (!ed) return prod;
-  var novo = {};
-  for (var chave in prod) novo[chave] = prod[chave];
-  for (var k in ed) novo[k] = ed[k];
-  return novo;
+function mostrarEditor() {
+  var ed = $("#editor-box");
+  var lg = $("#login-box");
+  if (ed) ed.hidden = false;
+  if (lg) lg.hidden = true;
+  var out = $("#btn-logout");
+  if (out) out.style.display = "";
+  var lbl = $("#admin-email");
+  if (lbl) lbl.textContent = (sessao && sessao.user && sessao.user.email) ? sessao.user.email : "";
 }
 
 function initAdmin() {
-  carregarEdicoesArmazenadas();
-  preencherFiltroCategorias();
-  document.getElementById("busca").addEventListener("input", function () { paginaAtual = 0; renderAdmin(); });
-  document.getElementById("filtro-disp").addEventListener("change", function () { paginaAtual = 0; renderAdmin(); });
-  document.getElementById("filtro-cat").addEventListener("change", function () { paginaAtual = 0; renderAdmin(); });
-  document.getElementById("btn-export").addEventListener("click", exportarJSON);
-  document.getElementById("btn-reset").addEventListener("click", resetGeral);
-  document.getElementById("btn-close").addEventListener("click", fecharModal);
+  restaurarSessao();
+  document.getElementById("btn-login").addEventListener("click", aoEntrar);
+  document.getElementById("login-pass").addEventListener("keydown", function (e) { if (e.key === "Enter") aoEntrar(); });
+  document.getElementById("btn-logout").addEventListener("click", authLogout);
+  document.getElementById("btn-close-modal").addEventListener("click", fecharModal);
+  document.getElementById("btn-salvar").addEventListener("click", salvarEdicao);
   document.getElementById("btn-reverter").addEventListener("click", reverterProduto);
-  document.getElementById("form-edicao").addEventListener("submit", salvarProduto);
-  document.getElementById("admin-modal").addEventListener("click", function (e) {
-    if (e.target === document.getElementById("admin-modal")) fecharModal();
+  document.getElementById("btn-reset").addEventListener("click", resetTotal);
+  document.getElementById("btn-export").addEventListener("click", exportarJSON);
+  document.getElementById("modal").addEventListener("click", function (e) { if (e.target === document.getElementById("modal")) fecharModal(); });
+  var f = document.getElementById("form-edicao");
+  f.addEventListener("submit", function (e) { e.preventDefault(); salvarEdicao(); });
+  var busca = document.getElementById("busca");
+  busca.addEventListener("input", function () {
+    clearTimeout(buscarTimer);
+    buscarTimer = setTimeout(function () { paginaAtual = 0; renderAdmin(); }, 250);
   });
+  document.getElementById("filtro-disp").addEventListener("change", function () { paginaAtual = 0; renderAdmin(); });
+  var selCat = document.getElementById("filtro-cat");
+  if (selCat) {
+    CATEGORIAS.forEach(function (c) {
+      var op = document.createElement("option");
+      op.value = c.slug; op.textContent = c.nome;
+      selCat.appendChild(op);
+    });
+    selCat.addEventListener("change", function () { paginaAtual = 0; renderAdmin(); });
+  }
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && !document.getElementById("admin-modal").hidden) fecharModal();
+    if (e.key === "Escape") fecharModal();
+  });
+  mostrarEditor();
+  listaOriginal = PRODUTOS.map(function (p) {
+    return { id: p.id, dados: JSON.parse(JSON.stringify(p)) };
   });
   renderAdmin();
 }
 
-function preencherFiltroCategorias() {
-  var sel = document.getElementById("filtro-cat");
-  var cats = {};
-  PRODUTOS.forEach(function (p) {
-    if (p.categoria && !cats[p.categoria]) cats[p.categoria] = p.categoria_nome;
-  });
-  Object.keys(cats).sort().forEach(function (slug) {
-    var op = document.createElement("option");
-    op.value = slug;
-    op.textContent = cats[slug];
-    sel.appendChild(op);
+function aoEntrar() {
+  var email = document.getElementById("login-email").value.trim();
+  var pass = document.getElementById("login-pass").value;
+  var err = $("#login-err");
+  var btn = $("#btn-login");
+  if (!email || !pass) {
+    if (err) err.textContent = "Informe e-mail e senha.";
+    return;
+  }
+  btn.disabled = true;
+  if (err) err.textContent = "Entrando…";
+  authLogin(email, pass).then(function () {
+    if (err) err.textContent = "";
+    btn.disabled = false;
+    mostrarEditor();
+    toast("Bem-vindo, " + (sessao.user && sessao.user.email ? sessao.user.email : "") + ".");
+  }).catch(function (e) {
+    if (err) err.textContent = e.message;
+    btn.disabled = false;
   });
 }
 
 function filtrarProdutos() {
   var termo = document.getElementById("busca").value.trim().toLowerCase();
   var disp = document.getElementById("filtro-disp").value;
-  var cat = document.getElementById("filtro-cat").value;
+  var cat = document.getElementById("filtro-cat") ? document.getElementById("filtro-cat").value : "";
   return PRODUTOS.filter(function (p) {
     if (cat && p.categoria !== cat) return false;
     if (disp && p.disponibilidade !== disp) return false;
@@ -90,32 +200,14 @@ function renderAdmin() {
   var fatia = listaFiltrada.slice(inicio, inicio + PG_POR_PAGINA);
 
   document.getElementById("admin-count").textContent =
-    total + " produto" + (total === 1 ? "" : "s") + " · pág " + (paginaAtual + 1) + "/" + totalPaginas;
+    total + " produtos · pág " + (paginaAtual + 1) + "/" + totalPaginas;
 
   var list = document.getElementById("admin-list");
   if (!fatia.length) {
-    list.innerHTML = '<div class="admin-empty">Nenhum produto encontrado.</div>';
+    list.innerHTML = '<div class="admin-empty">Nenhum produto.</div>';
   } else {
-    list.innerHTML = fatia.map(function (p) {
-      var q = aplicarEdicoes(p);
-      var editado = EDICOES[p.id] ? '<span class="badge-ed">EDITADO</span>' : "";
-      var sel = ehtoSelect(q.disponibilidade);
-      return '<div class="admin-row" data-id="' + p.id + '">' +
-        '<img class="admin-thumb" src="' + esc(imgProd(q, 0)) + '" alt="" loading="lazy"/>' +
-        '<div class="admin-row-main">' +
-        '<div class="admin-row-titulo">' + esc(q.nome) + " " + editado + "</div>" +
-        '<div class="admin-row-meta">' + esc(q.marca || "—") + " · " + esc(q.categoria_nome || q.categoria || "—") +
-        " · " + q.rating.toFixed(1) + "★ (" + num(q.avaliacoes) + ")</div>" +
-        '<div class="admin-row-link">Link: <span class="link-val">' + esc(q.url_afiliado || "—") + "</span></div>" +
-        "</div>" +
-        '<div class="admin-row-preco">' + fmt(q.preco) + "</div>" +
-        '<span class="admin-avail ' + q.disponibilidade + '">' + sel + "</span>" +
-        (q.destaque ? '<span class="admin-feat">★</span>' : "") +
-        '<button class="btn btn-light btn-edit" type="button" data-edit="' + p.id + '">Editar</button>' +
-        "</div>";
-    }).join("");
+    list.innerHTML = fatia.map(linhaProduto).join("");
   }
-
   $$(".btn-edit", list).forEach(function (b) {
     b.addEventListener("click", function () { abrirModal(b.dataset.edit); });
   });
@@ -126,7 +218,7 @@ function renderAdmin() {
   } else {
     var botoes = [];
     if (paginaAtual > 0) botoes.push('<button class="btn btn-light" type="button" data-pg="' + (paginaAtual - 1) + '">‹ Anterior</button>');
-    botoes.push('<span class="pager-info">Página ' + (paginaAtual + 1) + " de " + totalPaginas + "</span>");
+    botoes.push('<span class="pager-info">' + (paginaAtual + 1) + " / " + totalPaginas + "</span>");
     if (paginaAtual < totalPaginas - 1) botoes.push('<button class="btn btn-light" type="button" data-pg="' + (paginaAtual + 1) + '">Próxima ›</button>');
     pager.innerHTML = botoes.join("");
     $$("[data-pg]", pager).forEach(function (b) {
@@ -135,7 +227,21 @@ function renderAdmin() {
   }
 }
 
-function ehtoSelect(v) {
+function linhaProduto(p) {
+  return '<div class="admin-row" data-id="' + esc(p.id) + '">' +
+    '<img class="admin-thumb" src="' + esc(imgProd(p, 0)) + '" alt="" loading="lazy"/>' +
+    '<div class="admin-row-main">' +
+    '<div class="admin-row-titulo">' + esc(p.nome) + "</div>" +
+    '<div class="admin-row-meta">' + esc(p.marca || "—") + " · " + esc(p.categoria_nome || p.categoria || "—") +
+    " · " + num(p.rating) + "★ (" + num(p.avaliacoes) + ")</div>" +
+    '<div class="admin-row-link">Link: <span class="link-val">' + esc(p.url_afiliado || "—") + "</span></div>" +
+    "</div>" +
+    '<div class="admin-row-preco">' + fmt(p.preco) + "</div>" +
+    '<span class="admin-avail ' + esc(p.disponibilidade) + '">' + chipDispTexto(p.disponibilidade) + "</span>" +
+    '<button class="btn btn-light btn-edit" type="button" data-edit="' + esc(p.id) + '">Editar</button>' +
+    "</div>";
+}
+function chipDispTexto(v) {
   if (v === "poucas_unidades") return "Poucas unidades";
   if (v === "esgotado") return "Esgotado";
   return "Em estoque";
@@ -144,90 +250,113 @@ function ehtoSelect(v) {
 function abrirModal(id) {
   idEmEdicao = id;
   var p = PRODUTOS.find(function (x) { return x.id === id; });
-  if (!p) return;
-  var q = aplicarEdicoes(p);
+  if (!p) { toast("Produto não encontrado."); return; }
   var f = document.getElementById("form-edicao");
-  f.nome.value = q.nome || "";
-  f.url_afiliado.value = q.url_afiliado || "";
-  f.img.value = q.img || "";
-  f.preco.value = q.preco;
-  f.preco_anterior.value = q.preco_anterior != null ? q.preco_anterior : "";
-  f.rating.value = q.rating;
-  f.avaliacoes.value = q.avaliacoes;
-  f.disponibilidade.value = q.disponibilidade === "poucas_unidades" ? "poucas_unidades" : q.disponibilidade === "esgotado" ? "esgotado" : "em_estoque";
-  f.marca.value = q.marca || "";
-  f.categoria.value = q.categoria || "";
-  f.destaque.checked = !!q.destaque;
-  f.descricao.value = q.descricao || "";
+  f.nome.value = p.nome || "";
+  f.url_afiliado.value = p.url_afiliado || "";
+  f.img.value = p.img || "";
+  f.preco.value = p.preco != null ? p.preco : "";
+  f.preco_anterior.value = p.preco_anterior != null ? p.preco_anterior : "";
+  f.rating.value = p.rating != null ? p.rating : "";
+  f.avaliacoes.value = p.avaliacoes != null ? p.avaliacoes : "";
+  f.disponibilidade.value = p.disponibilidade === "poucas_unidades" ? "poucas_unidades" : p.disponibilidade === "esgotado" ? "esgotado" : "em_estoque";
+  f.marca.value = p.marca || "";
+  f.categoria.value = p.categoria || "";
+  f.destaque.checked = !!p.destaque;
+  f.descricao.value = p.descricao || "";
   document.getElementById("modal-titulo").textContent = "Editar · " + id;
-  atualizarMarcadorDirty();
-  document.getElementById("admin-modal").hidden = false;
-  setTimeout(function () { f.nome.focus(); }, 30);
+  document.getElementById("modal").hidden = false;
+  document.body.classList.add("modal-open");
 }
-
 function fecharModal() {
-  document.getElementById("admin-modal").hidden = true;
+  document.getElementById("modal").hidden = true;
+  document.body.classList.remove("modal-open");
   idEmEdicao = null;
 }
 
-function salvarProduto() {
+function salvarEdicao() {
   if (!idEmEdicao) return;
+  var p = PRODUTOS.find(function (x) { return x.id === idEmEdicao; });
+  if (!p) return;
   var f = document.getElementById("form-edicao");
-  var ed = {
-    nome: String(f.nome.value || "").trim(),
-    url_afiliado: String(f.url_afiliado.value || "").trim(),
-    img: String(f.img.value || "").trim(),
+  var novo = {
+    nome: f.nome.value.trim() || p.nome,
+    url_afiliado: f.url_afiliado.value.trim(),
+    img: f.img.value.trim(),
     preco: Number(f.preco.value),
     preco_anterior: f.preco_anterior.value === "" ? null : Number(f.preco_anterior.value),
     rating: Number(f.rating.value),
     avaliacoes: Number(f.avaliacoes.value),
     disponibilidade: f.disponibilidade.value,
-    marca: String(f.marca.value || "").trim(),
-    categoria: String(f.categoria.value || "").trim(),
+    marca: f.marca.value.trim() || p.marca,
+    categoria: f.categoria.value.trim() || p.categoria,
+    categoria_nome: p.categoria_nome,
     destaque: f.destaque.checked,
-    descricao: String(f.descricao.value || "").trim()
+    descricao: f.descricao.value.trim() || p.descricao,
+    product_id: p.product_id,
+    merchant: p.merchant,
+    merchant_nome: p.merchant_nome,
+    comissao: p.comissao,
+    icone: p.icone,
+    specs: p.specs,
+    faq: p.faq
   };
-  EDICOES[idEmEdicao] = ed;
-  gravarEdicoes();
-  fecharModal();
-  renderAdmin();
-  toast("Produto " + idEmEdicao + " salvo.");
+  if (p.id) novo.id = p.id;
+  var btn = document.getElementById("btn-salvar");
+  btn.disabled = true;
+  supaPatch(idEmEdicao, novo).then(function () {
+    for (var chave in novo) p[chave] = novo[chave];
+    btn.disabled = false;
+    fecharModal();
+    renderAdmin();
+    toast("Produto " + idEmEdicao + " salvo no banco.");
+  }).catch(function (e) {
+    btn.disabled = false;
+    toast("Falha ao salvar: " + e.message);
+  });
 }
 
 function reverterProduto() {
   if (!idEmEdicao) return;
-  delete EDICOES[idEmEdicao];
-  gravarEdicoes();
-  fecharModal();
-  renderAdmin();
-  toast("Alterações revertidas para o original.");
+  var original = listaOriginal.find(function (x) { return x.id === idEmEdicao; });
+  if (original) {
+    supaPatch(idEmEdicao, original.dados || original).then(function () {
+      var p = PRODUTOS.find(function (x) { return x.id === idEmEdicao; });
+      if (p && original.dados) for (var chave in original.dados) p[chave] = original.dados[chave];
+      if (p && original.nome) { p.nome = original.nome; p.img = original.img; p.url_afiliado = original.url_afiliado; }
+      fecharModal();
+      renderAdmin();
+      toast("Produto revertido ao estado original do banco.");
+    }).catch(function (e) { toast("Falha ao reverter: " + e.message); });
+  } else {
+    toast("Registro original não encontrado.");
+    fecharModal();
+  }
 }
 
-function atualizarMarcadorDirty() {
-  var el = document.getElementById("admin-dirty");
-  el.textContent = EDICOES[idEmEdicao] ? "Há alterações salvas para este produto." : "Sem alterações salvas.";
-}
-
-function resetGeral() {
-  if (!confirm("Apagar TODAS as edições salvas no navegador?")) return;
-  EDICOES = {};
-  gravarEdicoes();
-  renderAdmin();
-  toast("Todas as edições foram apagadas.");
+function resetTotal() {
+  if (!confirm("Reenviar TODOS os " + PRODUTOS.length + " produtos atuais para o banco?")) return;
+  var btn = document.getElementById("btn-reset");
+  btn.disabled = true;
+  supaBulkUpsert(PRODUTOS.map(function (p) { return { id: p.id, dados: p }; }))
+    .then(function (n) {
+      btn.disabled = false;
+      toast(n + " produtos sincronizados no banco.");
+    })
+    .catch(function (e) {
+      btn.disabled = false;
+      toast("Falha: " + e.message);
+    });
 }
 
 function exportarJSON() {
-  var base = {
-    marca: DADOS.marca,
-    categorias: DADOS.categorias,
-    produtos: PRODUTOS.map(aplicarEdicoes)
-  };
-  var json = JSON.stringify(base);
-  var ba = document.createElement("a");
-  ba.href = URL.createObjectURL(new Blob([json], { type: "application/json" }));
-  ba.download = "products.json";
-  document.body.appendChild(ba);
-  ba.click();
-  ba.remove();
-  toast("products.json baixado — faça upload/commit do arquivo para publicar.");
+  var base = { marca: "GadgetScout", categorias: CATEGORIAS, produtos: PRODUTOS };
+  var blob = new Blob([JSON.stringify(base)], { type: "application/json" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "products.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  toast("products.json gerado a partir do banco.");
 }

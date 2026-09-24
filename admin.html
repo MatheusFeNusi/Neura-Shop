@@ -16,41 +16,65 @@
   <div id="app-header"></div>
 
   <main class="container admin-wrap">
-    <div class="admin-top">
-      <div>
-        <p class="kicker">Painel de produtos</p>
-        <h1>Editar produtos</h1>
-        <p class="admin-sub">Altere título, imagem, link de redirecionamento, preço e disponibilidade. Salve por produto; as mudanças ficam no seu navegador e valem para o site.</p>
-      </div>
-      <div class="admin-top-actions">
-        <button class="btn btn-light" id="btn-reset" type="button">Reset total</button>
-        <button class="btn btn-brand" id="btn-export" type="button">Baixar products.json</button>
+
+    <div class="login-box" id="login-box">
+      <div class="login-card">
+        <h1 class="login-title">Painel de produtos</h1>
+        <p class="login-sub">Entre com sua conta de administrador para editar o catálogo.</p>
+        <form id="login-form" onsubmit="return false">
+          <label class="login-label">
+            E-mail
+            <input type="email" id="login-email" autocomplete="username" placeholder="voce@exemplo.com"/>
+          </label>
+          <label class="login-label">
+            Senha
+            <input type="password" id="login-pass" autocomplete="current-password" placeholder="••••••••"/>
+          </label>
+          <div class="login-err" id="login-err"></div>
+          <button class="btn btn-brand btn-login" id="btn-login" type="submit">Entrar</button>
+        </form>
       </div>
     </div>
 
-    <div class="admin-toolbar">
-      <input id="busca" class="input-search" type="search" placeholder="Buscar por nome, marca ou id…" autocomplete="off"/>
-      <select id="filtro-disp" class="input-select">
-        <option value="">Todas disponibilidades</option>
-        <option value="em_estoque">Em estoque</option>
-        <option value="poucas_unidades">Poucas unidades</option>
-        <option value="esgotado">Esgotado</option>
-      </select>
-      <select id="filtro-cat" class="input-select">
-        <option value="">Todas categorias</option>
-      </select>
-      <span class="admin-count" id="admin-count"></span>
-    </div>
+    <div id="editor-box" hidden>
 
-    <div class="admin-list" id="admin-list"></div>
-    <div class="admin-pager" id="admin-pager"></div>
+      <div class="admin-top">
+        <div>
+          <p class="kicker">Painel de produtos</p>
+          <h1>Editar produtos</h1>
+          <p class="admin-sub">Altere título, imagem, link de redirecionamento, preço e disponibilidade. As mudanças são salvas no banco e valem para todos os visitantes. Sessão: <span id="admin-email"></span></p>
+        </div>
+        <div class="admin-top-actions">
+          <button class="btn btn-light" id="btn-reset" type="button">Sincronizar todos</button>
+          <button class="btn btn-light" id="btn-logout" type="button">Sair</button>
+          <button class="btn btn-brand" id="btn-export" type="button">Baixar products.json</button>
+        </div>
+      </div>
+
+      <div class="admin-toolbar">
+        <input id="busca" class="input-search" type="search" placeholder="Buscar por nome, marca ou id…" autocomplete="off"/>
+        <select id="filtro-disp" class="input-select">
+          <option value="">Todas disponibilidades</option>
+          <option value="em_estoque">Em estoque</option>
+          <option value="poucas_unidades">Poucas unidades</option>
+          <option value="esgotado">Esgotado</option>
+        </select>
+        <select id="filtro-cat" class="input-select">
+          <option value="">Todas categorias</option>
+        </select>
+        <span class="admin-count" id="admin-count"></span>
+      </div>
+
+      <div class="admin-list" id="admin-list"></div>
+      <div class="admin-pager" id="admin-pager"></div>
+    </div>
   </main>
 
-  <div class="admin-modal" id="admin-modal" hidden>
+  <div class="admin-modal" id="modal" hidden>
     <div class="admin-modal-box">
       <div class="admin-modal-head">
         <h2 id="modal-titulo">Editar produto</h2>
-        <button class="admin-close" id="btn-close" type="button" aria-label="Fechar">×</button>
+        <button class="admin-close" id="btn-close-modal" type="button" aria-label="Fechar">×</button>
       </div>
       <form id="form-edicao" onsubmit="return false">
         <label class="col-full">
@@ -105,7 +129,6 @@
           <textarea name="descricao" rows="4"></textarea>
         </label>
         <div class="admin-modal-foot">
-          <span class="admin-dirty" id="admin-dirty"></span>
           <div class="admin-foot-actions">
             <button type="button" class="btn btn-light" id="btn-reverter">Reverter</button>
             <button type="submit" class="btn btn-brand" id="btn-salvar">Salvar</button>
@@ -116,6 +139,7 @@
   </div>
 
   <div id="app-footer"></div>
+  <script src="js/config.js"></script>
   <script src="js/app.js"></script>
   <script src="js/admin.js"></script>
 </body>
