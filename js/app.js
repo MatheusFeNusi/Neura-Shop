@@ -176,9 +176,11 @@ function renderComparar(p) {
   var alvo = $("#comparar-tabela");
   if (!alvo) return;
   var q = encodeURIComponent(chaveBuscaProduto(p));
-  alvo.innerHTML = LOJAS_COMPARE.map(function (l) {
+  var lojas = (p.lojas_compare && p.lojas_compare.length) ? p.lojas_compare : LOJAS_COMPARE;
+  var img = imgProd(p, 0);
+  alvo.innerHTML = lojas.map(function (l) {
     return '<a class="comparar-loja" href="' + l.url + q + '" target="_blank" rel="noopener nofollow">' +
-      '<span class="store-logo sm">' + esc(l.nome.split(/\s+/).map(function (x) { return x.charAt(0); }).join("").slice(0, 2).toUpperCase()) + "</span>" +
+      '<img class="comparar-thumb" src="' + img + '" alt="" loading="lazy"/>' +
       '<span class="comparar-loja-nome">' + esc(l.nome) + "<small>Check prices ↗</small></span></a>";
   }).join("");
 }

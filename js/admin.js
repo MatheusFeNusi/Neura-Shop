@@ -301,6 +301,9 @@ function abrirModal(id) {
   f.disponibilidade.value = p.disponibilidade === "poucas_unidades" ? "poucas_unidades" : p.disponibilidade === "esgotado" ? "esgotado" : "em_estoque";
   f.cupom.value = p.cupom || p.cupom_texto || "";
   f.cupom_descricao.value = p.cupom_descricao || "";
+  f.lojas_compare.value = (p.lojas_compare && p.lojas_compare.length)
+    ? p.lojas_compare.map(function (l) { return l.nome + "|" + l.url; }).join("\n")
+    : "";
   f.marca.value = p.marca || "";
   f.categoria.value = p.categoria || "";
   f.destaque.checked = !!p.destaque;
@@ -334,6 +337,13 @@ function salvarEdicao() {
     disponibilidade: f.disponibilidade.value,
     cupom: f.cupom.value.trim() || null,
     cupom_descricao: f.cupom_descricao.value.trim() || "",
+    lojas_compare: (f.lojas_compare.value || "")
+      .split("\n").map(function (linha) {
+        var i = linha.indexOf("|");
+        if (i <= 0) return null;
+        return { nome: linha.slice(0, i).trim(), url: linha.slice(i + 1).trim() };
+      })
+      .filter(function (l) { return l && l.nome && l.url; }),
     marca: f.marca.value.trim() || p.marca,
     categoria: f.categoria.value.trim() || p.categoria,
     categoria_nome: p.categoria_nome,
@@ -436,14 +446,15 @@ function exportarCSV() {
   var colunas = [
     "id", "nome", "marca", "categoria", "categoria_nome",
     "preco", "preco_anterior", "rating", "avaliacoes",
-    "disponibilidade", "cupom", "cupom_descricao", "destaque", "url_afiliado", "img", "descricao"
+    "disponibilidade", "cupom", "cupom_descricao", "lojas_compare", "destaque", "url_afiliado", "img", "descricao"
   ];
   var linhas = [];
   linhas.push(colunas.map(csvEscape).join(";"));
   PRODUTOS.forEach(function (p) {
     var valores = colunas.map(function (c) {
       var v = p[c];
-      if (Array.isArray(v)) v = v.join("; ");
+      if (c === "lojas_compare" && Array.isArray(v)) v = v.map(function (l) { return (l.nome || "") + "|" + (l.url || ""); }).join("; ");
+      else if (Array.isArray(v)) v = v.join("; ");
       if (typeof v === "boolean") v = v ? "sim" : "nao";
       return csvEscape(v);
     });
