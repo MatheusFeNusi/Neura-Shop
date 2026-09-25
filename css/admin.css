@@ -63,6 +63,8 @@
 .admin-avail.esgotado { background: #fde8e8; color: #b03535; }
 .admin-feat { color: #e8a000; font-size: 15px; }
 .btn-edit { white-space: nowrap; }
+.admin-acoes a.btn,
+.admin-foot-actions a.btn { text-decoration: none; }
 .admin-acoes { display: flex; gap: 8px; }
 .btn-del {
   white-space: nowrap; background: #fde8e8; color: #b03535; border-color: #efd0d0;
