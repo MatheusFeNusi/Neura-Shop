@@ -475,7 +475,11 @@ button { font-family: inherit; }
   background: var(--surface-2); flex-shrink: 0; border: 1px solid var(--line);
 }
 .comparar-loja-nome { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow: hidden; }
-.comparar-loja-nome .comparar-preco { color: var(--ink); font-weight: 800; font-size: 19px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.comparar-loja-nome .comparar-preco {
+  color: var(--ink); font-weight: 800; font-size: 19px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  width: 100%; min-width: 0; overflow-wrap: anywhere;
+}
 .comparar-loja-nome .comparar-preco .comparar-best {
   font-size: 10px; margin-left: 0; padding: 2px 6px; border-radius: var(--radius-s);
   background: var(--buy); color: #fff; font-weight: 800; letter-spacing: 0.3px; flex-shrink: 0;
