@@ -1038,8 +1038,6 @@ function initProduto() {
       } else { _copiarFallback(codigo); toast("Coupon copied — apply it at checkout."); }
     }
   });
-  var btnCopiar = $("#btn-copiar-cupom");
-  if (btnCopiar) btnCopiar.addEventListener("click", copiarCupom.bind(null, p));
 
   $("#specs-tabela").innerHTML = p.specs.map(function (s) {
     return "<tr><th>" + esc(s.rotulo) + "</th><td>" + esc(s.valor) + "</td></tr>";
