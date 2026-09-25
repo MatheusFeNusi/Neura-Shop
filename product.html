@@ -19,7 +19,7 @@
 
     <div class="pg-layout">
 
-      <div>
+      <div class="pg-col-galeria">
         <div class="gallery-img"><img id="foto-main" alt=""/></div>
         <div class="thumbs" id="fotos-thumb"></div>
       </div>
@@ -27,7 +27,6 @@
       <div class="pg-info">
         <div class="pg-catscreen">
           <a class="chip" id="pg-categoria" href="catalog.html">All categories</a>
-          <span class="chip" id="pg-disponibilidade"><span data-dot></span>In stock</span>
         </div>
 
         <h1 class="pg-title" id="pg-titulo">—</h1>
@@ -40,30 +39,41 @@
         </div>
 
         <p class="pg-descricao" id="pg-descricao"></p>
+      </div>
 
-        <div class="pg-price" id="preco-bloco"></div>
-
-        <div class="comissao-note" id="comissao-note"></div>
+      <aside class="buybox-col">
 
         <div class="buybox">
-          <button class="btn-buy-big" id="btn-comprar">Check price at retailer</button>
-          <div class="coupon-box" id="cupom-box" hidden>
-            <div class="coupon-label">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 0-4h20a2 2 0 0 1 0 4 2 2 0 0 0 0 4 2 2 0 0 1 0 4H2a2 2 0 0 1 0-4 2 2 0 0 0 0-4z"/><path d="M13 5v14M16 12h.01M10 12h.01"/></svg>
-              Your coupon is ready — <strong>copy it</strong> and apply at checkout
-            </div>
-            <div class="coupon-row">
-              <button class="coupon-code" id="cupom-codigo" type="button" data-codigo="" title="Click to copy"></button>
-              <button class="btn-coupon-copy" id="btn-copiar-cupom" type="button">Copy</button>
-            </div>
-            <p class="coupon-note" id="cupom-nota"></p>
-            <button class="btn-buy-big" id="btn-comprar-cupom">Go to retailer with coupon ↗</button>
+          <div class="buybox-stock">
+            <span class="chip" id="pg-disponibilidade"><span data-dot></span>In stock</span>
           </div>
-          <p class="redirect-note">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-            You'll be redirected to <span id="parceiro-nome"></span>, the retailer handling this product. WattWheel only curates and compares — we never sell, price or process your purchase.
-          </p>
-          <button class="btn-partner" id="btn-parceiro">See product at retailer ↗</button>
+
+          <div class="buybox-price">
+            <div id="preco-bloco"></div>
+          </div>
+
+          <div class="buybox-sec">
+            <button class="btn-buy-big" id="btn-comprar">Check price at retailer</button>
+            <div class="coupon-box" id="cupom-box" hidden>
+              <div class="coupon-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 0-4h20a2 2 0 0 1 0 4 2 2 0 0 0 0 4 2 2 0 0 1 0 4H2a2 2 0 0 1 0-4 2 2 0 0 0 0-4z"/><path d="M13 5v14M16 12h.01M10 12h.01"/></svg>
+                Your coupon is ready — <strong>copy it</strong> and apply at checkout
+              </div>
+              <div class="coupon-row">
+                <button class="coupon-code" id="cupom-codigo" type="button" data-codigo="" title="Click to copy"></button>
+                <button class="btn-coupon-copy" id="btn-copiar-cupom" type="button">Copy</button>
+              </div>
+              <p class="coupon-note" id="cupom-nota"></p>
+              <button class="btn-buy-big" id="btn-comprar-cupom">Go to retailer with coupon ↗</button>
+            </div>
+            <p class="redirect-note">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+              You'll be redirected to <span id="parceiro-nome"></span>, the retailer handling this product. WattWheel only curates and compares — we never sell, price or process your purchase.
+            </p>
+            <button class="btn-partner" id="btn-parceiro">See product at retailer ↗</button>
+          </div>
+
+          <div class="comissao-note" id="comissao-note"></div>
         </div>
 
         <div class="trust-row">
@@ -85,7 +95,8 @@
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
           <span><strong>Affiliate disclosure.</strong> WattWheel is an independent product discovery website. We don't sell or stock products — this item is sold by the retailer shown, and your purchase is completed on the retailer's site. As an affiliate, we may earn a commission on qualifying purchases, at no additional cost to you. <a href="about.html#disclosure">Read our full disclosure</a>.</span>
         </div>
-      </div>
+
+      </aside>
 
     </div>
 
