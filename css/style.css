@@ -464,21 +464,21 @@ button { font-family: inherit; }
 /* ---------- Compare prices at other stores ---------- */
 .comparar-sec { border-top: 0; border-bottom: 1px solid var(--line); padding: 16px 0 22px; margin-top: 8px; }
 .comparar-sec > h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
-.comparar { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.comparar { display: grid; grid-template-columns: repeat(auto-fill, minmax(236px, 1fr)); gap: 12px; }
 .comparar-loja {
-  display: flex; align-items: center; gap: 13px;
+  display: flex; align-items: center; gap: 12px;
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 13px 14px; transition: border-color 0.15s;
+  padding: 12px 14px; transition: border-color 0.15s;
 }
 .comparar-thumb {
-  width: 72px; height: 72px; border-radius: 8px; object-fit: cover;
+  width: 64px; height: 64px; border-radius: 8px; object-fit: cover;
   background: var(--surface-2); flex-shrink: 0; border: 1px solid var(--line);
 }
 .comparar-loja-nome { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow: hidden; }
 .comparar-loja-nome .comparar-preco {
-  color: var(--ink); font-weight: 800; font-size: 19px;
+  color: var(--ink); font-weight: 800; font-size: clamp(15px, 1.5vw, 19px);
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  width: 100%; min-width: 0; overflow-wrap: anywhere;
+  width: 100%; min-width: 0; white-space: nowrap;
 }
 .comparar-loja-nome .comparar-preco .comparar-best {
   font-size: 10px; margin-left: 0; padding: 2px 6px; border-radius: var(--radius-s);
