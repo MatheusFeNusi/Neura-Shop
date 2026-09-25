@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 
 var PG_POR_PAGINA = 60;
 var SUPA = window.SUPA_CONFIG || {};
@@ -135,6 +135,7 @@ function initAdmin() {
   document.getElementById("btn-reverter").addEventListener("click", reverterProduto);
   document.getElementById("btn-reset").addEventListener("click", resetTotal);
   document.getElementById("btn-export").addEventListener("click", exportarJSON);
+  document.getElementById("btn-export-csv").addEventListener("click", exportarCSV);
   document.getElementById("modal").addEventListener("click", function (e) { if (e.target === document.getElementById("modal")) fecharModal(); });
   var f = document.getElementById("form-edicao");
   f.addEventListener("submit", function (e) { e.preventDefault(); salvarEdicao(); });
@@ -173,7 +174,7 @@ function aoEntrar() {
     return;
   }
   btn.disabled = true;
-  if (err) err.textContent = "Entrando…";
+  if (err) err.textContent = "Entrandoâ€¦";
   authLogin(email, pass).then(function () {
     if (err) err.textContent = "";
     btn.disabled = false;
@@ -209,7 +210,7 @@ function renderAdmin() {
   var fatia = listaFiltrada.slice(inicio, inicio + PG_POR_PAGINA);
 
   document.getElementById("admin-count").textContent =
-    total + " produtos · pág " + (paginaAtual + 1) + "/" + totalPaginas;
+    total + " produtos Â· pÃ¡g " + (paginaAtual + 1) + "/" + totalPaginas;
 
   var list = document.getElementById("admin-list");
   if (!fatia.length) {
@@ -229,9 +230,9 @@ function renderAdmin() {
     pager.innerHTML = "";
   } else {
     var botoes = [];
-    if (paginaAtual > 0) botoes.push('<button class="btn btn-light" type="button" data-pg="' + (paginaAtual - 1) + '">‹ Anterior</button>');
+    if (paginaAtual > 0) botoes.push('<button class="btn btn-light" type="button" data-pg="' + (paginaAtual - 1) + '">â€¹ Anterior</button>');
     botoes.push('<span class="pager-info">' + (paginaAtual + 1) + " / " + totalPaginas + "</span>");
-    if (paginaAtual < totalPaginas - 1) botoes.push('<button class="btn btn-light" type="button" data-pg="' + (paginaAtual + 1) + '">Próxima ›</button>');
+    if (paginaAtual < totalPaginas - 1) botoes.push('<button class="btn btn-light" type="button" data-pg="' + (paginaAtual + 1) + '">PrÃ³xima â€º</button>');
     pager.innerHTML = botoes.join("");
     $$("[data-pg]", pager).forEach(function (b) {
       b.addEventListener("click", function () { paginaAtual = Number(b.dataset.pg); renderAdmin(); });
@@ -244,9 +245,9 @@ function linhaProduto(p) {
     '<img class="admin-thumb" src="' + esc(imgProd(p, 0)) + '" alt="" loading="lazy"/>' +
     '<div class="admin-row-main">' +
     '<div class="admin-row-titulo">' + esc(p.nome) + "</div>" +
-    '<div class="admin-row-meta">' + esc(p.marca || "—") + " · " + esc(p.categoria_nome || p.categoria || "—") +
-    " · " + num(p.rating) + "★ (" + num(p.avaliacoes) + ")</div>" +
-    '<div class="admin-row-link">Link: <span class="link-val">' + esc(p.url_afiliado || "—") + "</span></div>" +
+    '<div class="admin-row-meta">' + esc(p.marca || "â€”") + " Â· " + esc(p.categoria_nome || p.categoria || "â€”") +
+    " Â· " + num(p.rating) + "â˜… (" + num(p.avaliacoes) + ")</div>" +
+    '<div class="admin-row-link">Link: <span class="link-val">' + esc(p.url_afiliado || "â€”") + "</span></div>" +
     "</div>" +
     '<div class="admin-row-preco">' + fmt(p.preco) + "</div>" +
     '<span class="admin-avail ' + esc(p.disponibilidade) + '">' + chipDispTexto(p.disponibilidade) + "</span>" +
@@ -265,7 +266,7 @@ function chipDispTexto(v) {
 function abrirModal(id) {
   idEmEdicao = id;
   var p = PRODUTOS.find(function (x) { return x.id === id; });
-  if (!p) { toast("Produto não encontrado."); return; }
+  if (!p) { toast("Produto nÃ£o encontrado."); return; }
   var f = document.getElementById("form-edicao");
   f.nome.value = p.nome || "";
   f.url_afiliado.value = p.url_afiliado || "";
@@ -280,7 +281,7 @@ function abrirModal(id) {
   f.categoria.value = p.categoria || "";
   f.destaque.checked = !!p.destaque;
   f.descricao.value = p.descricao || "";
-  document.getElementById("modal-titulo").textContent = "Editar · " + id;
+  document.getElementById("modal-titulo").textContent = "Editar Â· " + id;
   document.getElementById("modal").hidden = false;
   document.body.classList.add("modal-open");
 }
@@ -348,7 +349,7 @@ function reverterProduto() {
       toast("Produto revertido ao estado original do banco.");
     }).catch(function (e) { toast("Falha ao reverter: " + e.message); });
   } else {
-    toast("Registro original não encontrado.");
+    toast("Registro original nÃ£o encontrado.");
     fecharModal();
   }
 }
@@ -357,12 +358,12 @@ function excluirProduto(id) {
   var p = PRODUTOS.find(function (x) { return x.id === id; });
   if (!p) return;
   var nome = p.nome || id;
-  if (!confirm("Excluir \"" + nome + "\" (" + id + ")?\n\nO produto será removido do banco e deixará de aparecer no site. Esta ação não pode ser desfeita.")) return;
+  if (!confirm("Excluir \"" + nome + "\" (" + id + ")?\n\nO produto serÃ¡ removido do banco e deixarÃ¡ de aparecer no site. Esta aÃ§Ã£o nÃ£o pode ser desfeita.")) return;
   supaDelete(id).then(function () {
     PRODUTOS = PRODUTOS.filter(function (x) { return x.id !== id; });
     listaOriginal = listaOriginal.filter(function (x) { return x.id !== id; });
     renderAdmin();
-    toast("Produto " + id + " excluído do banco.");
+    toast("Produto " + id + " excluÃ­do do banco.");
   }).catch(function (e) {
     toast("Falha ao excluir: " + e.message);
   });
@@ -393,4 +394,42 @@ function exportarJSON() {
   a.click();
   a.remove();
   toast("products.json gerado a partir do banco.");
+}
+
+function csvEscape(v) {
+  if (v == null) return "";
+  var s = String(v);
+  if (/[",\n\r;]/.test(s)) {
+    s = s.replace(/"/g, '""');
+    return '"' + s + '"';
+  }
+  return s;
+}
+
+function exportarCSV() {
+  var colunas = [
+    "id", "nome", "marca", "categoria", "categoria_nome",
+    "preco", "preco_anterior", "rating", "avaliacoes",
+    "disponibilidade", "destaque", "url_afiliado", "img", "descricao"
+  ];
+  var linhas = [];
+  linhas.push(colunas.map(csvEscape).join(";"));
+  PRODUTOS.forEach(function (p) {
+    var valores = colunas.map(function (c) {
+      var v = p[c];
+      if (Array.isArray(v)) v = v.join("; ");
+      if (typeof v === "boolean") v = v ? "sim" : "nao";
+      return csvEscape(v);
+    });
+    linhas.push(valores.join(";"));
+  });
+  var csv = "\ufeff" + linhas.join("\r\n");
+  var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "produtos.csv";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  toast(PRODUTOS.length + " produtos exportados em CSV.");
 }

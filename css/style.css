@@ -114,7 +114,7 @@ button { font-family: inherit; }
 .hdr-links a.hdr-admin {
   background: var(--brand); color: #fff; border-radius: 8px; margin-left: 6px;
 }
-.hdr-links a.hdr-admin:hover { background: var(--brand-2); color: #fff; }
+.hdr-links a.hdr-admin:hover { background: var(--brand-dark); color: #fff; }
 
 .menu-btn {
   display: none; background: var(--surface-2); border: 0; color: var(--ink);
