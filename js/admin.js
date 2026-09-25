@@ -360,6 +360,9 @@ function criarLinhaBanner(url) {
 function criarLinhaReview(r) {
   var div = document.createElement("div");
   div.className = "edit-linha dp-review";
+  var foto = document.createElement("input");
+  foto.type = "text"; foto.className = "campo-img"; foto.placeholder = "Foto (URL)";
+  foto.value = r && r.foto ? r.foto : "";
   var nome = document.createElement("input");
   nome.type = "text"; nome.className = "campo-nome"; nome.placeholder = "Nome do cliente";
   nome.value = r && r.nome ? r.nome : "";
@@ -373,7 +376,7 @@ function criarLinhaReview(r) {
   var rm = document.createElement("button");
   rm.type = "button"; rm.className = "edit-rm"; rm.textContent = "×"; rm.title = "Remover avaliação";
   rm.addEventListener("click", function () { div.parentNode.removeChild(div); });
-  div.appendChild(nome); div.appendChild(nota); div.appendChild(texto); div.appendChild(rm);
+  div.appendChild(foto); div.appendChild(nome); div.appendChild(nota); div.appendChild(texto); div.appendChild(rm);
   return div;
 }
 function montarEditLojas(lojas) {
@@ -439,6 +442,7 @@ function lerEditReviews() {
   var lista = document.getElementById("edit-reviews");
   var out = [];
   Array.prototype.forEach.call(lista.children, function (linha) {
+    var foto = (linha.querySelector(".campo-img").value || "").trim();
     var nome = (linha.querySelector(".campo-nome").value || "").trim();
     var texto = (linha.querySelector(".campo-url").value || "").trim();
     var notaEl = linha.querySelector(".campo-preco");
@@ -446,7 +450,9 @@ function lerEditReviews() {
     var nota = Number(notaEl.value);
     if (!notaEl.value || !isFinite(nota)) nota = 5;
     nota = Math.max(0, Math.min(5, nota));
-    out.push({ nome: nome, nota: nota, texto: texto });
+    var r = { nome: nome, nota: nota, texto: texto };
+    if (foto) r.foto = foto;
+    out.push(r);
   });
   return out;
 }

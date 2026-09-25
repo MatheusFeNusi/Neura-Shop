@@ -1247,9 +1247,12 @@ function renderReviews(p) {
     "</div>" +
     '<div class="reviews-lista">' +
     reviews.map(function (r) {
+      var avatar = r.foto
+        ? '<span class="review-avatar foto"><img src="' + esc(r.foto) + '" alt="" loading="lazy" onerror="this.parentNode.className=\'review-avatar\'"/></span>'
+        : '<span class="review-avatar">' + esc(String(r.nome || "C").charAt(0).toUpperCase()) + "</span>";
       return '<div class="review-item">' +
         '<div class="review-head">' +
-        '<span class="review-avatar">' + esc(String(r.nome || "C").charAt(0).toUpperCase()) + "</span>" +
+        avatar +
         '<span class="review-nome">' + esc(r.nome) + "</span>" +
         '<span class="review-nota">' + starsHTML(r.nota != null ? r.nota : 5) + "</span>" +
         "</div>" +
