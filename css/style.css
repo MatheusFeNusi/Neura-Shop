@@ -467,7 +467,7 @@ button { font-family: inherit; }
 .pg-banner-carousel { position: relative; border-radius: var(--radius); overflow: hidden; }
 .pg-carousel-track { display: flex; transition: transform 0.4s ease; }
 .pg-carousel-slide { flex: 0 0 100%; min-width: 0; }
-.pg-carousel-slide img { width: 100%; display: block; aspect-ratio: 21 / 6; object-fit: cover; background: var(--surface-2); }
+.pg-carousel-slide img { width: 100%; height: auto; display: block; background: var(--surface-2); }
 .pg-carousel-nav {
   position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
   width: 42px; height: 42px; border-radius: 50%; border: 0; cursor: pointer;
