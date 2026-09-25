@@ -623,6 +623,9 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
   .pg-layout .buybox-col { grid-column: auto; grid-row: auto; order: 5; top: 0; }
   .pg-layout .pg-descricao { grid-column: auto; grid-row: auto; order: 6; }
   .buybox-col { top: 0; }
+  .pg-banner-carousel { border-radius: 10px; }
+  .pg-carousel-slide { overflow: hidden; }
+  .pg-carousel-slide img { width: 100%; height: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: center; }
   .layout-cat { grid-template-columns: 1fr; }
   .filtros-toggle { display: block; }
   .filtros { display: none; }
