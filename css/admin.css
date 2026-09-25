@@ -106,6 +106,22 @@
   font-family: inherit; color: var(--ink); background: #fff; width: 100%;
 }
 .admin-modal-box textarea { resize: vertical; }
+.edit-lista { display: flex; flex-direction: column; gap: 6px; }
+.edit-linha {
+  display: grid; grid-template-columns: 1fr 1fr 90px 34px; gap: 6px; align-items: stretch;
+}
+.edit-linha.dp-img { grid-template-columns: 1fr 34px; }
+.edit-linha input {
+  padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px;
+  font-family: inherit; color: var(--ink); background: #fff; width: 100%; min-width: 0;
+}
+.edit-linha .campo-preco { text-align: right; }
+.edit-rm {
+  border: 1px solid #efd0d0; background: #fde8e8; color: #b03535; border-radius: 8px;
+  cursor: pointer; font-size: 16px; line-height: 1;
+}
+.edit-rm:hover { background: #f6d4d4; }
+.btn-add { width: fit-content; }
 .check-row { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ink); }
 .check-row input[type="checkbox"] { width: 16px; height: 16px; }
 .admin-modal-foot {

@@ -157,6 +157,20 @@ function initAdmin() {
   document.getElementById("modal").addEventListener("click", function (e) { if (e.target === document.getElementById("modal")) fecharModal(); });
   var f = document.getElementById("form-edicao");
   f.addEventListener("submit", function (e) { e.preventDefault(); salvarEdicao(); });
+  var addLojas = document.querySelector(".btn-add[data-alvo='edit-lojas']");
+  if (addLojas) addLojas.addEventListener("click", function () {
+    var lista = document.getElementById("edit-lojas");
+    var linha = criarLinhaLoja();
+    lista.appendChild(linha);
+    linha.querySelector(".campo-nome").focus();
+  });
+  var addImagens = document.querySelector(".btn-add[data-alvo='edit-imagens']");
+  if (addImagens) addImagens.addEventListener("click", function () {
+    var lista = document.getElementById("edit-imagens");
+    var linha = criarLinhaImg();
+    lista.appendChild(linha);
+    linha.querySelector("input").focus();
+  });
   var busca = document.getElementById("busca");
   busca.addEventListener("input", function () {
     clearTimeout(buscarTimer);
@@ -286,6 +300,76 @@ function chipDispTexto(v) {
   return "Em estoque";
 }
 
+function criarLinhaLoja(l) {
+  var div = document.createElement("div");
+  div.className = "edit-linha dp-loja";
+  var nome = document.createElement("input");
+  nome.type = "text"; nome.className = "campo-nome"; nome.placeholder = "Loja (ex: Amazon)";
+  nome.value = l && l.nome ? l.nome : "";
+  var url = document.createElement("input");
+  url.type = "text"; url.className = "campo-url"; url.placeholder = "URL de busca (ex: https://www.amazon.com/s?k=)";
+  url.value = l && l.url ? l.url : "";
+  var preco = document.createElement("input");
+  preco.type = "number"; preco.inputMode = "decimal"; preco.className = "campo-preco"; preco.placeholder = "US$";
+  preco.value = l && l.preco != null ? l.preco : "";
+  preco.min = "0";
+  var rm = document.createElement("button");
+  rm.type = "button"; rm.className = "edit-rm"; rm.textContent = "×"; rm.title = "Remover loja";
+  rm.addEventListener("click", function () { div.parentNode.removeChild(div); });
+  div.appendChild(nome); div.appendChild(url); div.appendChild(preco); div.appendChild(rm);
+  return div;
+}
+function criarLinhaImg(url) {
+  var div = document.createElement("div");
+  div.className = "edit-linha dp-img";
+  var input = document.createElement("input");
+  input.type = "text"; input.className = "campo-url"; input.placeholder = "https://imagem.jpg";
+  input.value = url || "";
+  var rm = document.createElement("button");
+  rm.type = "button"; rm.className = "edit-rm"; rm.textContent = "×"; rm.title = "Remover imagem";
+  rm.addEventListener("click", function () { div.parentNode.removeChild(div); });
+  div.appendChild(input); div.appendChild(rm);
+  return div;
+}
+function montarEditLojas(lojas) {
+  var lista = document.getElementById("edit-lojas");
+  lista.innerHTML = "";
+  (lojas || []).forEach(function (l) { lista.appendChild(criarLinhaLoja(l)); });
+  if (!lista.children.length) lista.appendChild(criarLinhaLoja());
+}
+function montarEditImagens(fotos, imgPrincipal) {
+  var lista = document.getElementById("edit-imagens");
+  lista.innerHTML = "";
+  (fotos || []).forEach(function (f) {
+    if (f && f !== (imgPrincipal || "")) lista.appendChild(criarLinhaImg(f));
+  });
+  if (!lista.children.length) lista.appendChild(criarLinhaImg());
+}
+function lerEditLojas() {
+  var lista = document.getElementById("edit-lojas");
+  var out = [];
+  Array.prototype.forEach.call(lista.children, function (linha) {
+    var nome = (linha.querySelector(".campo-nome").value || "").trim();
+    var url = (linha.querySelector(".campo-url").value || "").trim();
+    if (!nome || !url) return;
+    var loja = { nome: nome, url: url };
+    var preco = linha.querySelector(".campo-preco").value;
+    if (preco !== "" && preco != null && isFinite(Number(preco))) loja.preco = Number(preco);
+    out.push(loja);
+  });
+  return out;
+}
+function lerEditImagens() {
+  var lista = document.getElementById("edit-imagens");
+  var principal = (document.getElementById("form-edicao").img.value || "").trim();
+  var out = [];
+  Array.prototype.forEach.call(lista.children, function (linha) {
+    var v = (linha.querySelector("input").value || "").trim();
+    if (v && v !== principal) out.push(v);
+  });
+  return out;
+}
+
 function abrirModal(id) {
   idEmEdicao = id;
   var p = PRODUTOS.find(function (x) { return x.id === id; });
@@ -294,7 +378,8 @@ function abrirModal(id) {
   f.nome.value = p.nome || "";
   f.url_afiliado.value = p.url_afiliado || "";
   f.img.value = p.img || "";
-  f.imagens.value = (p.fotos && p.fotos.length) ? p.fotos.join("\n") : "";
+  var imgPrincipal = p.img || "";
+  montarEditImagens(p.fotos, imgPrincipal);
   f.preco.value = p.preco != null ? p.preco : "";
   f.preco_anterior.value = p.preco_anterior != null ? p.preco_anterior : "";
   f.rating.value = p.rating != null ? p.rating : "";
@@ -302,9 +387,7 @@ function abrirModal(id) {
   f.disponibilidade.value = p.disponibilidade === "poucas_unidades" ? "poucas_unidades" : p.disponibilidade === "esgotado" ? "esgotado" : "em_estoque";
   f.cupom.value = p.cupom || p.cupom_texto || "";
   f.cupom_descricao.value = p.cupom_descricao || "";
-  f.lojas_compare.value = (p.lojas_compare && p.lojas_compare.length)
-    ? p.lojas_compare.map(function (l) { return l.nome + "|" + l.url + (l.preco != null ? "|" + l.preco : ""); }).join("\n")
-    : "";
+  montarEditLojas(p.lojas_compare);
   f.marca.value = p.marca || "";
   f.categoria.value = p.categoria || "";
   f.destaque.checked = !!p.destaque;
@@ -329,32 +412,16 @@ function salvarEdicao() {
   var novo = {
     nome: f.nome.value.trim() || p.nome,
     url_afiliado: f.url_afiliado.value.trim(),
-    img: f.img.value.trim(),
-    fotos: (f.imagens.value || "")
-      .split("\n").map(function (s) { return s.trim(); })
-      .filter(function (s, i, arr) { return s && !(s === f.img.value.trim() && i === arr.indexOf(s)); }),
-    preco: Number(f.preco.value),
-    preco_anterior: f.preco_anterior.value === "" ? null : Number(f.preco_anterior.value),
-    rating: Number(f.rating.value),
-    avaliacoes: Number(f.avaliacoes.value),
-    disponibilidade: f.disponibilidade.value,
-    cupom: f.cupom.value.trim() || null,
-    cupom_descricao: f.cupom_descricao.value.trim() || "",
-    lojas_compare: (f.lojas_compare.value || "")
-      .split("\n").map(function (linha) {
-        var partes = linha.split("|");
-        if (partes.length < 2) return null;
-        var nome = (partes[0] || "").trim();
-        var url = (partes[1] || "").trim();
-        if (!nome || !url) return null;
-        var loja = { nome: nome, url: url };
-        if (partes[2] != null && String(partes[2]).trim() !== "") {
-          var p = Number(String(partes[2]).trim().replace(/[^0-9.,]/g, "").replace(",", "."));
-          if (isFinite(p)) loja.preco = p;
-        }
-        return loja;
-      })
-      .filter(function (l) { return l; }),
+img: f.img.value.trim(),
+      fotos: lerEditImagens(),
+      preco: Number(f.preco.value),
+      preco_anterior: f.preco_anterior.value === "" ? null : Number(f.preco_anterior.value),
+      rating: Number(f.rating.value),
+      avaliacoes: Number(f.avaliacoes.value),
+      disponibilidade: f.disponibilidade.value,
+      cupom: f.cupom.value.trim() || null,
+      cupom_descricao: f.cupom_descricao.value.trim() || "",
+      lojas_compare: lerEditLojas(),
     marca: f.marca.value.trim() || p.marca,
     categoria: f.categoria.value.trim() || p.categoria,
     categoria_nome: p.categoria_nome,

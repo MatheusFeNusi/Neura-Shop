@@ -91,8 +91,9 @@
           <input type="url" name="img" placeholder="https://…"/>
         </label>
         <label class="col-full">
-          Imagens adicionais da galeria (uma URL por linha)
-          <textarea name="imagens" rows="4" placeholder="https://imagem2.jpg&#10;https://imagem3.jpg&#10;https://imagem4.jpg"></textarea>
+          Imagens adicionais da galeria
+          <div class="edit-lista" id="edit-imagens"></div>
+          <button type="button" class="btn btn-light btn-add" data-alvo="edit-imagens" data-tipo="img">+ Adicionar imagem</button>
         </label>
         <label>
           Preço (US$)
@@ -119,8 +120,9 @@
           <input type="text" name="cupom_descricao" placeholder="ex: 10% off"/>
         </label>
         <label class="col-full">
-          Lojas para comparação (uma por linha: Nome|URL de busca|Preço)
-          <textarea name="lojas_compare" rows="3" placeholder="Amazon|https://www.amazon.com/s?k=|3499&#10;Walmart|https://www.walmart.com/search?q=|3699"></textarea>
+          Lojas para comparação (preço opcional)
+          <div class="edit-lista" id="edit-lojas"></div>
+          <button type="button" class="btn btn-light btn-add" data-alvo="edit-lojas" data-tipo="loja">+ Adicionar loja</button>
         </label>
         <label>
           Disponibilidade
