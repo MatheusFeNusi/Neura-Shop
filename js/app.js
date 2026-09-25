@@ -395,7 +395,6 @@ function renderHeader() {
     "</form>" +
     '<nav class="hdr-links" id="hdr-links">' +
     '<a class="ofertas" href="catalog.html?ofertas=1">Deals</a>' +
-    '<a href="store.html">Stores</a>' +
     '<a href="about.html">About</a>' +
     '<a class="hdr-admin" href="admin.html">Admin</a>' +
     "</nav>" +
