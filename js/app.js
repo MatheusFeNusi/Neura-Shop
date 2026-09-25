@@ -698,33 +698,7 @@ function initHome() {
     feat.innerHTML = destaques.map(cardHTML).join("");
   }
 
-  renderStoreStrip();
   renderPopSearches();
-}
-
-function renderStoreStrip() {
-  var el = $("#store-strip");
-  if (!el) return;
-  var lojas = {};
-  PRODUTOS.forEach(function (p) {
-    var k = p.merchant || p.merchant_nome || "Partner store";
-    var nome = p.merchant_nome || k;
-    if (!lojas[k]) lojas[k] = { nome: nome, qtd: 0, menor: Infinity, maior: 0 };
-    lojas[k].qtd++;
-    if (p.preco < lojas[k].menor) lojas[k].menor = p.preco;
-    if (p.preco > lojas[k].maior) lojas[k].maior = p.preco;
-  });
-  var itens = Object.keys(lojas).sort(function (a, b) { return lojas[b].qtd - lojas[a].qtd; });
-  if (!itens.length) { el.style.display = "none"; return; }
-  el.innerHTML = itens.map(function (k) {
-    var l = lojas[k];
-    var iniciais = String(l.nome).split(/\s+/).map(function (w) { return w.charAt(0); }).join("").slice(0, 2).toUpperCase();
-    return '<a class="store-card" href="store.html?loja=' + encodeURIComponent(k) + '">' +
-      '<span class="store-logo">' + esc(iniciais) + "</span>" +
-      '<span class="store-meta"><strong>' + esc(l.nome) + "</strong>" +
-      "<span>" + l.qtd + " offer" + (l.qtd === 1 ? "" : "s") + " · from " + fmt(l.menor) + "</span>" +
-      "</span><span class=\"store-link\">Compare prices ›</span></a>";
-  }).join("");
 }
 
 function renderPopSearches() {
