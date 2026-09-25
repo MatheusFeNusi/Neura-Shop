@@ -492,8 +492,8 @@ button { font-family: inherit; }
   background: #fff; color: var(--buy-dark); border-radius: 999px; padding: 4px 12px;
   margin-top: 6px;
 }
-.comparar-hero-btn { margin: 10px 0 0; background: #fff; color: var(--buy-dark); }
-.comparar-hero-btn:hover { background: rgba(255,255,255,0.9); color: var(--buy-dark); }
+.comparar-hero-btn { margin: 12px 0 0; background: var(--buy); color: #fff; font-size: 18px; font-weight: 800; padding: 8px 24px; }
+.comparar-hero-btn:hover { background: var(--buy-dark); color: #fff; }
 
 .comparar { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
 .comparar-loja {
