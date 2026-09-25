@@ -82,11 +82,11 @@ function starsHTML(rating) {
   return '<span class="stars">' + out + "</span>";
 }
 function imgProd(p) {
+  if (p.img && /^https?:\/\//i.test(String(p.img))) return p.img;
   const fotos = (p.fotos && p.fotos.length) ? p.fotos : null;
   if (fotos) {
     for (let i = 0; i < fotos.length; i++) if (fotos[i] && /^https?:\/\//i.test(String(fotos[i]))) return fotos[i];
   }
-  if (p.img && /^https?:\/\//i.test(String(p.img))) return p.img;
   return "";
 }
 function descricaoHTML(t) {
@@ -325,8 +325,9 @@ function schemaProduto(p, canonicalPage) {
 
 function pagProduto(p, contexto) {
   const total = contexto.produtos.length;
-  const fotos = (p.fotos && p.fotos.length) ? p.fotos.filter(u => /^https?:\/\//i.test(u)) : [];
-  if (!fotos.length && p.img && /^https?:\/\//i.test(String(p.img))) fotos.push(p.img);
+  const fotos = [];
+  if (p.img && /^https?:\/\//i.test(String(p.img))) fotos.push(p.img);
+  if (p.fotos && p.fotos.length) p.fotos.forEach(u => { if (u && /^https?:\/\//i.test(u) && fotos.indexOf(u) === -1) fotos.push(u); });
   const canonical = urlProduto(p);
   const title = p.nome + " | Compare Prices & Coupon | WattWheel";
   const metadata = (p.descricao || "").replace(/\s+/g, " ").slice(0, 150) + " Compare prices, ratings and specs, then check the price and buy directly at the retailer.";

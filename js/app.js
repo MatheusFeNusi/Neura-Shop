@@ -180,17 +180,20 @@ function svgProduto(prod, variant) {
     "</g></svg>";
   return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
+function galeriaProduto(prod) {
+  var gal = [];
+  var add = function (u) {
+    if (u && /^https?:\/\//i.test(String(u).trim()) && gal.indexOf(u.trim()) === -1) gal.push(u.trim());
+  };
+  add(prod.img);
+  (prod.fotos || []).forEach(add);
+  return gal;
+}
 function imgProd(prod, variant) {
-  var v = variant || 0;
-  var fotos = (prod.fotos && prod.fotos.length) ? prod.fotos : null;
-  if (fotos) {
-    if (fotos[v] && /^https?:\/\//i.test(String(fotos[v]))) return fotos[v];
-    for (var i = 0; i < fotos.length; i++) {
-      if (fotos[i] && /^https?:\/\//i.test(String(fotos[i]))) return fotos[i];
-    }
-  } else if (prod.img && /^https?:\/\//i.test(String(prod.img))) {
-    return prod.img;
-  }
+  var gal = galeriaProduto(prod);
+  var v = variant == null ? 0 : variant;
+  if (gal[v]) return gal[v];
+  if (gal.length) return gal[0];
   return svgProduto(prod, variant);
 }
 
@@ -290,6 +293,10 @@ function cardHTML(p) {
   var btn = esgotado
     ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>'
     : '<button class="btn-buy" onclick="abrirOferta(\'' + p.id + '\')">View deal</button>';
+  var hasRating = p.rating != null && isFinite(p.rating) && p.rating > 0 && p.avaliacoes > 0;
+  var ratingHTML = hasRating
+    ? '<div class="rating">' + starsHTML(p.rating) + ' <span class="reviews">' + Number(p.rating).toFixed(1) + ' (' + num(p.avaliacoes) + ')</span></div>'
+    : '';
   return '<article class="pcard">' +
     '<a class="media" href="' + urlProduto(p) + '">' + badge +
     '<img src="' + imgProd(p, 0) + '" alt="' + esc(p.nome) + '" loading="lazy"/>' +
@@ -297,7 +304,7 @@ function cardHTML(p) {
     '<div class="body">' +
     '<span class="p-brand">' + esc(p.marca) + "</span>" +
     '<a class="p-name" href="' + urlProduto(p) + '">' + esc(p.nome) + "</a>" +
-    '<div class="rating">' + starsHTML(p.rating) + ' <span class="reviews">' + p.rating.toFixed(1) + " (" + num(p.avaliacoes) + ")</span></div>" +
+    ratingHTML +
     '<div class="price">' +
     (p.preco_anterior ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" : "") +
     '<span class="now">' + fmt(p.preco) + "</span>" +
@@ -327,6 +334,7 @@ function injetarSchema(p) {
     "@type": "Product",
     "name": p.nome,
     "description": p.descricao,
+    "image": imgProd(p, 0),
     "brand": { "@type": "Brand", "name": p.marca },
     "sku": p.product_id,
     "offers": {
@@ -654,9 +662,11 @@ function assinaDados(d) {
   var h = 2166136261;
   for (var i = 0; i < d.produtos.length; i++) {
     var p = d.produtos[i];
+    // Include img and fotos so image updates properly bust the cache
+    var imgsStr = String(p.img || "") + "|" + (Array.isArray(p.fotos) ? p.fotos.join(",") : "");
     var s = String(p.id) + "|" + String(p.cupom || "") + "|" +
       (p.lojas_compare ? p.lojas_compare.map(function (l) { return l.nome + "@" + (l.preco != null ? l.preco : ""); }).join(",") : "") + "|" +
-      String(p.preco != null ? p.preco : "");
+      String(p.preco != null ? p.preco : "") + "|" + imgsStr;
     for (var j = 0; j < s.length; j++) { h ^= s.charCodeAt(j); h = Math.imul(h, 16777619); }
   }
   return String(d.produtos.length) + ":" + h;
@@ -1045,8 +1055,8 @@ function initProduto() {
 
   var mainImg = $("#foto-main");
   var thumbs = $("#fotos-thumb");
-  var fotosReais = (p.fotos && p.fotos.length) ? p.fotos : null;
-  var variantes = fotosReais ? fotosReais.map(function (_, i) { return i; }) : [0, 1, 2, 3];
+  var gal = galeriaProduto(p);
+  var variantes = gal.length ? gal.map(function (_, i) { return i; }) : [0, 1, 2, 3];
   mainImg.src = imgProd(p, 0);
   mainImg.alt = p.nome;
   thumbs.innerHTML = variantes.map(function (v, i) {
@@ -1100,7 +1110,13 @@ function initProduto() {
     $("#comissao-note").innerHTML = "<strong>Transparency:</strong> WattWheel is an affiliate — we may earn a commission on qualifying purchases made through this link, at no additional cost to you.";
   }
 
+  // Clone-replace interactive buttons so stale listeners don't stack on background re-render
   var btn = $("#btn-comprar");
+  if (btn) {
+    var btnClone = btn.cloneNode(true);
+    btn.parentNode.replaceChild(btnClone, btn);
+    btn = btnClone;
+  }
   btn.disabled = false;
   btn.classList.remove("hide");
   var temCupom = p.cupom && !esgotado;
@@ -1121,6 +1137,9 @@ function initProduto() {
 
   var btnPar = $("#btn-parceiro");
   if (btnPar) {
+    var btnParClone = btnPar.cloneNode(true);
+    btnPar.parentNode.replaceChild(btnParClone, btnPar);
+    btnPar = btnParClone;
     btnPar.textContent = "See product at " + esc(p.merchant_nome) + " \u2197";
     btnPar.addEventListener("click", function () { irAoParceiro(p); });
     if (temCupom) btnPar.classList.add("hide");
@@ -1130,14 +1149,19 @@ function initProduto() {
   if (parceiroNome) parceiroNome.textContent = p.merchant_nome;
 
   var codBtn = $("#cupom-codigo");
-  if (codBtn) codBtn.addEventListener("click", function () {
-    var codigo = codBtn.getAttribute("data-codigo");
-    if (codigo) {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(codigo).then(function () { toast("Coupon copied — apply it at checkout."); }, function () { toast("Coupon " + codigo.toUpperCase() + " — copy it manually."); });
-      } else { _copiarFallback(codigo); toast("Coupon copied — apply it at checkout."); }
-    }
-  });
+  if (codBtn) {
+    var codBtnClone = codBtn.cloneNode(true);
+    codBtn.parentNode.replaceChild(codBtnClone, codBtn);
+    codBtn = codBtnClone;
+    codBtn.addEventListener("click", function () {
+      var codigo = codBtn.getAttribute("data-codigo");
+      if (codigo) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(codigo).then(function () { toast("Coupon copied — apply it at checkout."); }, function () { toast("Coupon " + codigo.toUpperCase() + " — copy it manually."); });
+        } else { _copiarFallback(codigo); toast("Coupon copied — apply it at checkout."); }
+      }
+    });
+  }
 
   var specsEl = $("#specs-tabela");
   if (specsEl) {
@@ -1150,24 +1174,33 @@ function initProduto() {
 
   renderSimilares(p);
 
-  var faq = $("#faq-lista");
+  // Replace faq container to clear any stacked listener from previous render
+  var faqOld = $("#faq-lista");
+  var faq = faqOld;
+  if (faqOld) {
+    var faqClone = faqOld.cloneNode(false);
+    faqOld.parentNode.replaceChild(faqClone, faqOld);
+    faq = faqClone;
+  }
   var genericas = [
     { p: "Does WattWheel sell this item?", a: "No. WattWheel is an independent product discovery platform — the button takes you to the retailer, where your purchase is completed. WattWheel never sells, prices or processes payment." },
     { p: "Is the displayed price final?", a: "Prices shown are references collected from retailer listings and can change. Please confirm the price on the retailer's page before completing your order." },
     { p: "Who handles shipping and returns?", a: "Shipping, delivery dates and return policies are set by the retailer. Review those terms on the retailer's product page." }
   ];
-  faq.innerHTML = p.faq.concat(genericas).map(function (f) {
-    return '<div class="faq-item"><button class="faq-q" type="button">' + esc(f.p) +
-      '<span class="chev">\u25BC</span></button><div class="faq-a">' + esc(f.a) + "</div></div>";
-  }).join("");
-  faq.addEventListener("click", function (e) {
-    var b = e.target.closest(".faq-q");
-    if (!b) return;
-    var item = b.parentNode;
-    var estavaAberto = item.classList.contains("open");
-    $$(".faq-item", faq).forEach(function (x) { x.classList.remove("open"); });
-    if (!estavaAberto) item.classList.add("open");
-  });
+  if (faq) {
+    faq.innerHTML = p.faq.concat(genericas).map(function (f) {
+      return '<div class="faq-item"><button class="faq-q" type="button">' + esc(f.p) +
+        '<span class="chev">\u25BC</span></button><div class="faq-a">' + esc(f.a) + "</div></div>";
+    }).join("");
+    faq.addEventListener("click", function (e) {
+      var b = e.target.closest(".faq-q");
+      if (!b) return;
+      var item = b.parentNode;
+      var estavaAberto = item.classList.contains("open");
+      $$(".faq-item", faq).forEach(function (x) { x.classList.remove("open"); });
+      if (!estavaAberto) item.classList.add("open");
+    });
+  }
 
   var rel = $("#relacionados-grid");
   if (rel) {
