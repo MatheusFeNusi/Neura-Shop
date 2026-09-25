@@ -180,29 +180,15 @@ function renderComparar(p) {
   var img = imgProd(p, 0);
   var precos = lojas
     .map(function (l) { return Number(l.preco); })
-    .filter(function (x) { return isFinite(x); })
-    .concat(isFinite(Number(p.preco)) ? [Number(p.preco)] : []);
+    .filter(function (x) { return isFinite(x); });
   var melhor = precos.length ? Math.min.apply(null, precos) : null;
-  var parceiroEhMelhor = melhor != null && isFinite(Number(p.preco)) && Number(p.preco) <= melhor;
 
-  var hero =
-    '<div class="comparar-hero">' +
-    '<img class="comparar-hero-thumb" src="' + img + '" alt="" loading="lazy"/>' +
-    '<div class="comparar-hero-corpo">' +
-    '<span class="comparar-hero-tag">Partner price at WattWheel</span>' +
-    '<div class="comparar-hero-nome">' + esc(p.merchant_nome) + "</div>" +
-    '<div class="comparar-hero-preco">' + fmt(p.preco) + "</div>" +
-    (p.preco_anterior ? '<div class="comparar-hero-was">Was: ' + fmt(p.preco_anterior) + "</div>" : "") +
-    (parceiroEhMelhor ? '<span class="comparar-best">✔ Lowest price found</span>' : "") +
-    '<a class="btn-partner comparar-hero-btn" href="' + esc(p.url_afiliado) + '" target="_blank" rel="noopener nofollow">Check price at ' + esc(p.merchant_nome) + " \u2197</a>" +
-    "</div></div>";
-
-  alvo.innerHTML = hero + '<div class="comparar">' + lojas.map(function (l) {
+  alvo.innerHTML = '<div class="comparar">' + lojas.map(function (l) {
     var temPreco = l.preco != null && isFinite(Number(l.preco));
     var precoN = temPreco ? Number(l.preco) : null;
     var marcaBest = temPreco && melhor != null && precoN === melhor;
     var precoHTML = temPreco
-      ? '<small class="comparar-preco">' + fmt(precoN) + (marcaBest && !parceiroEhMelhor ? '<span class="comparar-best">Lowest</span>' : "") + "</small>"
+      ? '<small class="comparar-preco">' + fmt(precoN) + (marcaBest ? '<span class="comparar-best">Lowest</span>' : "") + "</small>"
       : "";
     return '<a class="comparar-loja" href="' + l.url + q + '" target="_blank" rel="noopener nofollow">' +
       '<img class="comparar-thumb" src="' + img + '" alt="" loading="lazy"/>' +
