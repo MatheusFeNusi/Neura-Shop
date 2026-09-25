@@ -294,6 +294,7 @@ function revelarCupom(p) {
   if (nota) nota.textContent = (p.cupom_descricao ? p.cupom_descricao + " — " : "") + "Copy the code and paste it at checkout on the retailer's page.";
   var btnCupom = $("#btn-comprar-cupom");
   if (btnCupom) btnCupom.addEventListener("click", function () { irAoParceiro(p); });
+  $("#btn-comprar").classList.add("hide");
   box.hidden = false;
   box.classList.add("show");
   copiarCupom(p);
@@ -1006,15 +1007,13 @@ function initProduto() {
   var btn = $("#btn-comprar");
   btn.disabled = false;
   btn.classList.remove("hide");
-  btn.innerHTML = esgotado ? "Currently unavailable" : "Check price at " + esc(p.merchant_nome);
+  var temCupom = p.cupom && !esgotado;
+  btn.innerHTML = esgotado ? "Currently unavailable" : (temCupom ? "Reveal coupon" : "Check price at " + esc(p.merchant_nome));
   btn.disabled = esgotado;
-  btn.addEventListener("click", function () { irAoParceiro(p); });
-
-  var btnRevelar = $("#btn-revelar-cupom");
-  if (btnRevelar) {
-    btnRevelar.hidden = !(p.cupom && !esgotado);
-    btnRevelar.addEventListener("click", function () { revelarCupom(p); });
-  }
+  btn.addEventListener("click", function () {
+    if (temCupom) { revelarCupom(p); return; }
+    irAoParceiro(p);
+  });
 
   var boxCupom = $("#cupom-box");
   if (boxCupom) {
@@ -1028,6 +1027,8 @@ function initProduto() {
   if (btnPar) {
     btnPar.textContent = "See product at " + esc(p.merchant_nome) + " \u2197";
     btnPar.addEventListener("click", function () { irAoParceiro(p); });
+    if (temCupom) btnPar.classList.add("hide");
+    else btnPar.classList.remove("hide");
   }
   var parceiroNome = $("#parceiro-nome");
   if (parceiroNome) parceiroNome.textContent = p.merchant_nome;
