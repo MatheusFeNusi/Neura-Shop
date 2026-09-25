@@ -368,7 +368,18 @@ button { font-family: inherit; }
 .pg-meta .merchant-chip { color: var(--brand); font-weight: 600; }
 
 .pg-price { max-width: 420px; }
-.pg-descricao { font-size: 14px; line-height: 1.6; color: #444; margin: 0 0 14px; max-width: 90ch; }
+.pg-descricao { display: flex; flex-direction: column; gap: 14px; margin: 4px 0 14px; max-width: 90ch; }
+.pg-descricao p { font-size: 14px; line-height: 1.7; color: #444; margin: 0; }
+.pg-descricao .d-item {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--surface);
+}
+.pg-descricao .d-titulo {
+  font-size: 14px; font-weight: 700; color: var(--ink);
+  display: flex; align-items: center; gap: 6px;
+}
+.pg-descricao .d-corpo { font-size: 14px; line-height: 1.7; color: #555; }
 .pg-price .was { font-size: 13px; color: var(--faint); text-decoration: line-through; }
 .pg-price .row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 3px; }
 .pg-price .now { font-size: 28px; font-weight: 700; letter-spacing: -0.6px; }

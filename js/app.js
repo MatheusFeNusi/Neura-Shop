@@ -172,6 +172,42 @@ function chaveBuscaProduto(p) {
   return w.join(" ").slice(0, 60);
 }
 
+/* ---------- Product description -> structured HTML ---------- */
+function descricaoHTML(t) {
+  if (!t) return "";
+  var linhas = String(t).split(/\n+/);
+  var blocos = [];
+  var emojis = "🚲⚡🔋🛴🛹🚀💪🌲🛡🔐⚙🖥🔧📶👌🏆🎯🔥🚦🔒";
+  for (var i = 0; i < linhas.length; i++) {
+    var l = linhas[i].trim();
+    if (!l) continue;
+    var m = l.match(/^([\u{1F000}-\u{1FAFF}]|[\u2600-\u27BF])?\s*【([^】]+)】\s*(.*)$/u);
+    if (m && m[2]) {
+      var titulo = (m[1] || "") + " " + m[2];
+      var corpo = m[3];
+      var j = i + 1;
+      var extra = [];
+      while (j < linhas.length) {
+        var lj = linhas[j].trim();
+        if (!lj) break;
+        var mj = lj.match(/^[\u{1F000}-\u{1FAFF}]?\s*【[^】]+】/u);
+        if (mj) break;
+        extra.push(lj);
+        j++;
+      }
+      if (extra.length) corpo += (corpo ? " " : "") + extra.join(" ");
+      i = j - 1;
+      blocos.push('<div class="d-item">' +
+        '<span class="d-titulo">' + esc(titulo) + "</span>" +
+        (corpo ? '<span class="d-corpo">' + esc(corpo) + "</span>" : "") +
+        "</div>");
+    } else {
+      blocos.push("<p>" + esc(l) + "</p>");
+    }
+  }
+  return blocos.join("");
+}
+
 function renderComparar(p) {
   var alvo = $("#comparar-tabela");
   if (!alvo) return;
@@ -957,7 +993,7 @@ function initProduto() {
 
   $("#pg-titulo").textContent = p.nome;
   var descEl = $("#pg-descricao");
-  if (descEl && p.descricao) descEl.textContent = p.descricao;
+  if (descEl && p.descricao) descEl.innerHTML = descricaoHTML(p.descricao);
   setMetaDescricao(p);
   injetarSchema(p);
   var chipCat = $("#pg-categoria");
