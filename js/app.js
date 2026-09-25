@@ -178,14 +178,36 @@ function renderComparar(p) {
   var q = encodeURIComponent(chaveBuscaProduto(p));
   var lojas = (p.lojas_compare && p.lojas_compare.length) ? p.lojas_compare : LOJAS_COMPARE;
   var img = imgProd(p, 0);
-  alvo.innerHTML = lojas.map(function (l) {
-    var precoHTML = (l.preco != null && isFinite(Number(l.preco)))
-      ? '<small class="comparar-preco">' + fmt(Number(l.preco)) + "</small><small class=\"comparar-cta\">Check prices ↗</small>"
-      : '<small class="comparar-cta">Check prices ↗</small>';
+  var precos = lojas
+    .map(function (l) { return Number(l.preco); })
+    .filter(function (x) { return isFinite(x); })
+    .concat(isFinite(Number(p.preco)) ? [Number(p.preco)] : []);
+  var melhor = precos.length ? Math.min.apply(null, precos) : null;
+  var parceiroEhMelhor = melhor != null && isFinite(Number(p.preco)) && Number(p.preco) <= melhor;
+
+  var hero =
+    '<div class="comparar-hero">' +
+    '<img class="comparar-hero-thumb" src="' + img + '" alt="" loading="lazy"/>' +
+    '<div class="comparar-hero-corpo">' +
+    '<span class="comparar-hero-tag">Partner price at WattWheel</span>' +
+    '<div class="comparar-hero-nome">' + esc(p.merchant_nome) + "</div>" +
+    '<div class="comparar-hero-preco">' + fmt(p.preco) + "</div>" +
+    (p.preco_anterior ? '<div class="comparar-hero-was">Was: ' + fmt(p.preco_anterior) + "</div>" : "") +
+    (parceiroEhMelhor ? '<span class="comparar-best">✔ Lowest price found</span>' : "") +
+    '<a class="btn-partner comparar-hero-btn" href="' + esc(p.url_afiliado) + '" target="_blank" rel="noopener nofollow">Check price at ' + esc(p.merchant_nome) + " \u2197</a>" +
+    "</div></div>";
+
+  alvo.innerHTML = hero + '<div class="comparar">' + lojas.map(function (l) {
+    var temPreco = l.preco != null && isFinite(Number(l.preco));
+    var precoN = temPreco ? Number(l.preco) : null;
+    var marcaBest = temPreco && melhor != null && precoN === melhor;
+    var precoHTML = temPreco
+      ? '<small class="comparar-preco">' + fmt(precoN) + (marcaBest && !parceiroEhMelhor ? '<span class="comparar-best">Lowest</span>' : "") + "</small>"
+      : "";
     return '<a class="comparar-loja" href="' + l.url + q + '" target="_blank" rel="noopener nofollow">' +
       '<img class="comparar-thumb" src="' + img + '" alt="" loading="lazy"/>' +
-      '<span class="comparar-loja-nome">' + esc(l.nome) + precoHTML + "</span></a>";
-  }).join("");
+      '<span class="comparar-loja-nome">' + esc(l.nome) + precoHTML + '<small class="comparar-cta">Check prices ↗</small></span></a>';
+  }).join("") + "</div>";
 }
 
 /* ---------- Product card ---------- */
@@ -556,7 +578,15 @@ function cacheGrava(dados) {
 }
 function assinaDados(d) {
   if (!d || !d.produtos || !d.produtos.length) return "0";
-  return String(d.produtos.length) + ":" + String(d.produtos[0].id) + ":" + String(d.produtos[d.produtos.length - 1].id);
+  var h = 2166136261;
+  for (var i = 0; i < d.produtos.length; i++) {
+    var p = d.produtos[i];
+    var s = String(p.id) + "|" + String(p.cupom || "") + "|" +
+      (p.lojas_compare ? p.lojas_compare.map(function (l) { return l.nome + "@" + (l.preco != null ? l.preco : ""); }).join(",") : "") + "|" +
+      String(p.preco != null ? p.preco : "");
+    for (var j = 0; j < s.length; j++) { h ^= s.charCodeAt(j); h = Math.imul(h, 16777619); }
+  }
+  return String(d.produtos.length) + ":" + h;
 }
 function aplicarDados(d) {
   DADOS = d;
@@ -585,16 +615,19 @@ function carregarDados() {
       .then(function (d) {
         if (!d.produtos) d.produtos = [];
         saneiaProdutos_(d.produtos);
-        aplicarDados(d);
         cacheGrava({ dados: d, ts: Date.now() });
         return d;
       });
+  };
+  var aplicarSeMudou = function (d, c) {
+    if (!c || assinaDados(d) !== assinaDados(c.dados)) aplicarDados(d);
+    return d;
   };
   return cacheLe().then(function (c) {
     if (c && c.dados && c.dados.produtos && c.dados.produtos.length) {
       if ((Date.now() - (c.ts || 0)) < CACHE_TTL_MS) {
         aplicarDados(c.dados);
-        return c.dados;
+        return carregarRede().then(function (d) { return aplicarSeMudou(d, c); });
       }
       return carregarRede();
     }
