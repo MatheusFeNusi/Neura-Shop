@@ -1,28 +1,24 @@
 /* ============================================================
    AISLE — app.js
-   Independent product discovery for drone & RC parts.
+   Independent product discovery for electric scooters & electric bikes.
    Curation + affiliate links. Data in products.json
    (plus embedded fallback so the files work from file:// too).
    ============================================================ */
 
 /* ---------- Embedded fallback (mirror of products.json) ---------- */
 var STORE_FALLBACK = {
-  "marca": { "nome": "DroneDeck", "tagline": "Drone parts. Fair prices." },
+  "marca": { "nome": "WattWheel", "tagline": "E-mobility gear. Fair prices." },
   "categorias": [
-    { "slug": "rc-transmissores", "nome": "RC Transmitters", "icone": "teclado", "descricao": "RC Transmitters for your drone or RC build — with live price and real rating per listing." },
-    { "slug": "baterias-rc", "nome": "Batteries", "icone": "carregador", "descricao": "Batteries for your drone or RC build — with live price and real rating per listing." },
-    { "slug": "servos-rc", "nome": "Servos", "icone": "caixa", "descricao": "Servos for your drone or RC build — with live price and real rating per listing." },
-    { "slug": "rc-receptores", "nome": "RC Receivers", "icone": "teclado", "descricao": "RC Receivers for your drone or RC build — with live price and real rating per listing." },
-    { "slug": "motores-esc", "nome": "Motors & ESCs", "icone": "barra", "descricao": "Motors & ESCs for your drone or RC build — with live price and real rating per listing." },
-    { "slug": "fpv-camera", "nome": "FPV & Cameras", "icone": "camera", "descricao": "FPV & Cameras for your drone or RC build — with live price and real rating per listing." },
-    { "slug": "helices-rc", "nome": "Propellers", "icone": "caixa", "descricao": "Propellers for your drone or RC build — with live price and real rating per listing." },
-    { "slug": "drones-rc", "nome": "Drones & FPV", "icone": "barra", "descricao": "Drones & FPV for your drone or RC build — with live price and real rating per listing." },
-    { "slug": "pecas-rc", "nome": "RC Parts & Upgrades", "icone": "caixa", "descricao": "RC Parts & Upgrades for your drone or RC build — with live price and real rating per listing." },
-    { "slug": "estruturas-rc", "nome": "Frames & Bodies", "icone": "caixa", "descricao": "Frames & Bodies for your drone or RC build — with live price and real rating per listing." },
-    { "slug": "helicopteros", "nome": "Helicopters", "icone": "caixa", "descricao": "Helicopters for your drone or RC build — with live price and real rating per listing." },
-    { "slug": "veiculos-rc", "nome": "RC Cars & Trucks", "icone": "caixa", "descricao": "RC Cars & Trucks for your drone or RC build — with live price and real rating per listing." },
-    { "slug": "carregadores-rc", "nome": "Chargers", "icone": "carregador", "descricao": "Chargers for your drone or RC build — with live price and real rating per listing." },
-    { "slug": "aeromodelos", "nome": "Airplanes", "icone": "caixa", "descricao": "Airplanes for your drone or RC build — with live price and real rating per listing." }
+    { "slug": "scooters-eletricos", "nome": "Electric Scooters", "icone": "caixa", "descricao": "Electric scooters for every rider — with live price and real rating per listing." },
+    { "slug": "bicicletas-eletricas", "nome": "Electric Bikes", "icone": "caixa", "descricao": "Electric bikes and e-bike kits — with live price and real rating per listing." },
+    { "slug": "baterias-e-motor", "nome": "Batteries & Motors", "icone": "barra", "descricao": "Batteries, motors and controllers for e-scooters and e-bikes — with live price and real rating per listing." },
+    { "slug": "carregadores", "nome": "Chargers", "icone": "carregador", "descricao": "Chargers and adapters for your e-scooter or e-bike — with live price and real rating per listing." },
+    { "slug": "pneus-e-rodas", "nome": "Tires & Wheels", "icone": "caixa", "descricao": "Tires, tubes and wheels for e-scooters and e-bikes — with live price and real rating per listing." },
+    { "slug": "freios-e-parachoques", "nome": "Brakes & Fenders", "icone": "caixa", "descricao": "Brakes, fenders and safety gear for your ride — with live price and real rating per listing." },
+    { "slug": "luzes-e-visibilidade", "nome": "Lights & Visibility", "icone": "lampada", "descricao": "Lights and reflectors for safer commutes — with live price and real rating per listing." },
+    { "slug": "capacetes-e-protecao", "nome": "Helmets & Protection", "icone": "fone", "descricao": "Helmets and protective gear for riders — with live price and real rating per listing." },
+    { "slug": "acessorios", "nome": "Accessories", "icone": "caixa", "descricao": "Accessories and upgrades for e-scooters and e-bikes — with live price and real rating per listing." },
+    { "slug": "pecas-de-reposicao", "nome": "Spare Parts", "icone": "caixa", "descricao": "Spare parts and replacement components for e-mobility — with live price and real rating per listing." }
   ],
   "produtos": []
 };
@@ -197,7 +193,7 @@ function setMetaDescricao(p) {
     metaDesc.name = "description";
     document.head.appendChild(metaDesc);
   }
-  metaDesc.content = p.descricao + " Explore this product on DroneDeck — compare prices, ratings and specs, then check the price and buy directly at the retailer.";
+  metaDesc.content = p.descricao + " Explore this product on WattWheel — compare prices, ratings and specs, then check the price and buy directly at the retailer.";
 }
 
 function injetarSchema(p) {
@@ -267,12 +263,12 @@ function renderHeader() {
     '<div class="container">' +
     '<div class="hdr-top">' +
     '<a class="brand" href="index.html">' +
-    '<img class="brand-logo" src="img/logo.png" alt="DroneDeck logo" width="36" height="36"/>' +
-    '<span><span class="brand-name">DroneDeck</span><span class="brand-tag">discover curated drone &amp; RC parts</span></span>' +
+    '<img class="brand-logo" src="img/logo.png" alt="WattWheel logo"/>' +
+    '<span><span class="brand-name">WattWheel</span><span class="brand-tag">discover curated e-scooter &amp; e-bike gear</span></span>' +
     '</a>' +
     '<form class="search-box" id="busca-form" role="search">' +
     '<label class="visually-hidden" for="busca-input">Search products</label>' +
-    '<input id="busca-input" type="search" placeholder="Search parts… (e.g. LiPo battery, FPV camera, motor, prop)" autocomplete="off"/>' +
+    '<input id="busca-input" type="search" placeholder="Search gear… (e.g. e-scooter, e-bike, battery, charger, motor, tire)" autocomplete="off"/>' +
     '<button class="search-btn" type="submit" aria-label="Search">' + iconLupa() + "</button>" +
     '<div class="sugest" id="busca-sugest"></div>' +
     "</form>" +
@@ -356,18 +352,18 @@ function renderFooter() {
     '<div class="container">' +
     '<div class="foot-top">' +
     '<div class="foot-brand">' +
-    '<span class="brand"><img class="brand-logo" src="img/logo.png" alt="DroneDeck logo" width="36" height="36"/><span><span class="brand-name">DroneDeck</span></span></span>' +
-    "<p>Independent product discovery and curation for drone and RC parts. We research and organize products, deals and coupons from partner retailers — purchases are completed directly with the retailer, never with us.</p>" +
+    '<span class="brand"><img class="brand-logo" src="img/logo.png" alt="WattWheel logo"/><span><span class="brand-name">WattWheel</span></span></span>' +
+    "<p>Independent product discovery and curation for electric scooters and electric bikes. We research and organize products, deals and coupons from partner retailers — purchases are completed directly with the retailer, never with us.</p>" +
     "</div>" +
     '<div class="foot-col"><h4>Explore</h4><ul>' + catLinks + "</ul></div>" +
     '<div class="foot-col"><h4>Company</h4><ul>' +
-    '<li><a href="about.html">About DroneDeck</a></li>' +
+    '<li><a href="about.html">About WattWheel</a></li>' +
     '<li><a href="about.html#how-it-works">How it works</a></li>' +
     '<li><a href="store.html">Retailers we track</a></li>' +
     '<li><a href="about.html#contact">Contact</a></li>' +
     "</ul></div>" +
     '<div class="foot-col"><h4>Transparency</h4>' +
-    '<div class="foot-disclose">DroneDeck is an independent product discovery website. Some links may be affiliate links, meaning we may earn a commission from qualifying purchases, at no additional cost to you.</div>' +
+    '<div class="foot-disclose">WattWheel is an independent product discovery website. Some links may be affiliate links, meaning we may earn a commission from qualifying purchases, at no additional cost to you.</div>' +
     '<ul class="foot-legal">' +
     '<li><a href="about.html#disclosure">Affiliate disclosure</a></li>' +
     '<li><a href="about.html#privacy">Privacy policy</a></li>' +
@@ -375,7 +371,7 @@ function renderFooter() {
     '<li><a href="about.html#cookies">Cookie policy</a></li>' +
     "</ul></div>" +
     "</div>" +
-    '<div class="foot-bottom"><span>© 2026 ' + esc((DADOS.marca && DADOS.marca.nome) ? DADOS.marca.nome : String(DADOS.marca || "DroneDeck")) + ' — independent product discovery for drone &amp; RC parts. All products and retailers shown in this demo are fictional.</span><span>Built to validate the independent product curation model for drone parts.</span></div>' +
+    '<div class="foot-bottom"><span>© 2026 ' + esc((DADOS.marca && DADOS.marca.nome) ? DADOS.marca.nome : String(DADOS.marca || "WattWheel")) + ' — independent product discovery for electric scooters &amp; electric bikes. All products and retailers shown in this demo are fictional.</span><span>Built to validate the independent product curation model for e-mobility gear.</span></div>' +
     "</div></footer>";
   var slot = $("#app-footer");
   if (!slot) return;
@@ -418,7 +414,7 @@ function carregarDoSupabase() {
     var produtos = [];
     for (var i = 0; i < rows.length; i++) produtos.push(rows[i].dados);
     var cats = {};
-    var CAT_ICONE = { "rc-transmissores": "teclado", "rc-receptores": "teclado", "baterias-rc": "carregador", "carregadores-rc": "carregador", "servos-rc": "caixa", "motores-esc": "barra", "helices-rc": "caixa", "estruturas-rc": "caixa", "fpv-camera": "camera", "aeromodelos": "caixa", "helicopteros": "caixa", "drones-rc": "barra", "veiculos-rc": "caixa", "pecas-rc": "caixa" };
+    var CAT_ICONE = { "scooters-eletricos": "caixa", "bicicletas-eletricas": "caixa", "baterias-e-motor": "barra", "carregadores": "carregador", "pneus-e-rodas": "caixa", "freios-e-parachoques": "caixa", "luzes-e-visibilidade": "lampada", "capacetes-e-protecao": "fone", "acessorios": "caixa", "pecas-de-reposicao": "caixa" };
     produtos.forEach(function (p) {
       if (!p || !p.categoria) return;
       if (!cats[p.categoria]) {
@@ -431,7 +427,7 @@ function carregarDoSupabase() {
       }
     });
     var categorias = Object.keys(cats).map(function (k) { return cats[k]; });
-    return { "marca": "DroneDeck", "categorias": categorias, "produtos": produtos };
+    return { "marca": "WattWheel", "categorias": categorias, "produtos": produtos };
   });
 }
 
@@ -695,8 +691,8 @@ function initCategoria() {
   var head = $("#cat-head");
   if (head) {
     var kicker = ofertas ? "Best deals" : (cat ? cat.nome : "Curated catalog");
-    var titulo = ofertas ? "Best deals right now" : (cat ? cat.nome : (busca ? "Results for \u201c" + esc(busca) + "\u201d" : "Explore all curated parts"));
-    var desc = ofertas ? "The best deals currently in our curated catalog — prices come from retailer listings. Check the price and buy directly at the retailer." : (cat ? cat.descricao : "Browse drone and RC parts curated from our partner retailers — compare prices, brands and ratings, then check the price and buy directly at the retailer.");
+    var titulo = ofertas ? "Best deals right now" : (cat ? cat.nome : (busca ? "Results for \u201c" + esc(busca) + "\u201d" : "Explore all curated gear"));
+    var desc = ofertas ? "The best deals currently in our curated catalog — prices come from retailer listings. Check the price and buy directly at the retailer." : (cat ? cat.descricao : "Browse electric scooter and e-bike gear curated from our partner retailers — compare prices, brands and ratings, then check the price and buy directly at the retailer.");
     head.innerHTML = '<p class="kicker">' + kicker + "</p><h1>" + titulo + "</h1><p>" + desc + "</p>";
   }
 
@@ -896,7 +892,7 @@ function initProduto() {
   $("#preco-bloco").innerHTML = precoHTML + '<div class="cash">Reference price from the retailer\'s listing — the final price is confirmed at checkout.</div>';
 
   if (p.comissao) {
-    $("#comissao-note").innerHTML = "<strong>Transparency:</strong> DroneDeck is an affiliate — we may earn a commission on qualifying purchases made through this link, at no additional cost to you.";
+    $("#comissao-note").innerHTML = "<strong>Transparency:</strong> WattWheel is an affiliate — we may earn a commission on qualifying purchases made through this link, at no additional cost to you.";
   }
 
   var btn = $("#btn-comprar");
@@ -920,7 +916,7 @@ function initProduto() {
 
   var faq = $("#faq-lista");
   var genericas = [
-    { p: "Does DroneDeck sell this part?", a: "No. DroneDeck is an independent product discovery platform — the button takes you to the retailer, where your purchase is completed. DroneDeck never sells, prices or processes payment." },
+    { p: "Does WattWheel sell this item?", a: "No. WattWheel is an independent product discovery platform — the button takes you to the retailer, where your purchase is completed. WattWheel never sells, prices or processes payment." },
     { p: "Is the displayed price final?", a: "Prices shown are references collected from retailer listings and can change. Please confirm the price on the retailer's page before completing your order." },
     { p: "Who handles shipping and returns?", a: "Shipping, delivery dates and return policies are set by the retailer. Review those terms on the retailer's product page." }
   ];
@@ -950,7 +946,7 @@ function initProduto() {
   renderOfertas(p);
   renderHistorico(p);
 
-  document.title = p.nome + " · DroneDeck";
+  document.title = p.nome + " · WattWheel";
 }
 
 /* ---------- Where to buy (offer comparison) ---------- */

@@ -385,7 +385,7 @@ function resetTotal() {
 }
 
 function exportarJSON() {
-  var base = { marca: "DroneDeck", categorias: CATEGORIAS, produtos: PRODUTOS };
+  var base = { marca: "WattWheel", categorias: CATEGORIAS, produtos: PRODUTOS };
   var blob = new Blob([JSON.stringify(base)], { type: "application/json" });
   var a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
