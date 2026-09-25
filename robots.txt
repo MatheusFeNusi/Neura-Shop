@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
-
-Sitemap: https://www.gadgetscout.example/sitemap.xml
+Disallow: /admin.html
+Sitemap: https://neura-shop66.vercel.app/sitemap.xml

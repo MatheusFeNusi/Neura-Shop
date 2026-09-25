@@ -33,6 +33,56 @@ function esc(s) {
   });
 }
 
+function slugify(s) {
+  return String(s || "").toLowerCase().normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+function slugProduto(p) {
+  var marca = slugify(p.marca || "");
+  var stop = /^(electric|e|scooter|bike|with|and|for|the|of|to|in|on|recommended|top|max|range|battery|motor|speed|tires|inch|folding|load|mileage|dual|single|brushless|watt|ah|kmh|km|model|version|new|usa|plus|pro|black|color|option|v)$/;
+  var palavras = String(p.nome || "").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  var parts = [];
+  var count = 0;
+  palavras.forEach(function (w) {
+    if (count >= 4) return;
+    if (w === marca || stop.test(w)) return;
+    parts.push(w);
+    count++;
+  });
+  if (!parts.length) parts = palavras.slice(0, 3);
+  var nome = [marca].concat(parts).filter(Boolean).join("-") || slugify(p.id || "product");
+  return nome.slice(0, 64) || slugify(p.id || "product");
+}
+function urlProduto(p) {
+  return "/products/" + (SLUG_FINAL[p.id] || slugProduto(p)) + "/";
+}
+var SLUG_FINAL = {};
+function computarSlugs(produtos) {
+  SLUG_FINAL = {};
+  var cont = {};
+  produtos.forEach(function (p) { var b = slugProduto(p); cont[b] = (cont[b] || 0) + 1; });
+  var usados = {};
+  produtos.forEach(function (p) {
+    var b = slugProduto(p);
+    var fin = b;
+    if (cont[b] > 1) {
+      var suf = String(p.product_id || p.id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-4).toLowerCase();
+      fin = b + "-" + suf;
+      var i = 2;
+      while (usados[fin]) fin = b + "-" + suf + "-" + (i++);
+    }
+    usados[fin] = true;
+    SLUG_FINAL[p.id] = fin;
+  });
+}
+function produtoDoSeed() {
+  var el = document.getElementById("produto-seed");
+  if (!el) return null;
+  try { return JSON.parse(el.textContent); } catch (e) { return null; }
+}
+
 function starsHTML(rating) {
   var full = Math.floor(rating);
   var frac = rating - full;
@@ -241,12 +291,12 @@ function cardHTML(p) {
     ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>'
     : '<button class="btn-buy" onclick="abrirOferta(\'' + p.id + '\')">View deal</button>';
   return '<article class="pcard">' +
-    '<a class="media" href="product.html?id=' + p.id + '">' + badge +
+    '<a class="media" href="' + urlProduto(p) + '">' + badge +
     '<img src="' + imgProd(p, 0) + '" alt="' + esc(p.nome) + '" loading="lazy"/>' +
     "</a>" +
     '<div class="body">' +
     '<span class="p-brand">' + esc(p.marca) + "</span>" +
-    '<a class="p-name" href="product.html?id=' + p.id + '">' + esc(p.nome) + "</a>" +
+    '<a class="p-name" href="' + urlProduto(p) + '">' + esc(p.nome) + "</a>" +
     '<div class="rating">' + starsHTML(p.rating) + ' <span class="reviews">' + p.rating.toFixed(1) + " (" + num(p.avaliacoes) + ")</span></div>" +
     '<div class="price">' +
     (p.preco_anterior ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" : "") +
@@ -615,6 +665,7 @@ function aplicarDados(d) {
   DADOS = d;
   PRODUTOS = DADOS.produtos;
   CATEGORIAS = DADOS.categorias || [];
+  computarSlugs(PRODUTOS);
   renderHeader();
   renderFooter();
   if (typeof document !== "undefined") {
@@ -928,7 +979,24 @@ function renderLista() {
    ============================================================ */
 function initProduto() {
   var id = new URLSearchParams(location.search).get("id");
-  var p = PRODUTOS.find(function (x) { return x.id === id; });
+  var seed = produtoDoSeed();
+  var p = null;
+  if (seed) {
+    p = seed;
+    if (id && id !== seed.id) {
+      var viaId = PRODUTOS.find(function (x) { return x.id === id; });
+      if (viaId) p = viaId;
+    }
+  } else {
+    p = PRODUTOS.find(function (x) { return x.id === id; });
+    if (!p && !id) {
+      var m = location.pathname.match(/^\/products\/([^/]+)\/?$/);
+      if (m) {
+        var slug = decodeURIComponent(m[1]);
+        p = PRODUTOS.find(function (x) { return slugProduto(x) === slug; });
+      }
+    }
+  }
   if (!p) {
     var main = $("main");
     if (main) main.innerHTML = '<div class="container"><div class="empty" style="margin-top:60px"><h3>Product not found</h3><p>The link you followed may be out of date.</p></div></div>';
@@ -968,7 +1036,7 @@ function initProduto() {
   var descEl = $("#pg-descricao");
   if (descEl && p.descricao) descEl.innerHTML = descricaoHTML(p.descricao);
   setMetaDescricao(p);
-  injetarSchema(p);
+  if (!seed) injetarSchema(p);
   var chipCat = $("#pg-categoria");
   if (chipCat) {
     chipCat.textContent = p.categoria_nome;
@@ -1039,9 +1107,14 @@ function initProduto() {
     }
   });
 
-  $("#specs-tabela").innerHTML = p.specs.map(function (s) {
-    return "<tr><th>" + esc(s.rotulo) + "</th><td>" + esc(s.valor) + "</td></tr>";
-  }).join("");
+  var specsEl = $("#specs-tabela");
+  if (specsEl) {
+    specsEl.innerHTML = (p.specs && p.specs.length)
+      ? p.specs.map(function (s) {
+          return "<tr><th>" + esc(s.rotulo) + "</th><td>" + esc(s.valor) + "</td></tr>";
+        }).join("")
+      : "<tr><th>Condition</th><td>New</td></tr>";
+  }
 
   renderSimilares(p);
 
@@ -1065,14 +1138,16 @@ function initProduto() {
   });
 
   var rel = $("#relacionados-grid");
-  var relacionados = PRODUTOS.filter(function (x) { return x.id !== p.id; })
-    .sort(function (a, b) {
-      var sameA = a.categoria === p.categoria ? 0 : 1;
-      var sameB = b.categoria === p.categoria ? 0 : 1;
-      return sameA - sameB || b.rating - a.rating;
-    })
-    .slice(0, 4);
-  rel.innerHTML = relacionados.map(cardHTML).join("");
+  if (rel) {
+    var relacionados = PRODUTOS.filter(function (x) { return x.id !== p.id; })
+      .sort(function (a, b) {
+        var sameA = a.categoria === p.categoria ? 0 : 1;
+        var sameB = b.categoria === p.categoria ? 0 : 1;
+        return sameA - sameB || b.rating - a.rating;
+      })
+      .slice(0, 4);
+    rel.innerHTML = relacionados.map(cardHTML).join("");
+  }
 
   renderComparar(p);
   renderBanners(p);
@@ -1093,6 +1168,7 @@ function renderSimilares(principal) {
     });
   }
   var alvo = $("#similares");
+  if (!alvo) return;
   if (sim.length) {
     alvo.style.display = "";
     $("#similares-grid").innerHTML = sim.map(osCardHTML).join("");
@@ -1213,12 +1289,12 @@ function renderReviews(p) {
 function osCardHTML(p) {
   var esgotado = p.disponibilidade === "esgotado";
   return '<article class="pcard">' +
-    '<a class="media" href="product.html?id=' + p.id + '">' +
+    '<a class="media" href="' + urlProduto(p) + '">' +
     (pctDesc(p.preco, p.preco_anterior) != null ? '<span class="badge">-' + pctDesc(p.preco, p.preco_anterior) + "%</span>" : "") +
     '<img src="' + imgProd(p, 1) + '" alt="' + esc(p.nome) + '" loading="lazy"/></a>' +
     '<div class="body">' +
     '<span class="p-brand">' + esc(p.marca) + "</span>" +
-    '<a class="p-name" href="product.html?id=' + p.id + '">' + esc(p.nome) + "</a>" +
+    '<a class="p-name" href="' + urlProduto(p) + '">' + esc(p.nome) + "</a>" +
     '<div class="rating">' + starsHTML(p.rating) + " <span class=\"reviews\">" + p.rating.toFixed(1) + " (" + num(p.avaliacoes) + ")</span></div>" +
     '<div class="price">' +
     (p.preco_anterior ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" : "") +

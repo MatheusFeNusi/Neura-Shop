@@ -1,80 +1,260 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://www.gadgetscout.example/</loc>
-    <lastmod>2026-09-23</lastmod>
+    <loc>https://neura-shop66.vercel.app/</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <priority>1</priority>
   </url>
   <url>
-    <loc>https://www.gadgetscout.example/catalog.html</loc>
-    <lastmod>2026-09-23</lastmod>
+    <loc>https://neura-shop66.vercel.app/catalog.html</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.gadgetscout.example/about.html</loc>
-    <lastmod>2026-09-23</lastmod>
+    <loc>https://neura-shop66.vercel.app/about.html</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://www.gadgetscout.example/product.html?id=odyssey-air-2</loc>
-    <lastmod>2026-09-23</lastmod>
+    <loc>https://neura-shop66.vercel.app/electric-bikes/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/electric-scooters/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/jansno-x60-48v-23ah-750w/</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.gadgetscout.example/product.html?id=smart-360-speaker</loc>
-    <lastmod>2026-09-23</lastmod>
+    <loc>https://neura-shop66.vercel.app/products/freeboy-j30-38ah-60v-3000w/</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.gadgetscout.example/product.html?id=hometheater-21-soundbar</loc>
-    <lastmod>2026-09-23</lastmod>
+    <loc>https://neura-shop66.vercel.app/products/freeboy-j05-15ah-36v-500w/</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.gadgetscout.example/product.html?id=fitpulse-pro</loc>
-    <lastmod>2026-09-23</lastmod>
+    <loc>https://neura-shop66.vercel.app/products/freeboy-j01-15ah-48v-800w/</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.gadgetscout.example/product.html?id=lumio-smart-bulb</loc>
-    <lastmod>2026-09-23</lastmod>
+    <loc>https://neura-shop66.vercel.app/products/freeboy-h8-28ah-60v-3000w/</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.gadgetscout.example/product.html?id=conecta-smart-plug</loc>
-    <lastmod>2026-09-23</lastmod>
+    <loc>https://neura-shop66.vercel.app/products/freeboy-j15-18ah-48v-1600w/</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.gadgetscout.example/product.html?id=cleanbot-3000</loc>
-    <lastmod>2026-09-23</lastmod>
+    <loc>https://neura-shop66.vercel.app/products/freeboy-h9-30ah-60v-3000w/</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.gadgetscout.example/product.html?id=guardcam-2k</loc>
-    <lastmod>2026-09-23</lastmod>
+    <loc>https://neura-shop66.vercel.app/products/gokeep-f5-20ah-52v-1000w-5760/</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.gadgetscout.example/product.html?id=k80-tkl-keyboard</loc>
-    <lastmod>2026-09-23</lastmod>
+    <loc>https://neura-shop66.vercel.app/products/gokeep-f4-48v-15-6ah/</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.gadgetscout.example/product.html?id=voltaway-wireless-charger</loc>
-    <lastmod>2026-09-23</lastmod>
+    <loc>https://neura-shop66.vercel.app/products/boyueda-s5-38ah-60v-3000w/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/boyueda-s3-11-seat-38ah/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/toursor-x8p-60v-38-8ah/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/gokeep-f5-20ah-52v-1000w-5347/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/coasta-l9pro-36v-20ah-350w/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/boyueda-q7pro-52v-28ah-1600w/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/ootd-t10-48v-18ah-900w/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/shengmilo-s600-48v-17-5ah/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/sinohon-em200-48v-12-5ah-1055/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/sinohon-em200d-36v-10-4ah/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/sinohon-em200g-48v-15-6ah/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/sinohon-em200-48v-12-5ah-1060/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/urlife-e20-48v-13ah-500w/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/urlife-t2-48v-15-6ah/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/jansno-x90-48v-14ah-48v/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/drvetion-at20-48v-15ah-750w/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/drvetion-ct20-48v-20ah-750w/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/jansno-x70-48v-14ah-20ah/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/giducton-ec100-48v-12ah-750w/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/pamila-e3-15-6ah-48v/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/shengmilo-s900-60v-30ah-1500w/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/drvetion-at20-48v-20ah-750w/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/happyrun-hr-g50-48v-18ah/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/qunt-bk20-48v-18ah-500w/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/drvetion-ct20-48v-15ah-750w/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/randride-yx80m-2-48v-20ah/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/sinohon-a20-48v-22ah-1000w/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/wq-w4-wq-w4-36v-10ah/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://neura-shop66.vercel.app/products/engwe-y400-13-5ah-48v/</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
