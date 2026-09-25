@@ -54,6 +54,12 @@
 
           <div class="buybox-sec">
             <button class="btn-buy-big" id="btn-comprar">Check price at retailer</button>
+            <div class="video-row" id="video-row" hidden>
+              <a class="btn-video" id="btn-video" href="#" target="_blank" rel="noopener">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Watch video <span class="video-ext">↗</span>
+              </a>
+            </div>
             <div class="coupon-box" id="cupom-box" hidden>
               <div class="coupon-label">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 0-4h20a2 2 0 0 1 0 4 2 2 0 0 0 0 4 2 2 0 0 1 0 4H2a2 2 0 0 1 0-4 2 2 0 0 0 0-4z"/><path d="M13 5v14M16 12h.01M10 12h.01"/></svg>
@@ -100,6 +106,12 @@
 
     </div>
 
+    <section class="section pg-banner-sec" id="pg-banner-sec" hidden>
+      <div class="container" style="padding-inline:0">
+        <div class="pg-banner-carousel" id="pg-banner-carousel"></div>
+      </div>
+    </section>
+
     <section class="detail-sec comparar-sec" id="comparar-sec">
       <h2><span class="bar"></span> Compare prices at other stores</h2>
       <p class="comparar-note">Our partner's price is highlighted below — check it against the same model at other major retailers. Prices and availability vary by store; the partner price is confirmed at checkout.</p>
@@ -109,6 +121,11 @@
     <section class="detail-sec">
       <h2><span class="bar"></span> Specifications</h2>
       <table class="specs" id="specs-tabela"></table>
+    </section>
+
+    <section class="detail-sec" id="reviews-sec">
+      <h2><span class="bar"></span> Customer reviews</h2>
+      <div id="reviews-lista"></div>
     </section>
 
     <section class="detail-sec" id="similares">

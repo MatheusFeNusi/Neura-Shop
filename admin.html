@@ -95,6 +95,15 @@
           <div class="edit-lista" id="edit-imagens"></div>
           <button type="button" class="btn btn-light btn-add" data-alvo="edit-imagens" data-tipo="img">+ Adicionar imagem</button>
         </label>
+        <label class="col-full">
+          Banners (carrossel na página do produto)
+          <div class="edit-lista" id="edit-banners"></div>
+          <button type="button" class="btn btn-light btn-add" data-alvo="edit-banners" data-tipo="banner">+ Adicionar banner</button>
+        </label>
+        <label class="col-full">
+          Vídeo (link externo, abre em nova aba)
+          <input type="url" name="video" placeholder="https://www.youtube.com/watch?v=…"/>
+        </label>
         <label>
           Preço (US$)
           <input type="number" name="preco" step="0.01" min="0"/>
@@ -146,6 +155,11 @@
         <label class="col-full">
           Descrição
           <textarea name="descricao" rows="4"></textarea>
+        </label>
+        <label class="col-full">
+          Avaliações (clientes)
+          <div class="edit-lista" id="edit-reviews"></div>
+          <button type="button" class="btn btn-light btn-add" data-alvo="edit-reviews" data-tipo="review">+ Adicionar avaliação</button>
         </label>
         <div class="admin-modal-foot">
           <div class="admin-foot-actions">

@@ -1082,6 +1082,9 @@ function initProduto() {
   rel.innerHTML = relacionados.map(cardHTML).join("");
 
   renderComparar(p);
+  renderBanners(p);
+  renderVideo(p);
+  renderReviews(p);
 
   document.title = p.nome + " · WattWheel";
 }
@@ -1120,6 +1123,87 @@ function renderSimilares(principal) {
   } else {
     alvo.style.display = "none";
   }
+}
+
+/* ---------- Banners (carousel) ---------- */
+function renderBanners(p) {
+  var sec = $("#pg-banner-sec");
+  var alvo = $("#pg-banner-carousel");
+  if (!sec || !alvo) return;
+  var banners = (p.banners && p.banners.length) ? p.banners : null;
+  if (!banners) { sec.hidden = true; return; }
+  sec.hidden = false;
+  alvo.innerHTML =
+    '<div class="pg-carousel-track">' +
+    banners.map(function (url, i) {
+      return '<div class="pg-carousel-slide' + (i === 0 ? " on" : "") + '"><img src="' + esc(url) + '" alt="Banner ' + (i + 1) + '" loading="lazy"/></div>';
+    }).join("") +
+    "</div>" +
+    (banners.length > 1
+      ? '<button class="pg-carousel-nav prev" type="button" aria-label="Previous">‹</button>' +
+        '<button class="pg-carousel-nav next" type="button" aria-label="Next">›</button>' +
+        '<div class="pg-carousel-dots">' + banners.map(function (_, i) { return '<button type="button" data-ix="' + i + '" class="dot' + (i === 0 ? " on" : "") + '" aria-label="Slide ' + (i + 1) + '"></button>'; }).join("") + "</div>"
+      : "")
+  ;
+  var track = alvo.querySelector(".pg-carousel-track");
+  var ix = 0;
+  var total = banners.length;
+  function go(n) {
+    ix = (n + total) % total;
+    var off = -ix * 100;
+    track.style.transform = "translateX(" + off + "%)";
+    $$(".pg-carousel-slide", track).forEach(function (s, i) { s.classList.toggle("on", i === ix); });
+    $$(".dot", alvo).forEach(function (d, i) { d.classList.toggle("on", i === ix); });
+  }
+  var prev = alvo.querySelector(".prev");
+  var next = alvo.querySelector(".next");
+  if (prev) prev.addEventListener("click", function () { go(ix - 1); });
+  if (next) next.addEventListener("click", function () { go(ix + 1); });
+  $$(".dot", alvo).forEach(function (d) {
+    d.addEventListener("click", function () { go(Number(d.dataset.ix)); });
+  });
+}
+
+/* ---------- Video (external link) ---------- */
+function renderVideo(p) {
+  var row = $("#video-row");
+  var btn = $("#btn-video");
+  if (!row || !btn) return;
+  if (p.video) {
+    btn.href = p.video;
+    row.hidden = false;
+  } else {
+    btn.removeAttribute("href");
+    row.hidden = true;
+  }
+}
+
+/* ---------- Customer reviews ---------- */
+function renderReviews(p) {
+  var sec = $("#reviews-sec");
+  var alvo = $("#reviews-lista");
+  if (!sec || !alvo) return;
+  var reviews = (p.reviews && p.reviews.length) ? p.reviews : null;
+  if (!reviews) { sec.style.display = "none"; return; }
+  sec.style.display = "";
+  alvo.innerHTML =
+    '<div class="reviews-summary">' +
+    '<span class="reviews-score">' + (p.rating != null ? p.rating.toFixed(1) : "—") + "</span>" +
+    '<span class="reviews-stars">' + starsHTML(p.rating != null ? p.rating : 5) + "</span>" +
+    '<span class="reviews-count">' + num(p.avaliacoes) + " reviews</span>" +
+    "</div>" +
+    '<div class="reviews-lista">' +
+    reviews.map(function (r) {
+      return '<div class="review-item">' +
+        '<div class="review-head">' +
+        '<span class="review-avatar">' + esc(String(r.nome || "C").charAt(0).toUpperCase()) + "</span>" +
+        '<span class="review-nome">' + esc(r.nome) + "</span>" +
+        '<span class="review-nota">' + starsHTML(r.nota != null ? r.nota : 5) + "</span>" +
+        "</div>" +
+        '<p class="review-texto">' + esc(r.texto) + "</p>" +
+        "</div>";
+    }).join("") +
+    "</div>";
 }
 
 function osCardHTML(p) {

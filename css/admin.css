@@ -111,6 +111,7 @@
   display: grid; grid-template-columns: 1fr 1fr 90px 34px; gap: 6px; align-items: stretch;
 }
 .edit-linha.dp-img { grid-template-columns: 1fr 34px; }
+.edit-linha.dp-review { grid-template-columns: 140px 70px 1fr 34px; }
 .edit-linha input {
   padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px;
   font-family: inherit; color: var(--ink); background: #fff; width: 100%; min-width: 0;
@@ -146,4 +147,8 @@
   .admin-acoes { grid-area: acoes; flex-wrap: wrap; }
   .admin-row-link { grid-area: link; max-width: none; white-space: normal; }
   .admin-modal-box form { grid-template-columns: 1fr; }
+  .edit-linha, .edit-linha.dp-review, .edit-linha.dp-img { grid-template-columns: 1fr 1fr; }
+  .edit-linha.dp-img { grid-template-columns: 1fr 34px; }
+  .edit-linha.dp-review { grid-template-columns: 1fr 70px; }
+  .edit-linha.dp-review .campo-url { grid-column: 1 / -1; }
 }

@@ -171,6 +171,20 @@ function initAdmin() {
     lista.appendChild(linha);
     linha.querySelector("input").focus();
   });
+  var addBanners = document.querySelector(".btn-add[data-alvo='edit-banners']");
+  if (addBanners) addBanners.addEventListener("click", function () {
+    var lista = document.getElementById("edit-banners");
+    var linha = criarLinhaBanner();
+    lista.appendChild(linha);
+    linha.querySelector("input").focus();
+  });
+  var addReviews = document.querySelector(".btn-add[data-alvo='edit-reviews']");
+  if (addReviews) addReviews.addEventListener("click", function () {
+    var lista = document.getElementById("edit-reviews");
+    var linha = criarLinhaReview();
+    lista.appendChild(linha);
+    linha.querySelector(".campo-nome").focus();
+  });
   var busca = document.getElementById("busca");
   busca.addEventListener("input", function () {
     clearTimeout(buscarTimer);
@@ -331,6 +345,37 @@ function criarLinhaImg(url) {
   div.appendChild(input); div.appendChild(rm);
   return div;
 }
+function criarLinhaBanner(url) {
+  var div = document.createElement("div");
+  div.className = "edit-linha dp-img";
+  var input = document.createElement("input");
+  input.type = "text"; input.className = "campo-url"; input.placeholder = "https://banner.jpg";
+  input.value = url || "";
+  var rm = document.createElement("button");
+  rm.type = "button"; rm.className = "edit-rm"; rm.textContent = "×"; rm.title = "Remover banner";
+  rm.addEventListener("click", function () { div.parentNode.removeChild(div); });
+  div.appendChild(input); div.appendChild(rm);
+  return div;
+}
+function criarLinhaReview(r) {
+  var div = document.createElement("div");
+  div.className = "edit-linha dp-review";
+  var nome = document.createElement("input");
+  nome.type = "text"; nome.className = "campo-nome"; nome.placeholder = "Nome do cliente";
+  nome.value = r && r.nome ? r.nome : "";
+  var nota = document.createElement("input");
+  nota.type = "number"; nota.inputMode = "decimal"; nota.min = "0"; nota.max = "5"; nota.step = "0.5";
+  nota.className = "campo-preco"; nota.placeholder = "Nota"; nota.title = "Nota de 1 a 5";
+  nota.value = r && r.nota != null ? r.nota : "";
+  var texto = document.createElement("input");
+  texto.type = "text"; texto.className = "campo-url"; texto.placeholder = "Texto do comentário";
+  texto.value = r && r.texto ? r.texto : "";
+  var rm = document.createElement("button");
+  rm.type = "button"; rm.className = "edit-rm"; rm.textContent = "×"; rm.title = "Remover avaliação";
+  rm.addEventListener("click", function () { div.parentNode.removeChild(div); });
+  div.appendChild(nome); div.appendChild(nota); div.appendChild(texto); div.appendChild(rm);
+  return div;
+}
 function montarEditLojas(lojas) {
   var lista = document.getElementById("edit-lojas");
   lista.innerHTML = "";
@@ -344,6 +389,18 @@ function montarEditImagens(fotos, imgPrincipal) {
     if (f && f !== (imgPrincipal || "")) lista.appendChild(criarLinhaImg(f));
   });
   if (!lista.children.length) lista.appendChild(criarLinhaImg());
+}
+function montarEditBanners(banners) {
+  var lista = document.getElementById("edit-banners");
+  lista.innerHTML = "";
+  (banners || []).forEach(function (b) { lista.appendChild(criarLinhaBanner(b)); });
+  if (!lista.children.length) lista.appendChild(criarLinhaBanner());
+}
+function montarEditReviews(reviews) {
+  var lista = document.getElementById("edit-reviews");
+  lista.innerHTML = "";
+  (reviews || []).forEach(function (r) { lista.appendChild(criarLinhaReview(r)); });
+  if (!lista.children.length) lista.appendChild(criarLinhaReview());
 }
 function lerEditLojas() {
   var lista = document.getElementById("edit-lojas");
@@ -369,6 +426,30 @@ function lerEditImagens() {
   });
   return out;
 }
+function lerEditBanners() {
+  var lista = document.getElementById("edit-banners");
+  var out = [];
+  Array.prototype.forEach.call(lista.children, function (linha) {
+    var v = (linha.querySelector("input").value || "").trim();
+    if (v) out.push(v);
+  });
+  return out;
+}
+function lerEditReviews() {
+  var lista = document.getElementById("edit-reviews");
+  var out = [];
+  Array.prototype.forEach.call(lista.children, function (linha) {
+    var nome = (linha.querySelector(".campo-nome").value || "").trim();
+    var texto = (linha.querySelector(".campo-url").value || "").trim();
+    var notaEl = linha.querySelector(".campo-preco");
+    if (!nome || !texto) return;
+    var nota = Number(notaEl.value);
+    if (!notaEl.value || !isFinite(nota)) nota = 5;
+    nota = Math.max(0, Math.min(5, nota));
+    out.push({ nome: nome, nota: nota, texto: texto });
+  });
+  return out;
+}
 
 function abrirModal(id) {
   idEmEdicao = id;
@@ -380,6 +461,8 @@ function abrirModal(id) {
   f.img.value = p.img || "";
   var imgPrincipal = p.img || "";
   montarEditImagens(p.fotos, imgPrincipal);
+  montarEditBanners(p.banners);
+  f.video.value = p.video || "";
   f.preco.value = p.preco != null ? p.preco : "";
   f.preco_anterior.value = p.preco_anterior != null ? p.preco_anterior : "";
   f.rating.value = p.rating != null ? p.rating : "";
@@ -392,6 +475,7 @@ function abrirModal(id) {
   f.categoria.value = p.categoria || "";
   f.destaque.checked = !!p.destaque;
   f.descricao.value = p.descricao || "";
+  montarEditReviews(p.reviews);
   document.getElementById("modal-titulo").textContent = "Editar Â· " + id;
   var linkVer = document.getElementById("btn-ver-modal");
   if (linkVer) linkVer.href = "product.html?id=" + encodeURIComponent(id);
@@ -422,12 +506,15 @@ img: f.img.value.trim(),
       cupom: f.cupom.value.trim() || null,
       cupom_descricao: f.cupom_descricao.value.trim() || "",
       lojas_compare: lerEditLojas(),
-    marca: f.marca.value.trim() || p.marca,
-    categoria: f.categoria.value.trim() || p.categoria,
-    categoria_nome: p.categoria_nome,
-    destaque: f.destaque.checked,
-    descricao: f.descricao.value.trim() || p.descricao,
-    product_id: p.product_id,
+marca: f.marca.value.trim() || p.marca,
+      categoria: f.categoria.value.trim() || p.categoria,
+      categoria_nome: p.categoria_nome,
+      destaque: f.destaque.checked,
+      descricao: f.descricao.value.trim() || p.descricao,
+      banners: lerEditBanners(),
+      video: f.video.value.trim() || null,
+      reviews: lerEditReviews(),
+      product_id: p.product_id,
     merchant: p.merchant,
     merchant_nome: p.merchant_nome,
     comissao: p.comissao,
