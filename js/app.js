@@ -294,7 +294,8 @@ function revelarCupom(p) {
   if (nota) nota.textContent = (p.cupom_descricao ? p.cupom_descricao + " — " : "") + "Copy the code and paste it at checkout on the retailer's page.";
   var btnCupom = $("#btn-comprar-cupom");
   if (btnCupom) btnCupom.addEventListener("click", function () { irAoParceiro(p); });
-  $("#btn-comprar").classList.add("hide");
+  var btnComprar = $("#btn-comprar");
+  if (btnComprar) btnComprar.classList.add("hide");
   box.hidden = false;
   box.classList.add("show");
   copiarCupom(p);

@@ -440,6 +440,7 @@ button { font-family: inherit; }
 
 /* ---------- Coupon reveal (product page) ---------- */
 .btn-buy-big.hide { display: none; }
+.btn-partner.hide { display: none; }
 .coupon-box {
   display: none; margin-top: 14px; padding: 16px;
   border: 1.5px dashed var(--brand); border-radius: var(--radius);
