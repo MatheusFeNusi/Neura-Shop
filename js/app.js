@@ -1186,18 +1186,49 @@ function renderBanners(p) {
   });
 }
 
-/* ---------- Video (external link) ---------- */
+/* ---------- Video (popup embed) ---------- */
+function videoEmbedURL(url) {
+  if (!url) return "";
+  var raw = String(url).trim();
+  var m = raw.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+  if (m) return "https://www.youtube.com/embed/" + m[1] + "?rel=0&autoplay=1";
+  return raw;
+}
+
 function renderVideo(p) {
   var row = $("#video-row");
   var btn = $("#btn-video");
-  if (!row || !btn) return;
-  if (p.video) {
-    btn.href = p.video;
-    row.hidden = false;
-  } else {
-    btn.removeAttribute("href");
-    row.hidden = true;
+  var modal = $("#modal-video");
+  var frame = $("#modal-video-frame");
+  if (!row || !btn || !modal || !frame) return;
+  if (!p.video) { row.hidden = true; return; }
+  row.hidden = false;
+  btn.onclick = function () {
+    frame.innerHTML = '<iframe src="' + esc(videoEmbedURL(p.video)) + '" title="Product video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    modal.hidden = false;
+    document.body.style.overflow = "hidden";
+  };
+}
+
+function initModalVideo() {
+  var modal = $("#modal-video");
+  if (modal) {
+    $$("[data-fechar]", modal).forEach(function (el) {
+      el.addEventListener("click", function () { fecharModalVideo(); });
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") fecharModalVideo();
+    });
   }
+}
+
+function fecharModalVideo() {
+  var modal = $("#modal-video");
+  var frame = $("#modal-video-frame");
+  if (!modal) return;
+  modal.hidden = true;
+  document.body.style.overflow = "";
+  if (frame) frame.innerHTML = "";
 }
 
 /* ---------- Customer reviews ---------- */
@@ -1366,6 +1397,7 @@ function renderLojaOverview() {
 /* ---------- Boot ---------- */
 if (typeof document !== "undefined") {
   document.addEventListener("DOMContentLoaded", function () {
+    initModalVideo();
     carregarDados();
   });
 }
