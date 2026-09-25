@@ -201,21 +201,6 @@ button { font-family: inherit; }
 .section-head .link-all { font-size: 13px; font-weight: 600; color: var(--brand); white-space: nowrap; }
 .section-head .link-all:hover { text-decoration: underline; }
 
-/* ---------- Category tiles ---------- */
-.cat-tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
-.cat-tile {
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 16px 12px; text-align: center; transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-}
-.cat-tile:hover { border-color: #cdd3db; box-shadow: var(--shadow); }
-.cat-tile .ico {
-  width: 64px; height: 64px; margin: 0 auto 10px; border-radius: 12px;
-  background: var(--surface-2); display: grid; place-items: center; overflow: hidden;
-}
-.cat-tile .ico img { width: 100%; height: 100%; object-fit: cover; }
-.cat-tile h3 { font-size: 13.5px; font-weight: 600; }
-.cat-tile p { font-size: 11.5px; color: var(--faint); margin-top: 3px; }
-
 /* ---------- Product cards ---------- */
 .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
 .grid-home { grid-template-columns: repeat(5, 1fr); }
@@ -533,7 +518,6 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1060px) {
-  .cat-tiles { grid-template-columns: repeat(3, 1fr); }
   .foot-top { grid-template-columns: 1fr 1fr; }
 }
 
@@ -559,9 +543,6 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
   .hdr-links.open { display: flex; position: absolute; top: 100%; left: 14px; right: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px; flex-direction: column; box-shadow: var(--shadow-lg); z-index: 70; }
   .hdr-links a { padding: 12px; border-radius: 8px; }
   .cats a { padding: 8px 12px; font-size: 13px; }
-  .cat-tiles { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .cat-tile { padding: 14px 10px; }
-  .cat-tile .ico { width: 54px; height: 54px; }
   .grid-cards { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
   .pcard .body { padding: 10px 10px 12px; gap: 6px; }
   .section { padding: 26px 0 4px; }

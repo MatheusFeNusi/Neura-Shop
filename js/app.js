@@ -293,15 +293,6 @@ function imgProd(prod, variant) {
   return svgProduto(prod, variant);
 }
 
-function tileIMG(cat) {
-  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">' +
-    '<ellipse cx="100" cy="150" rx="62" ry="9" fill="rgba(20,28,36,0.08)"/>' +
-    '<g transform="translate(100,86) translate(-100,-86) translate(0,-14) scale(0.30)">' +
-    iconeSVG(cat.icone) +
-    "</g></svg>";
-  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-}
-
 /* ---------- Product card ---------- */
 function cardHTML(p) {
   var pct = pctDesc(p.preco, p.preco_anterior);
@@ -684,20 +675,6 @@ function carregarDados() {
    ============================================================ */
 
 function initHome() {
-  var catsCount = {};
-  PRODUTOS.forEach(function (p) {
-    catsCount[p.categoria] = (catsCount[p.categoria] || 0) + 1;
-  });
-  var tiles = $("#cat-tiles");
-  if (tiles) {
-    tiles.innerHTML = CATEGORIAS.map(function (c) {
-      return '<a class="cat-tile" href="catalog.html?cat=' + c.slug + '">' +
-        '<span class="ico"><img src="' + tileIMG(c) + '" alt="' + esc(c.nome) + '"/></span>' +
-        "<h3>" + esc(c.nome) + "</h3>" +
-        "<p>" + (catsCount[c.slug] || 0) + " products</p></a>";
-    }).join("");
-  }
-
   var deals = $("#deals-grid");
   if (deals) {
     var comDesconto = PRODUTOS.filter(function (p) { return p.preco_anterior != null && p.preco_anterior > p.preco; })
