@@ -409,10 +409,10 @@ function pagProduto(p, contexto) {
     '<div class="pg-catscreen"><a class="chip cat" id="pg-categoria" href="/catalog.html?cat=' + esc(p.categoria) + '">' + esc(p.categoria_nome) + "</a></div>" +
     '<h1 class="pg-title" id="pg-titulo">' + esc(p.nome) + "</h1>" +
     '<div class="pg-meta">' +
-    '<span class="pg-rating">' + starsHTML(p.rating || 5) + ' <strong>' + (p.rating || 0).toFixed(1) + "</strong> out of 5 <span class=\"count\">(" + num(p.avaliacoes) + " ratings)</span></span>" +
-    '<span>Available at <span class="merchant-chip">' + esc(p.merchant_nome || p.merchant) + "</span></span>" +
-    '<span class="ref">Brand: ' + esc(p.marca) + "</span>" +
-    '<span class="ref">Partner SKU: ' + esc(p.product_id) + "</span>" +
+    '<span class="pg-rating" id="pg-rating">' + starsHTML(p.rating || 5) + ' <strong>' + (p.rating || 0).toFixed(1) + "</strong> out of 5 <span class=\"count\">(" + num(p.avaliacoes) + " ratings)</span></span>" +
+    '<span id="pg-merchant">Available at <span class="merchant-chip">' + esc(p.merchant_nome || p.merchant) + "</span></span>" +
+    '<span class="ref" id="pg-marca">Brand: ' + esc(p.marca) + "</span>" +
+    '<span class="ref" id="pg-produto-id">Partner SKU: ' + esc(p.product_id) + "</span>" +
     "</div>" +
     (p.descricao ? '<div class="pg-descricao" id="pg-descricao">' + descricaoHTMLout + "</div>" : "") +
     "</div>" +

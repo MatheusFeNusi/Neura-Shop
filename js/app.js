@@ -562,9 +562,9 @@ function carregarDoSupabase() {
   if (!url) return Promise.reject(new Error("sem-supabase"));
   var base = url + "/rest/v1/produtos?select=id,dados";
   function getPagina(offset) {
-    return fetch(base, {
+    return fetchComTimeout(base, {
       headers: Object.assign(supaHeaders(), { "Range-Unit": "items", "Range": offset + "-" + (offset + 999) })
-    }).then(function (r) {
+    }, 12000).then(function (r) {
       if (!r.ok) throw new Error("supa " + r.status);
       return r.json();
     });
@@ -661,6 +661,32 @@ function assinaDados(d) {
   }
   return String(d.produtos.length) + ":" + h;
 }
+function renderPaginaAtual() {
+  var page = document.body && document.body.dataset.page;
+  if (page === "home") initHome();
+  else if (page === "categoria") initCategoria();
+  else if (page === "produto") initProduto();
+  else if (page === "loja") initLoja();
+  else if (page === "admin") initAdmin();
+}
+
+function hidratarSeedProduto() {
+  if (typeof document === "undefined") return false;
+  if (!document.body || document.body.dataset.page !== "produto") return false;
+  if (PRODUTOS && PRODUTOS.length) return false;
+  var el = document.getElementById("produto-seed");
+  if (!el) return false;
+  var p = null;
+  try { p = JSON.parse(el.textContent); } catch (e) { return false; }
+  if (!p || !p.id) return false;
+  PRODUTOS = [p];
+  CATEGORIAS = CATEGORIAS || [];
+  DADOS = { marca: "WattWheel", categorias: CATEGORIAS, produtos: PRODUTOS };
+  computarSlugs(PRODUTOS);
+  initProduto();
+  return true;
+}
+
 function aplicarDados(d) {
   DADOS = d;
   PRODUTOS = DADOS.produtos;
@@ -668,22 +694,24 @@ function aplicarDados(d) {
   computarSlugs(PRODUTOS);
   renderHeader();
   renderFooter();
-  if (typeof document !== "undefined") {
-    var page = document.body && document.body.dataset.page;
-    if (page === "home") initHome();
-    else if (page === "categoria") initCategoria();
-    else if (page === "produto") initProduto();
-    else if (page === "loja") initLoja();
-    else if (page === "admin") initAdmin();
-  }
+  if (typeof document !== "undefined") renderPaginaAtual();
+}
+
+function fetchComTimeout(url, opts, ms) {
+  var ctrl = new AbortController();
+  var to = setTimeout(function () { ctrl.abort(); }, ms || 10000);
+  opts = opts || {};
+  opts.signal = ctrl.signal;
+  return fetch(url, opts).then(function (r) { clearTimeout(to); return r; }, function (e) { clearTimeout(to); throw e; });
 }
 
 var CACHE_TTL_MS = 30 * 60 * 1000;
 function carregarDados() {
+  hidratarSeedProduto();
   var carregarRede = function () {
     return carregarDoSupabase()
       .catch(function () {
-        return fetch("products.json")
+        return fetchComTimeout("products.json", {}, 8000)
           .then(function (r) { if (!r.ok) throw new Error("http"); return r.json(); });
       })
       .then(function (d) {
@@ -1047,10 +1075,14 @@ function initProduto() {
   chipDisp.className = "chip " + disp[1];
   chipDisp.innerHTML = '<span data-dot></span>' + disp[0];
 
-  $("#pg-rating").innerHTML = starsHTML(p.rating) + ' <strong>' + p.rating.toFixed(1) + "</strong> out of 5 <span class=\"count\">(" + num(p.avaliacoes) + " ratings)</span>";
-  $("#pg-merchant").innerHTML = "Available at <span class=\"merchant-chip\">" + esc(p.merchant_nome) + "</span>";
-  $("#pg-marca").textContent = "Brand: " + p.marca;
-  $("#pg-produto-id").textContent = "Partner SKU: " + p.product_id;
+  var elRating = $("#pg-rating");
+  if (elRating) elRating.innerHTML = starsHTML(p.rating || 5) + ' <strong>' + (p.rating || 5).toFixed(1) + "</strong> out of 5 <span class=\"count\">(" + num(p.avaliacoes) + " ratings)</span>";
+  var elMerchant = $("#pg-merchant");
+  if (elMerchant) elMerchant.innerHTML = "Available at <span class=\"merchant-chip\">" + esc(p.merchant_nome) + "</span>";
+  var elMarca = $("#pg-marca");
+  if (elMarca) elMarca.textContent = "Brand: " + p.marca;
+  var elSku = $("#pg-produto-id");
+  if (elSku) elSku.textContent = "Partner SKU: " + p.product_id;
 
   var precoHTML = "";
   if (p.preco_anterior) {
@@ -1080,7 +1112,7 @@ function initProduto() {
   });
 
   var boxCupom = $("#cupom-box");
-  if (boxCupom) {
+  if (boxCupom && !boxCupom.classList.contains("show")) {
     boxCupom.hidden = true;
     boxCupom.classList.remove("show");
     var codEl = $("#cupom-codigo");
