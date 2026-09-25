@@ -294,45 +294,6 @@ button { font-family: inherit; }
 .filtros .fgroup .chk { display: flex; }
 .filtro-empty { font-size: 12.5px; color: var(--faint); }
 
-/* ---------- Product page: Where to buy + price history ---------- */
-.ofertas { display: flex; flex-direction: column; gap: 10px; }
-.ofertas-note { font-size: 13px; color: var(--muted); margin: -6px 0 16px; max-width: 80ch; }
-.ofertas-count { color: var(--muted); font-weight: 600; font-size: 13px; }
-.oferta-row {
-  position: relative;
-  display: grid; grid-template-columns: minmax(200px, 1.4fr) auto auto auto; align-items: center; gap: 18px;
-  border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; background: var(--surface);
-}
-.oferta-row.best { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(11, 94, 168, 0.08); }
-.oferta-badge {
-  position: absolute; top: -10px; left: 12px;
-  background: var(--brand); color: #fff; font-size: 10.5px; font-weight: 700; letter-spacing: 0.4px;
-  padding: 4px 10px; border-radius: 5px; text-transform: uppercase;
-}
-.oferta-loja { display: flex; align-items: center; gap: 12px; }
-.oferta-loja-nome { display: flex; flex-direction: column; min-width: 0; }
-.oferta-loja-nome a { font-weight: 700; font-size: 14px; color: var(--ink); }
-.oferta-loja-nome a:hover { color: var(--brand); }
-.oferta-loja-nome small { font-size: 11.5px; color: var(--faint); }
-.oferta-prazo { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
-.oferta-preco { text-align: right; white-space: nowrap; }
-.oferta-preco .now { font-size: 19px; font-weight: 800; letter-spacing: -0.3px; color: var(--ink); }
-.oferta-preco .was { font-size: 12px; color: var(--faint); text-decoration: line-through; margin-left: 6px; }
-.oferta-preco .pct { background: var(--spot); color: #fff; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 10px; margin-right: 8px; }
-.oferta-row .btn-buy { margin-top: 0; width: auto; white-space: nowrap; }
-.ofertas-extra { font-size: 12.5px; color: var(--faint); margin-top: 4px; }
-
-.historico-box { }
-.historico-empty {
-  text-align: center; padding: 34px 18px; border: 1px dashed var(--line); border-radius: var(--radius);
-  background: #fafbfc; color: var(--muted);
-}
-.historico-ico { color: var(--brand); margin-bottom: 10px; }
-.historico-empty h3 { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
-.historico-empty p { font-size: 13px; max-width: 60ch; margin: 0 auto; line-height: 1.6; }
-.historico-empty .historico-fato { margin-top: 12px; font-size: 13px; color: var(--ink); }
-.historico-empty .historico-fato strong { color: var(--brand); }
-
 /* ---------- Breadcrumb ---------- */
 .crumb { font-size: 13px; color: var(--faint); padding: 18px 0 4px; display: flex; flex-wrap: wrap; gap: 6px; }
 .crumb a:hover { color: var(--brand); text-decoration: underline; }
@@ -468,6 +429,7 @@ button { font-family: inherit; }
 .coupon-box .btn-buy-big { width: 100%; }
 
 /* ---------- Compare prices at other stores ---------- */
+.comparar-note { font-size: 13px; color: var(--muted); margin: -6px 0 16px; max-width: 80ch; }
 .comparar-hero {
   display: flex; align-items: center; gap: 20px;
   background: linear-gradient(135deg, var(--buy) 0%, var(--buy-dark) 100%);
@@ -655,9 +617,4 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
   .toolbar select { flex: 1; min-height: 42px; }
   .filtros-toggle { min-height: 44px; }
   .store-card { padding: 12px 14px; }
-  .oferta-row { grid-template-columns: 1fr auto; gap: 12px; padding: 12px 14px; }
-  .oferta-prazo { grid-column: 1; }
-  .oferta-preco { grid-column: 2; grid-row: 1; }
-  .oferta-row .btn-buy { grid-column: 1 / -1; width: 100%; }
-  .ofertas-count { display: block; margin-top: 2px; }
 }

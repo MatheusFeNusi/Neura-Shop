@@ -1081,85 +1081,9 @@ function initProduto() {
     .slice(0, 4);
   rel.innerHTML = relacionados.map(cardHTML).join("");
 
-  renderOfertas(p);
-  renderHistorico(p);
   renderComparar(p);
 
   document.title = p.nome + " · WattWheel";
-}
-
-/* ---------- Where to buy (offer comparison) ---------- */
-/* Groups offers for the same product by a real identifier only.
-   No invented matches: if only this store carries the item, it is the single offer. */
-function ofertasDoProduto(p) {
-  var chave = p.product_id || p.nome.toLowerCase().trim();
-  var ofertas = PRODUTOS.filter(function (x) { return (x.product_id || x.nome.toLowerCase().trim()) === chave; });
-  if (!ofertas.length) ofertas = [p];
-  return ofertas;
-}
-
-function renderOfertas(p) {
-  var sec = $("#ofertas-sec");
-  var alvo = $("#ofertas-tabela");
-  var countEl = $("#ofertas-count");
-  if (!alvo) return;
-  var ofertas = ofertasDoProduto(p);
-  var melhorPreco = Math.min.apply(null, ofertas.map(function (o) { return o.preco; }));
-  var best = melhorPreco === p.preco;
-  if (countEl) countEl.textContent = "(" + ofertas.length + " offer" + (ofertas.length === 1 ? "" : "s") + ")";
-  if (ofertas.length === 1) {
-    var o = ofertas[0];
-    var pct = pctDesc(o.preco, o.preco_anterior);
-    alvo.innerHTML =
-      '<div class="oferta-row best">' +
-      '<span class="oferta-badge">Best offer</span>' +
-      '<span class="oferta-loja"><span class="store-logo sm">' + esc(String(o.merchant_nome || "Store").split(/\s+/).map(function (w) { return w.charAt(0); }).join("").slice(0, 2).toUpperCase()) + "</span>" +
-      '<span class="oferta-loja-nome"><a href="store.html?loja=' + encodeURIComponent(o.merchant) + '">' + esc(o.merchant_nome) + "</a><small>" + esc(o.marca) + "</small></span></span>" +
-      '<span class="oferta-prazo">' + (ROTULOS_DISP[o.disponibilidade] ? ROTULOS_DISP[o.disponibilidade][0] : "In stock") + "</span>" +
-      '<span class="oferta-preco">' +
-      (pct != null ? '<span class="pct">-' + pct + "%</span>" : "") +
-      '<span class="now">' + fmt(o.preco) + "</span>" +
-      (o.preco_anterior ? '<span class="was">' + fmt(o.preco_anterior) + "</span>" : "") +
-      "</span>" +
-      (o.disponibilidade === "esgotado"
-        ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>'
-        : '<button class="btn-buy" onclick="abrirOferta(\'' + o.id + '\')">View deal</button>') +
-      "</div>" +
-      '<p class="ofertas-extra">This product is currently available from one retailer. As more retailers carry it, all offers will appear here automatically.</p>';
-  } else {
-    alvo.innerHTML = ofertas.map(function (o, i) {
-      var isBest = o.preco === melhorPreco;
-      var pct = pctDesc(o.preco, o.preco_anterior);
-      return '<div class="oferta-row' + (isBest ? " best" : "") + '">' +
-        (isBest ? '<span class="oferta-badge">Best offer</span>' : "") +
-        '<span class="oferta-loja"><span class="store-logo sm">' + esc(String(o.merchant_nome || "Store").split(/\s+/).map(function (w) { return w.charAt(0); }).join("").slice(0, 2).toUpperCase()) + "</span>" +
-        '<span class="oferta-loja-nome"><a href="store.html?loja=' + encodeURIComponent(o.merchant) + '">' + esc(o.merchant_nome) + "</a><small>" + esc(o.marca) + "</small></span></span>" +
-        '<span class="oferta-prazo">' + (ROTULOS_DISP[o.disponibilidade] ? ROTULOS_DISP[o.disponibilidade][0] : "In stock") + "</span>" +
-        '<span class="oferta-preco">' +
-        (pct != null ? '<span class="pct">-' + pct + "%</span>" : "") +
-        '<span class="now">' + fmt(o.preco) + "</span>" +
-        (o.preco_anterior ? '<span class="was">' + fmt(o.preco_anterior) + "</span>" : "") +
-        "</span>" +
-        (o.disponibilidade === "esgotado"
-          ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>'
-          : '<button class="btn-buy" onclick="abrirOferta(\'' + o.id + '\')">View deal</button>') +
-        "</div>";
-    }).join("");
-  }
-  if (!best && sec) sec.classList.add("not-best");
-}
-
-/* ---------- Price history (interface only — no invented data) ---------- */
-function renderHistorico(p) {
-  var alvo = $("#historico-box");
-  if (!alvo) return;
-  alvo.innerHTML =
-    '<div class="historico-empty">' +
-    '<svg class="historico-ico" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>' +
-    "<h3>Price tracking is starting</h3>" +
-    "<p>We record prices for this product over time. This section will show the price history (current price, lowest and highest recorded) as soon as real data is collected. We never show estimated history.</p>" +
-    '<p class="historico-fato">Current price: <strong>' + fmt(p.preco) + "</strong> at " + esc(p.merchant_nome) + ".</p>" +
-    "</div>";
 }
 
 function renderSimilares(principal) {
