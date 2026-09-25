@@ -1,6 +1,7 @@
 node_modules/
 produtos csv/
-tools/
+tools/*
+!tools/fix-rls-produtos.sql
 *.bak*
 products.json.bak*
 *.log

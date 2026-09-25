@@ -40,20 +40,30 @@ function supaPost(path, payload) {
 function supaPatch(id, dados) {
   return fetch(supaURL("/rest/v1/produtos?id=eq." + encodeURIComponent(id)), {
     method: "PATCH",
-    headers: Object.assign(supaHeaders(false), { "Prefer": "return=minimal" }),
+    headers: Object.assign(supaHeaders(false), { "Prefer": "return=representation" }),
     body: JSON.stringify({ dados: dados })
   }).then(function (r) {
     if (!r.ok) throw new Error("supaPATCH " + r.status);
-    return r;
+    return r.json().then(function (linhas) {
+      if (!linhas || !linhas.length) {
+        throw new Error("RLS bloqueou a escrita (0 linhas). Habilite as policies de UPDATE/INSERT para 'authenticated' na tabela produtos.");
+      }
+      return linhas;
+    });
   });
 }
 function supaDelete(id) {
   return fetch(supaURL("/rest/v1/produtos?id=eq." + encodeURIComponent(id)), {
     method: "DELETE",
-    headers: Object.assign(supaHeaders(false), { "Prefer": "return=minimal" })
+    headers: Object.assign(supaHeaders(false), { "Prefer": "return=representation" })
   }).then(function (r) {
     if (!r.ok) throw new Error("supaDELETE " + r.status);
-    return r;
+    return r.json().then(function (linhas) {
+      if (!linhas || !linhas.length) {
+        throw new Error("RLS bloqueou a exclusao (0 linhas). Habilite a policy de DELETE para 'authenticated' na tabela produtos.");
+      }
+      return linhas;
+    });
   });
 }
 function supaBulkUpsert(rows, onProgress) {
@@ -68,7 +78,15 @@ function supaBulkUpsert(rows, onProgress) {
       headers: Object.assign(supaHeaders(false), { "Prefer": "resolution=merge-duplicates" }),
       body: JSON.stringify(chunk)
     }).then(function (r) {
-      if (!r.ok) throw new Error("supaUpsert " + r.status);
+      if (!r.ok) {
+        return r.json().then(function (b) {
+          var m = (b && b.message) || "";
+          if (/row-level security|row level security/i.test(m)) {
+            throw new Error("RLS bloqueou o INSERT. Rode tools/fix-rls-produtos.sql no SQL Editor do Supabase.");
+          }
+          throw new Error("supaUpsert " + r.status);
+        });
+      }
       if (onProgress) onProgress(i, rows.length);
       return prox();
     });
@@ -157,7 +175,11 @@ function initAdmin() {
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") fecharModal();
   });
-  mostrarEditor();
+  if (sessao && sessao.access_token) {
+    mostrarEditor();
+  } else {
+    mostrarLogin();
+  }
   listaOriginal = PRODUTOS.map(function (p) {
     return { id: p.id, dados: JSON.parse(JSON.stringify(p)) };
   });
