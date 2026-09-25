@@ -47,6 +47,18 @@
 
         <div class="buybox">
           <button class="btn-buy-big" id="btn-comprar">Check price at retailer</button>
+          <div class="coupon-box" id="cupom-box" hidden>
+            <div class="coupon-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 0-4h20a2 2 0 0 1 0 4 2 2 0 0 0 0 4 2 2 0 0 1 0 4H2a2 2 0 0 1 0-4 2 2 0 0 0 0-4z"/><path d="M13 5v14M16 12h.01M10 12h.01"/></svg>
+              Your coupon is ready — <strong>copy it</strong> and apply at checkout
+            </div>
+            <div class="coupon-row">
+              <button class="coupon-code" id="cupom-codigo" type="button" data-codigo="" title="Click to copy"></button>
+              <button class="btn-coupon-copy" id="btn-copiar-cupom" type="button">Copy</button>
+            </div>
+            <p class="coupon-note" id="cupom-nota"></p>
+            <button class="btn-buy-big" id="btn-comprar-cupom">Go to retailer with coupon ↗</button>
+          </div>
           <p class="redirect-note">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
             You'll be redirected to <span id="parceiro-nome"></span>, the retailer handling this product. WattWheel only curates and compares — we never sell, price or process your purchase.
@@ -86,6 +98,12 @@
       <h2><span class="bar"></span> Where to buy <span class="ofertas-count" id="ofertas-count"></span></h2>
       <p class="ofertas-note">We compare offers for this product across retailers. The best price is highlighted — buying through our links supports the comparison at no additional cost to you.</p>
       <div class="ofertas" id="ofertas-tabela"></div>
+    </section>
+
+    <section class="detail-sec comparar-sec" id="comparar-sec">
+      <h2><span class="bar"></span> Compare prices at other stores</h2>
+      <p class="ofertas-note">Check the same model at other major retailers. Prices and availability vary by store — we show you the current retailer price and link you to live searches.</p>
+      <div class="comparar" id="comparar-tabela"></div>
     </section>
 
     <section class="detail-sec historico-sec" id="historico-sec">

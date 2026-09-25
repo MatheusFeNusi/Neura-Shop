@@ -144,6 +144,45 @@ function imgProd(prod, variant) {
   return svgProduto(prod, variant);
 }
 
+/* ---------- Price comparison: other well-known retailers ---------- */
+/* External search URLs only — we never invent prices for other stores. */
+var LOJAS_COMPARE = [
+  { nome: "Amazon", chave: "amazon", url: "https://www.amazon.com/s?k=" },
+  { nome: "Walmart", chave: "walmart", url: "https://www.walmart.com/search?q=" },
+  { nome: "eBay", chave: "ebay", url: "https://www.ebay.com/sch/i.html?_nkw=" },
+  { nome: "Best Buy", chave: "bestbuy", url: "https://www.bestbuy.com/site/searchpage.jsp?st=" },
+  { nome: "Target", chave: "target", url: "https://www.target.com/s?searchTerm=" },
+  { nome: "AliExpress", chave: "aliexpress", url: "https://www.aliexpress.com/wholesale?SearchText=" }
+];
+
+function chaveBuscaProduto(p) {
+  var w = [];
+  if (p.marca) w.push(p.marca);
+  var m = String(p.nome || "").split(/\s+/);
+  for (var i = 0; i < m.length && w.length < 4; i++) {
+    var t = m[i].replace(/[^a-zA-Z0-9\-\.]/g, "");
+    var menor = String(t).toLowerCase();
+    if (!t) continue;
+    if (/^(electric|e-?scooter|e-?bike|with|and|for|the|of|to|in|on|recommended|top|max|range|battery|motor|speed|tires|inch|folding|load|mileage|hi|cm)$/.test(menor)) {
+      if (w.length === 0) continue;
+      break;
+    }
+    w.push(t);
+  }
+  return w.join(" ").slice(0, 60);
+}
+
+function renderComparar(p) {
+  var alvo = $("#comparar-tabela");
+  if (!alvo) return;
+  var q = encodeURIComponent(chaveBuscaProduto(p));
+  alvo.innerHTML = LOJAS_COMPARE.map(function (l) {
+    return '<a class="comparar-loja" href="' + l.url + q + '" target="_blank" rel="noopener nofollow">' +
+      '<span class="store-logo sm">' + esc(l.nome.split(/\s+/).map(function (x) { return x.charAt(0); }).join("").slice(0, 2).toUpperCase()) + "</span>" +
+      '<span class="comparar-loja-nome">' + esc(l.nome) + "<small>Check prices ↗</small></span></a>";
+  }).join("");
+}
+
 /* ---------- Product card ---------- */
 function cardHTML(p) {
   var pct = pctDesc(p.preco, p.preco_anterior);
@@ -213,13 +252,60 @@ function injetarSchema(p) {
   document.head.appendChild(s);
 }
 
-/* ---------- Buy action (redirects to affiliate link) ---------- */
+/* ---------- Buy action (reveal coupon first, then redirect) ---------- */
+function revelarCupom(p) {
+  if (p.disponibilidade === "esgotado") { toast("This item is currently unavailable at the retailer."); return; }
+  var box = $("#cupom-box");
+  if (!box || !p.cupom) { irAoParceiro(p); return; }
+  var cod = $("#cupom-codigo");
+  if (cod) {
+    cod.textContent = String(p.cupom).toUpperCase();
+    cod.setAttribute("data-codigo", String(p.cupom));
+    cod.classList.add("show");
+  }
+  var nota = $("#cupom-nota");
+  if (nota) nota.textContent = (p.cupom_descricao ? p.cupom_descricao + " — " : "") + "Copy the code and paste it at checkout on the retailer's page.";
+  var btnCupom = $("#btn-comprar-cupom");
+  if (btnCupom) btnCupom.addEventListener("click", function () { irAoParceiro(p); });
+  $("#btn-comprar").classList.add("hide");
+  box.hidden = false;
+  box.classList.add("show");
+  copiarCupom(p);
+  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function copiarCupom(p) {
+  var cod = $("#cupom-codigo");
+  if (!cod) return;
+  var texto = String(p.cupom);
+  function ok() { toast("Coupon " + texto.toUpperCase() + " copied — apply it at checkout."); }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(ok, function () { _copiarFallback(texto); ok(); });
+  } else {
+    _copiarFallback(texto); ok();
+  }
+}
+function _copiarFallback(texto) {
+  var ta = document.createElement("textarea");
+  ta.value = texto;
+  ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  ta.remove();
+}
+
+function irAoParceiro(p) {
+  if (p.disponibilidade === "esgotado") { toast("This item is currently unavailable at the retailer."); return; }
+  toast("Opening " + p.merchant_nome + " — the current price and deal are confirmed at checkout.");
+  setTimeout(function () { window.open(p.url_afiliado, "_blank", "noopener"); }, 500);
+}
+
 function abrirOferta(id) {
   var p = PRODUTOS.find(function (x) { return x.id === id; });
   if (!p) return;
-  if (p.disponibilidade === "esgotado") { toast("This item is currently unavailable at the retailer."); return; }
-  toast("Opening " + p.merchant_nome + " — the current price and deal are confirmed at checkout.");
-  setTimeout(function () { window.open(p.url_afiliado, "_blank", "noopener"); }, 600);
+  if (p.cupom) { revelarCupom(p); return; }
+  irAoParceiro(p);
 }
 
 function toast(msg) {
@@ -881,9 +967,19 @@ function initProduto() {
   }
 
   var btn = $("#btn-comprar");
-  btn.innerHTML = esgotado ? "Currently unavailable" : "Check price at " + esc(p.merchant_nome);
+  btn.disabled = false;
+  btn.classList.remove("hide");
+  btn.innerHTML = esgotado ? "Currently unavailable" : (p.cupom ? "Reveal coupon & check price" : "Check price at " + esc(p.merchant_nome));
   btn.disabled = esgotado;
   btn.addEventListener("click", function () { abrirOferta(p.id); });
+
+  var boxCupom = $("#cupom-box");
+  if (boxCupom) {
+    boxCupom.hidden = true;
+    boxCupom.classList.remove("show");
+    var codEl = $("#cupom-codigo");
+    if (codEl) { codEl.textContent = ""; codEl.removeAttribute("data-codigo"); codEl.classList.remove("show"); }
+  }
 
   var btnPar = $("#btn-parceiro");
   if (btnPar) {
@@ -892,6 +988,18 @@ function initProduto() {
   }
   var parceiroNome = $("#parceiro-nome");
   if (parceiroNome) parceiroNome.textContent = p.merchant_nome;
+
+  var codBtn = $("#cupom-codigo");
+  if (codBtn) codBtn.addEventListener("click", function () {
+    var codigo = codBtn.getAttribute("data-codigo");
+    if (codigo) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(codigo).then(function () { toast("Coupon copied — apply it at checkout."); }, function () { toast("Coupon " + codigo.toUpperCase() + " — copy it manually."); });
+      } else { _copiarFallback(codigo); toast("Coupon copied — apply it at checkout."); }
+    }
+  });
+  var btnCopiar = $("#btn-copiar-cupom");
+  if (btnCopiar) btnCopiar.addEventListener("click", copiarCupom.bind(null, p));
 
   $("#specs-tabela").innerHTML = p.specs.map(function (s) {
     return "<tr><th>" + esc(s.rotulo) + "</th><td>" + esc(s.valor) + "</td></tr>";
@@ -930,6 +1038,7 @@ function initProduto() {
 
   renderOfertas(p);
   renderHistorico(p);
+  renderComparar(p);
 
   document.title = p.nome + " · WattWheel";
 }

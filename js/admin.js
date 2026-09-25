@@ -277,6 +277,8 @@ function abrirModal(id) {
   f.rating.value = p.rating != null ? p.rating : "";
   f.avaliacoes.value = p.avaliacoes != null ? p.avaliacoes : "";
   f.disponibilidade.value = p.disponibilidade === "poucas_unidades" ? "poucas_unidades" : p.disponibilidade === "esgotado" ? "esgotado" : "em_estoque";
+  f.cupom.value = p.cupom || p.cupom_texto || "";
+  f.cupom_descricao.value = p.cupom_descricao || "";
   f.marca.value = p.marca || "";
   f.categoria.value = p.categoria || "";
   f.destaque.checked = !!p.destaque;
@@ -308,6 +310,8 @@ function salvarEdicao() {
     rating: Number(f.rating.value),
     avaliacoes: Number(f.avaliacoes.value),
     disponibilidade: f.disponibilidade.value,
+    cupom: f.cupom.value.trim() || null,
+    cupom_descricao: f.cupom_descricao.value.trim() || "",
     marca: f.marca.value.trim() || p.marca,
     categoria: f.categoria.value.trim() || p.categoria,
     categoria_nome: p.categoria_nome,
@@ -410,7 +414,7 @@ function exportarCSV() {
   var colunas = [
     "id", "nome", "marca", "categoria", "categoria_nome",
     "preco", "preco_anterior", "rating", "avaliacoes",
-    "disponibilidade", "destaque", "url_afiliado", "img", "descricao"
+    "disponibilidade", "cupom", "cupom_descricao", "destaque", "url_afiliado", "img", "descricao"
   ];
   var linhas = [];
   linhas.push(colunas.map(csvEscape).join(";"));
