@@ -179,9 +179,12 @@ function renderComparar(p) {
   var lojas = (p.lojas_compare && p.lojas_compare.length) ? p.lojas_compare : LOJAS_COMPARE;
   var img = imgProd(p, 0);
   alvo.innerHTML = lojas.map(function (l) {
+    var precoHTML = (l.preco != null && isFinite(Number(l.preco)))
+      ? '<small class="comparar-preco">' + fmt(Number(l.preco)) + "</small><small class=\"comparar-cta\">Check prices ↗</small>"
+      : '<small class="comparar-cta">Check prices ↗</small>';
     return '<a class="comparar-loja" href="' + l.url + q + '" target="_blank" rel="noopener nofollow">' +
       '<img class="comparar-thumb" src="' + img + '" alt="" loading="lazy"/>' +
-      '<span class="comparar-loja-nome">' + esc(l.nome) + "<small>Check prices ↗</small></span></a>";
+      '<span class="comparar-loja-nome">' + esc(l.nome) + precoHTML + "</span></a>";
   }).join("");
 }
 

@@ -302,7 +302,7 @@ function abrirModal(id) {
   f.cupom.value = p.cupom || p.cupom_texto || "";
   f.cupom_descricao.value = p.cupom_descricao || "";
   f.lojas_compare.value = (p.lojas_compare && p.lojas_compare.length)
-    ? p.lojas_compare.map(function (l) { return l.nome + "|" + l.url; }).join("\n")
+    ? p.lojas_compare.map(function (l) { return l.nome + "|" + l.url + (l.preco != null ? "|" + l.preco : ""); }).join("\n")
     : "";
   f.marca.value = p.marca || "";
   f.categoria.value = p.categoria || "";
@@ -339,11 +339,19 @@ function salvarEdicao() {
     cupom_descricao: f.cupom_descricao.value.trim() || "",
     lojas_compare: (f.lojas_compare.value || "")
       .split("\n").map(function (linha) {
-        var i = linha.indexOf("|");
-        if (i <= 0) return null;
-        return { nome: linha.slice(0, i).trim(), url: linha.slice(i + 1).trim() };
+        var partes = linha.split("|");
+        if (partes.length < 2) return null;
+        var nome = (partes[0] || "").trim();
+        var url = (partes[1] || "").trim();
+        if (!nome || !url) return null;
+        var loja = { nome: nome, url: url };
+        if (partes[2] != null && String(partes[2]).trim() !== "") {
+          var p = Number(String(partes[2]).trim().replace(/[^0-9.,]/g, "").replace(",", "."));
+          if (isFinite(p)) loja.preco = p;
+        }
+        return loja;
       })
-      .filter(function (l) { return l && l.nome && l.url; }),
+      .filter(function (l) { return l; }),
     marca: f.marca.value.trim() || p.marca,
     categoria: f.categoria.value.trim() || p.categoria,
     categoria_nome: p.categoria_nome,
@@ -453,7 +461,7 @@ function exportarCSV() {
   PRODUTOS.forEach(function (p) {
     var valores = colunas.map(function (c) {
       var v = p[c];
-      if (c === "lojas_compare" && Array.isArray(v)) v = v.map(function (l) { return (l.nome || "") + "|" + (l.url || ""); }).join("; ");
+      if (c === "lojas_compare" && Array.isArray(v)) v = v.map(function (l) { return (l.nome || "") + "|" + (l.url || "") + (l.preco != null ? "|" + l.preco : ""); }).join("; ");
       else if (Array.isArray(v)) v = v.join("; ");
       if (typeof v === "boolean") v = v ? "sim" : "nao";
       return csvEscape(v);
