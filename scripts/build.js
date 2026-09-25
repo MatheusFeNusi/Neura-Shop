@@ -505,17 +505,46 @@ function robotsTxt() {
 }
 
 /* ---------- Build ---------- */
+const ROOT_COPY_EXCL = new Set([
+  ".git", "node_modules", "public", "scripts", "tools", "produtos csv",
+  "products", "electric-scooters", "electric-bikes", ".gitignore",
+  "sitemap.xml", "robots.txt"
+]);
 function escreverArquivo(rel, conteudo) {
-  const destino = path.join(OUT, rel);
-  fs.mkdirSync(path.dirname(destino), { recursive: true });
-  fs.writeFileSync(destino, conteudo, "utf8");
-  return destino;
+  [OUT, path.join(OUT, "public")].forEach(function (base) {
+    const destino = path.join(base, rel);
+    fs.mkdirSync(path.dirname(destino), { recursive: true });
+    fs.writeFileSync(destino, conteudo, "utf8");
+  });
+  return path.join(OUT, rel);
+}
+function copiarManual(src, dest) {
+  const st = fs.statSync(src);
+  if (st.isDirectory()) {
+    fs.mkdirSync(dest, { recursive: true });
+    fs.readdirSync(src).forEach(function (nome) {
+      copiarManual(path.join(src, nome), path.join(dest, nome));
+    });
+  } else {
+    fs.copyFileSync(src, dest);
+  }
+}
+function copiarAssetsPublic() {
+  const pub = path.join(OUT, "public");
+  fs.rmSync(pub, { recursive: true, force: true });
+  fs.mkdirSync(pub, { recursive: true });
+  fs.readdirSync(OUT).forEach(function (nome) {
+    if (ROOT_COPY_EXCL.has(nome)) return;
+    if (/\.bak/i.test(nome)) return;
+    copiarManual(path.join(OUT, nome), path.join(pub, nome));
+  });
 }
 
 async function main() {
   const { origem, produtos } = await carregarProdutos();
   console.log("[build] origem:", origem, "| produtos:", produtos.length);
   computarSlugs(produtos);
+  copiarAssetsPublic();
 
   const categorias = {};
   produtos.forEach(p => {
@@ -551,6 +580,7 @@ async function main() {
   escreverArquivo("sitemap.xml", sitemapXML(produtos, catArray));
   escreverArquivo("robots.txt", robotsTxt());
   console.log("[build] sitemap.xml + robots.txt atualizados");
+  console.log("[build] saída: raiz (preview local) + public/ (deploy Vercel)");
   console.log("[build] done");
 }
 
