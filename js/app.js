@@ -272,7 +272,6 @@ function revelarCupom(p) {
   if (nota) nota.textContent = (p.cupom_descricao ? p.cupom_descricao + " — " : "") + "Copy the code and paste it at checkout on the retailer's page.";
   var btnCupom = $("#btn-comprar-cupom");
   if (btnCupom) btnCupom.addEventListener("click", function () { irAoParceiro(p); });
-  $("#btn-comprar").classList.add("hide");
   box.hidden = false;
   box.classList.add("show");
   copiarCupom(p);
@@ -974,9 +973,15 @@ function initProduto() {
   var btn = $("#btn-comprar");
   btn.disabled = false;
   btn.classList.remove("hide");
-  btn.innerHTML = esgotado ? "Currently unavailable" : (p.cupom ? "Reveal coupon & check price" : "Check price at " + esc(p.merchant_nome));
+  btn.innerHTML = esgotado ? "Currently unavailable" : "Check price at " + esc(p.merchant_nome);
   btn.disabled = esgotado;
-  btn.addEventListener("click", function () { abrirOferta(p.id); });
+  btn.addEventListener("click", function () { irAoParceiro(p); });
+
+  var btnRevelar = $("#btn-revelar-cupom");
+  if (btnRevelar) {
+    btnRevelar.hidden = !(p.cupom && !esgotado);
+    btnRevelar.addEventListener("click", function () { revelarCupom(p); });
+  }
 
   var boxCupom = $("#cupom-box");
   if (boxCupom) {
@@ -989,7 +994,7 @@ function initProduto() {
   var btnPar = $("#btn-parceiro");
   if (btnPar) {
     btnPar.textContent = "See product at " + esc(p.merchant_nome) + " \u2197";
-    btnPar.addEventListener("click", function () { abrirOferta(p.id); });
+    btnPar.addEventListener("click", function () { irAoParceiro(p); });
   }
   var parceiroNome = $("#parceiro-nome");
   if (parceiroNome) parceiroNome.textContent = p.merchant_nome;
