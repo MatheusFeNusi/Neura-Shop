@@ -9,152 +9,22 @@
 var STORE_FALLBACK = {
   "marca": { "nome": "DroneDeck", "tagline": "Drone parts. Fair prices." },
   "categorias": [
-    { "slug": "baterias-rc", "nome": "Batteries", "icone": "carregador", "descricao": "LiPo and LiHV packs for quadcopters, whoops and planes." },
-    { "slug": "motores-esc", "nome": "Motors & ESCs", "icone": "barra", "descricao": "Brushless motors, ESCs and speed controllers for your build." },
-    { "slug": "fpv-camera", "nome": "FPV & Cameras", "icone": "camera", "descricao": "FPV cameras, gimbals, video transmitters and antennas." },
-    { "slug": "helices-rc", "nome": "Propellers", "icone": "caixa", "descricao": "Props and blades for racing, freestyle and scale models." },
-    { "slug": "rc-transmissores", "nome": "RC Transmitters", "icone": "teclado", "descricao": "Radios, transmitters, gimbals and controller accessories." }
+    { "slug": "rc-transmissores", "nome": "RC Transmitters", "icone": "teclado", "descricao": "RC Transmitters for your drone or RC build — with live price and real rating per listing." },
+    { "slug": "baterias-rc", "nome": "Batteries", "icone": "carregador", "descricao": "Batteries for your drone or RC build — with live price and real rating per listing." },
+    { "slug": "servos-rc", "nome": "Servos", "icone": "caixa", "descricao": "Servos for your drone or RC build — with live price and real rating per listing." },
+    { "slug": "rc-receptores", "nome": "RC Receivers", "icone": "teclado", "descricao": "RC Receivers for your drone or RC build — with live price and real rating per listing." },
+    { "slug": "motores-esc", "nome": "Motors & ESCs", "icone": "barra", "descricao": "Motors & ESCs for your drone or RC build — with live price and real rating per listing." },
+    { "slug": "fpv-camera", "nome": "FPV & Cameras", "icone": "camera", "descricao": "FPV & Cameras for your drone or RC build — with live price and real rating per listing." },
+    { "slug": "helices-rc", "nome": "Propellers", "icone": "caixa", "descricao": "Propellers for your drone or RC build — with live price and real rating per listing." },
+    { "slug": "drones-rc", "nome": "Drones & FPV", "icone": "barra", "descricao": "Drones & FPV for your drone or RC build — with live price and real rating per listing." },
+    { "slug": "pecas-rc", "nome": "RC Parts & Upgrades", "icone": "caixa", "descricao": "RC Parts & Upgrades for your drone or RC build — with live price and real rating per listing." },
+    { "slug": "estruturas-rc", "nome": "Frames & Bodies", "icone": "caixa", "descricao": "Frames & Bodies for your drone or RC build — with live price and real rating per listing." },
+    { "slug": "helicopteros", "nome": "Helicopters", "icone": "caixa", "descricao": "Helicopters for your drone or RC build — with live price and real rating per listing." },
+    { "slug": "veiculos-rc", "nome": "RC Cars & Trucks", "icone": "caixa", "descricao": "RC Cars & Trucks for your drone or RC build — with live price and real rating per listing." },
+    { "slug": "carregadores-rc", "nome": "Chargers", "icone": "carregador", "descricao": "Chargers for your drone or RC build — with live price and real rating per listing." },
+    { "slug": "aeromodelos", "nome": "Airplanes", "icone": "caixa", "descricao": "Airplanes for your drone or RC build — with live price and real rating per listing." }
   ],
-  "produtos": [
-    {
-      "id": "bg-fallback-lipo-1500", "nome": "ZOP Power 7.4V 1500mAh 40C 2S Lipo Battery XT60 Plug", "descricao": "A 2S 7.4V LiPo pack with XT60 plug — a solid pick for your RC build, curated from the retailer catalog with live price and real ratings.", "marca": "ZOP Power",
-      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-LIPO-1500",
-      "categoria": "baterias-rc", "categoria_nome": "Batteries", "preco": 12.99, "preco_anterior": 15.99, "comissao": 0.4,
-      "url_afiliado": "https://partners.example.com/dronedeck/lipo-1500?ref=dronedeck",
-      "icone": "carregador", "disponibilidade": "em_estoque", "rating": 4.8, "avaliacoes": 920, "destaque": true,
-      "specs": [
-        { "rotulo": "Brand", "valor": "ZOP Power" },
-        { "rotulo": "Category", "valor": "Batteries" },
-        { "rotulo": "Package", "valor": "1 PCS" },
-        { "rotulo": "Availability", "valor": "In stock" }
-      ],
-      "faq": [
-        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an independent product discovery platform — the button takes you to the retailer's page, where the item is sold and processed by that retailer." },
-        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged). Since this is a static demo, confirm price, rating and availability before buying." },
-        { "p": "Does DroneDeck earn a commission?", "a": "if you buy through the button, this independent product discovery demo may receive a small commission from the partner store, at no additional cost to you." }
-      ]
-    },
-    {
-      "id": "bg-fallback-motor-2200kv", "nome": "RacerStar BR2304 1850KV 2-3S Brushless Motor", "descricao": "A race-tuned brushless motor for 2-3S whoop builds, curated from the retailer catalog with live price and ratings.", "marca": "RacerStar",
-      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-MOTOR-2304",
-      "categoria": "motores-esc", "categoria_nome": "Motors & ESCs", "preco": 9.99, "preco_anterior": 12.99, "comissao": 0.3,
-      "url_afiliado": "https://partners.example.com/dronedeck/br2304?ref=dronedeck",
-      "icone": "barra", "disponibilidade": "em_estoque", "rating": 4.7, "avaliacoes": 640, "destaque": true,
-      "specs": [
-        { "rotulo": "Brand", "valor": "RacerStar" },
-        { "rotulo": "Category", "valor": "Motors & ESCs" },
-        { "rotulo": "Availability", "valor": "In stock" }
-      ],
-      "faq": [
-        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an independent product discovery platform — the button takes you to the retailer's page, where the item is sold and processed by that retailer." },
-        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
-        { "p": "Does DroneDeck earn a commission?", "a": "if you buy through the button, this independent product discovery demo may receive a small commission from the partner store, at no additional cost to you." }
-      ]
-    },
-    {
-      "id": "bg-fallback-cam", "nome": "Caddx Nebula Pro Vista FPV Camera Unit", "descricao": "A high-quality FPV camera unit with low latency, fitted for racing and freestyle quads, curated from the retailer catalog.", "marca": "Caddx",
-      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-CAM-NEB",
-      "categoria": "fpv-camera", "categoria_nome": "FPV & Cameras", "preco": 89.99, "preco_anterior": 109.99, "comissao": 2.7,
-      "url_afiliado": "https://partners.example.com/dronedeck/nebula-pro?ref=dronedeck",
-      "icone": "camera", "disponibilidade": "em_estoque", "rating": 4.6, "avaliacoes": 388, "destaque": false,
-      "specs": [
-        { "rotulo": "Brand", "valor": "Caddx" },
-        { "rotulo": "Category", "valor": "FPV & Cameras" },
-        { "rotulo": "Availability", "valor": "In stock" }
-      ],
-      "faq": [
-        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an independent product discovery platform — the button takes you to the retailer's page, where the item is sold and processed by that retailer." },
-        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
-        { "p": "Does DroneDeck earn a commission?", "a": "if you buy through the button, this independent product discovery demo may receive a small commission from the partner store, at no additional cost to you." }
-      ]
-    },
-    {
-      "id": "bg-fallback-props", "nome": "Gemfan GF 5040 2-Blade Propeller CW CCW (4 Pack)", "descricao": "Lightweight 5-inch 2-blade props in CW and CCW pairs — a favorite for 5\" racing and freestyle quads.", "marca": "Gemfan",
-      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-PROPS-5040",
-      "categoria": "helices-rc", "categoria_nome": "Propellers", "preco": 3.49, "preco_anterior": 4.99, "comissao": 0.1,
-      "url_afiliado": "https://partners.example.com/dronedeck/gf5040?ref=dronedeck",
-      "icone": "caixa", "disponibilidade": "em_estoque", "rating": 4.9, "avaliacoes": 1510, "destaque": true,
-      "specs": [
-        { "rotulo": "Brand", "valor": "Gemfan" },
-        { "rotulo": "Category", "valor": "Propellers" },
-        { "rotulo": "Package", "valor": "4 PCS" },
-        { "rotulo": "Availability", "valor": "In stock" }
-      ],
-      "faq": [
-        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an independent product discovery platform — the button takes you to the retailer's page, where the item is sold and processed by that retailer." },
-        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
-        { "p": "Does DroneDeck earn a commission?", "a": "if you buy through the button, this independent product discovery demo may receive a small commission from the partner store, at no additional cost to you." }
-      ]
-    },
-    {
-      "id": "bg-fallback-tx", "nome": "RadioMaster Pocket 2.4GHz 16CH ELRS Radio Controller", "descricao": "A compact 2.4GHz 16-channel ELRS radio built for FPV — curated from the retailer catalog with live price and ratings.", "marca": "RadioMaster",
-      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-TX-POCKET",
-      "categoria": "rc-transmissores", "categoria_nome": "RC Transmitters", "preco": 79.99, "preco_anterior": 99.99, "comissao": 2.4,
-      "url_afiliado": "https://partners.example.com/dronedeck/pocket-elrs?ref=dronedeck",
-      "icone": "teclado", "disponibilidade": "em_estoque", "rating": 4.8, "avaliacoes": 1200, "destaque": true,
-      "specs": [
-        { "rotulo": "Brand", "valor": "RadioMaster" },
-        { "rotulo": "Category", "valor": "RC Transmitters" },
-        { "rotulo": "Availability", "valor": "In stock" }
-      ],
-      "faq": [
-        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an independent product discovery platform — the button takes you to the retailer's page, where the item is sold and processed by that retailer." },
-        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
-        { "p": "Does DroneDeck earn a commission?", "a": "if you buy through the button, this independent product discovery demo may receive a small commission from the partner store, at no additional cost to you." }
-      ]
-    },
-    {
-      "id": "bg-fallback-esc", "nome": "Flycolor Beast Pro 45A ESC 6S BLHeli_32 4-in-1", "descricao": "A 45A 6S 4-in-1 ESC with BLHeli_32 firmware for racing and freestyle quads.", "marca": "Flycolor",
-      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-ESC-45A",
-      "categoria": "motores-esc", "categoria_nome": "Motors & ESCs", "preco": 42.99, "preco_anterior": 49.99, "comissao": 1.3,
-      "url_afiliado": "https://partners.example.com/dronedeck/beastpro45?ref=dronedeck",
-      "icone": "barra", "disponibilidade": "em_estoque", "rating": 4.5, "avaliacoes": 255, "destaque": false,
-      "specs": [
-        { "rotulo": "Brand", "valor": "Flycolor" },
-        { "rotulo": "Category", "valor": "Motors & ESCs" },
-        { "rotulo": "Availability", "valor": "In stock" }
-      ],
-      "faq": [
-        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an independent product discovery platform — the button takes you to the retailer's page, where the item is sold and processed by that retailer." },
-        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
-        { "p": "Does DroneDeck earn a commission?", "a": "if you buy through the button, this independent product discovery demo may receive a small commission from the partner store, at no additional cost to you." }
-      ]
-    },
-    {
-      "id": "bg-fallback-servo", "nome": "DSServo DS3225 25KG Metal Gear Digital Servo", "descricao": "A 25kg metal-gear digital servo for planes, cars and robots — a robust choice at a fair price.", "marca": "DSServo",
-      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-SERVO-3225",
-      "categoria": "servos-rc", "categoria_nome": "Servos", "preco": 14.99, "preco_anterior": 17.99, "comissao": 0.5,
-      "url_afiliado": "https://partners.example.com/dronedeck/ds3225?ref=dronedeck",
-      "icone": "caixa", "disponibilidade": "em_estoque", "rating": 4.7, "avaliacoes": 810, "destaque": true,
-      "specs": [
-        { "rotulo": "Brand", "valor": "DSServo" },
-        { "rotulo": "Category", "valor": "Servos" },
-        { "rotulo": "Availability", "valor": "In stock" }
-      ],
-      "faq": [
-        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an independent product discovery platform — the button takes you to the retailer's page, where the item is sold and processed by that retailer." },
-        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
-        { "p": "Does DroneDeck earn a commission?", "a": "if you buy through the button, this independent product discovery demo may receive a small commission from the partner store, at no additional cost to you." }
-      ]
-    },
-    {
-      "id": "bg-fallback-frame", "nome": "iFlight Nazgul CineSpeed Cinematic FPV Frame 5-inch", "descricao": "A durable 5-inch cinematic FPV frame with mounting options for an easily serviceable build.", "marca": "iFlight",
-      "merchant": "partner-store", "merchant_nome": "Partner store", "product_id": "BG-FALLBACK-FRAME-5",
-      "categoria": "estruturas-rc", "categoria_nome": "Frames & Bodies", "preco": 34.99, "preco_anterior": 41.99, "comissao": 1.1,
-      "url_afiliado": "https://partners.example.com/dronedeck/nazgul-frame?ref=dronedeck",
-      "icone": "caixa", "disponibilidade": "em_estoque", "rating": 4.6, "avaliacoes": 310, "destaque": false,
-      "specs": [
-        { "rotulo": "Brand", "valor": "iFlight" },
-        { "rotulo": "Category", "valor": "Frames & Bodies" },
-        { "rotulo": "Availability", "valor": "In stock" }
-      ],
-      "faq": [
-        { "p": "Does DroneDeck sell this part?", "a": "No. DroneDeck is an independent product discovery platform — the button takes you to the retailer's page, where the item is sold and processed by that retailer." },
-        { "p": "Where do the price and rating come from?", "a": "Directly from the current partner listing used in this demo (unchanged)." },
-        { "p": "Does DroneDeck earn a commission?", "a": "if you buy through the button, this independent product discovery demo may receive a small commission from the partner store, at no additional cost to you." }
-      ]
-    }
-  ]
+  "produtos": []
 };
 
 /* ---------- State ---------- */
