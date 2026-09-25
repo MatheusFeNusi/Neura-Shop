@@ -1120,7 +1120,7 @@ function renderSimilares(principal) {
   }
 }
 
-/* ---------- Banners (carousel) ---------- */
+/* ---------- Banners (stacked) ---------- */
 function renderBanners(p) {
   var sec = $("#pg-banner-sec");
   var alvo = $("#pg-banner-carousel");
@@ -1129,34 +1129,11 @@ function renderBanners(p) {
   if (!banners) { sec.hidden = true; return; }
   sec.hidden = false;
   alvo.innerHTML =
-    '<div class="pg-carousel-track">' +
+    '<div class="pg-banner-stack">' +
     banners.map(function (url, i) {
-      return '<div class="pg-carousel-slide' + (i === 0 ? " on" : "") + '"><img src="' + esc(url) + '" alt="Banner ' + (i + 1) + '" loading="lazy"/></div>';
+      return '<div class="pg-banner-item"><img src="' + esc(url) + '" alt="Banner ' + (i + 1) + '" loading="lazy"/></div>';
     }).join("") +
-    "</div>" +
-    (banners.length > 1
-      ? '<button class="pg-carousel-nav prev" type="button" aria-label="Previous">‹</button>' +
-        '<button class="pg-carousel-nav next" type="button" aria-label="Next">›</button>' +
-        '<div class="pg-carousel-dots">' + banners.map(function (_, i) { return '<button type="button" data-ix="' + i + '" class="dot' + (i === 0 ? " on" : "") + '" aria-label="Slide ' + (i + 1) + '"></button>'; }).join("") + "</div>"
-      : "")
-  ;
-  var track = alvo.querySelector(".pg-carousel-track");
-  var ix = 0;
-  var total = banners.length;
-  function go(n) {
-    ix = (n + total) % total;
-    var off = -ix * 100;
-    track.style.transform = "translateX(" + off + "%)";
-    $$(".pg-carousel-slide", track).forEach(function (s, i) { s.classList.toggle("on", i === ix); });
-    $$(".dot", alvo).forEach(function (d, i) { d.classList.toggle("on", i === ix); });
-  }
-  var prev = alvo.querySelector(".prev");
-  var next = alvo.querySelector(".next");
-  if (prev) prev.addEventListener("click", function () { go(ix - 1); });
-  if (next) next.addEventListener("click", function () { go(ix + 1); });
-  $$(".dot", alvo).forEach(function (d) {
-    d.addEventListener("click", function () { go(Number(d.dataset.ix)); });
-  });
+    "</div>";
 }
 
 /* ---------- Video (popup embed) ---------- */

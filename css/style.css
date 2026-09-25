@@ -489,30 +489,11 @@ button { font-family: inherit; }
 .comparar-loja-nome .comparar-cta { color: var(--brand); font-weight: 600; font-size: 12px; }
 .comparar-loja:hover { border-color: var(--brand); box-shadow: var(--shadow); }
 
-/* ---------- Product banners (carousel) ---------- */
+/* ---------- Product banners (stacked) ---------- */
 .pg-banner-sec { padding: 26px 0 0; }
-.pg-banner-carousel { position: relative; border-radius: var(--radius); overflow: hidden; }
-.pg-carousel-track { display: flex; transition: transform 0.4s ease; }
-.pg-carousel-slide { flex: 0 0 100%; min-width: 0; }
-.pg-carousel-slide img { width: 100%; height: auto; display: block; background: var(--surface-2); }
-.pg-carousel-nav {
-  position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
-  width: 42px; height: 42px; border-radius: 50%; border: 0; cursor: pointer;
-  background: rgba(255, 255, 255, 0.9); color: var(--ink); font-size: 22px; line-height: 1;
-  box-shadow: var(--shadow); display: grid; place-items: center;
-}
-.pg-carousel-nav.prev { left: 12px; }
-.pg-carousel-nav.next { right: 12px; }
-.pg-carousel-nav:hover { background: #fff; }
-.pg-carousel-dots {
-  position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 2;
-  display: flex; gap: 7px;
-}
-.pg-carousel-dots .dot {
-  width: 9px; height: 9px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
-  background: rgba(255, 255, 255, 0.6);
-}
-.pg-carousel-dots .dot.on { background: #fff; transform: scale(1.2); }
+.pg-banner-stack { display: flex; flex-direction: column; gap: 14px; }
+.pg-banner-item { border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+.pg-banner-item img { width: 100%; height: auto; display: block; background: var(--surface-2); }
 
 /* ---------- Video link (buybox) ---------- */
 .video-row { margin-top: 8px; display: flex; }
@@ -655,9 +636,7 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
   .pg-layout .buybox-col { grid-column: auto; grid-row: auto; order: 5; top: 0; }
   .pg-layout .pg-descricao { grid-column: auto; grid-row: auto; order: 6; }
   .buybox-col { top: 0; }
-  .pg-banner-carousel { border-radius: 10px; }
-  .pg-carousel-slide { overflow: hidden; }
-  .pg-carousel-slide img { width: 100%; height: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: center; }
+  .pg-banner-item { border-radius: 10px; }
   .layout-cat { grid-template-columns: 1fr; }
   .filtros-toggle { display: block; }
   .filtros { display: none; }
@@ -689,10 +668,6 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
   .pg-price .now { font-size: 24px; }
   .comparar { grid-template-columns: 1fr; }
   .comparar-thumb { width: 72px; height: 72px; }
-  .pg-carousel-slide img { aspect-ratio: 3 / 2; }
-  .pg-carousel-nav { width: 34px; height: 34px; font-size: 18px; }
-  .pg-carousel-nav.prev { left: 8px; }
-  .pg-carousel-nav.next { right: 8px; }
   .buybox {
     position: sticky; bottom: 0; z-index: 20;
     background: rgba(255, 255, 255, 0.92);
