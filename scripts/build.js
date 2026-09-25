@@ -430,10 +430,10 @@ function pagProduto(p, contexto) {
         '<p class="coupon-note" id="cupom-nota">Apply code at checkout on ' + esc(p.merchant_nome) + ".</p>" +
         '<button class="btn-buy-big" id="btn-comprar-cupom">Go to retailer with coupon ↗</button></div>'
       : "") +
-    '<p class="redirect-note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> You\u2019ll be redirected to <span id="parceiro-nome">' + esc(p.merchant_nome) + "</span>, the retailer handling this product. WattWheel only curates and compares — we never sell, price or process your purchase.</p>" +
+    '<p class="redirect-note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>You\u2019ll be redirected to <strong id="parceiro-nome">' + esc(p.merchant_nome) + "</strong>, the retailer handling this product. WattWheel only curates and compares — we never sell, price or process your purchase.</span></p>" +
     (temCupom ? "" : '<button class="btn-partner" id="btn-parceiro">See product at retailer \u2197</button>') +
     (p.comissao
-      ? '<div class="comissao-note" id="comissao-note"><strong>Transparency:</strong> WattWheel is an affiliate — we may earn a commission on qualifying purchases made through this link, at no additional cost to you.</div>'
+      ? '<div class="comissao-note" id="comissao-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span><strong>Transparency:</strong> WattWheel is an affiliate — we may earn a commission on qualifying purchases made through this link, at no additional cost to you.</span></div>'
       : "") +
     "</div>" +
     '<div class="trust-row"><div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span><strong>Secure checkout</strong>Handled entirely by the partner store.</span></div>' +
