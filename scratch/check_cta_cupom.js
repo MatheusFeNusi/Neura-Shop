@@ -25,7 +25,7 @@ slugs.forEach(s => {
   const html = fs.readFileSync(path.join(dir, s, "index.html"), "utf8");
   const tag = s;
 
-  /* 1: comparacao-sec logo abaixo do header e antes do veredito e do resto */
+  /* 1: comparacao-sec no topo, acima do hero, e antes do veredito e do resto */
   const iHead = html.indexOf('class="review-hero-head"');
   const iGal = html.indexOf('class="pg-layout"');
   const iCmp = html.indexOf('class="detail-sec comparar-sec"');
@@ -36,8 +36,8 @@ slugs.forEach(s => {
   if (iCmp < 0) err(tag + ": secao de comparacao ausente");
   else {
     if (iHead < 0) err(tag + ": header da review ausente");
-    else if (!(iHead < iCmp && iCmp < iGal))
-      err(tag + ": comparacao deveria ficar logo abaixo do header, antes da imagem");
+    else if (!(iCmp < iHead && iHead < iGal))
+      err(tag + ": comparacao deveria ficar no topo, acima do hero e antes da imagem");
     if (iCmp > iVer) err(tag + ": comparacao ainda aparece DEPOIS do veredito");
     if (iCmp > iSpec) err(tag + ": comparacao ainda aparece DEPOIS das specs");
     if (iCmp > iRev) err(tag + ": comparacao ainda aparece DEPOIS das reviews");
@@ -77,8 +77,8 @@ if (shellCmp < 0) err("product.html: secao de comparacao ausente");
 else {
   if (shellVer < 0) err("product.html: slot do veredito ausente");
   else if (shellCmp > shellVer) err("product.html: comparacao ainda depois do veredito");
-  if (!(shellHead < shellCmp && shellCmp < shellGal))
-    err("product.html: comparacao deveria ficar logo abaixo do header, antes da imagem");
+  if (!(shellCmp < shellHead && shellHead < shellGal))
+    err("product.html: comparacao deveria ficar no topo, acima do hero e antes da imagem");
 }
 const shellCtas = (shell.match(/class="cta-cupom"/g) || []).length;
 if (shellCtas !== 3) err("product.html: esperado 3 CTA de cupom, veio " + shellCtas);

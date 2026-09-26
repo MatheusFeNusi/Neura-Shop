@@ -408,6 +408,10 @@ function pagProduto(p, contexto) {
     '<a href="/catalog.html?cat=' + esc(p.categoria) + '">' + esc(p.categoria_nome || p.categoria) + "</a>" +
     '<span class="sep">›</span><span>' + esc(p.marca) + " Review</span></nav>" +
 
+    /* ---------- Comparacao de precos: topo da pagina, acima do hero ---------- */
+    '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Compare prices at other stores</h2>' +
+    comparar + "</section>" +
+
     /* ---------- Review hero ---------- */
     '<header class="review-hero-head">' +
     '  <div class="review-badge-tag">' +
@@ -430,10 +434,6 @@ function pagProduto(p, contexto) {
     "  </div>" +
     ReviewData.htmlBottomLine(p, contexto.produtos) +
     "</header>" +
-
-    /* ---------- Comparacao de precos: logo abaixo do header, antes da imagem ---------- */
-    '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Compare prices at other stores</h2>' +
-    comparar + "</section>" +
 
     /* ---------- Imagem + botão de revelar cupom, logo abaixo do título ---------- */
     '<div class="pg-layout">' +
