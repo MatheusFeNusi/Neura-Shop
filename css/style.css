@@ -30,7 +30,11 @@
   --radius-s: 6px;
   --shadow: 0 1px 2px rgba(25, 28, 34, 0.05);
   --shadow-lg: 0 12px 32px rgba(25, 28, 34, 0.1);
-  --font: "IBM Plex Sans", -apple-system, "Helvetica Neue", Roboto, Arial, sans-serif;
+  /* O HTML carrega Inter, nao IBM Plex Sans: sem esta correcao o site inteiro
+     caia na fallback do sistema e a requisicao de fonte ficava ociosa. */
+  --font: "Inter", -apple-system, "Helvetica Neue", Roboto, Arial, sans-serif;
+  /* Serifa de sistema so para a hierarquia editorial da review. */
+  --font-serif: Georgia, "Iowan Old Style", "Times New Roman", Times, serif;
 }
 
 * { box-sizing: border-box; }
@@ -368,7 +372,6 @@ button { font-family: inherit; }
 .chip.out [data-dot] { background: var(--spot); }
 .chip a:hover { text-decoration: underline; }
 .chip.cat { background: var(--brand-soft); border-color: #d5e3f2; color: var(--brand); }
-.pg-title { font-size: clamp(20px, 2.4vw, 26px); font-weight: 700; letter-spacing: -0.4px; line-height: 1.25; }
 .pg-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
 .pg-meta .pg-rating { display: flex; align-items: center; gap: 8px; }
 .pg-meta .pg-rating .count { color: var(--brand); }
@@ -559,7 +562,7 @@ button { font-family: inherit; }
 
 /* ---------- Detail sections ---------- */
 .detail-sec { border-top: 1px solid var(--line); border-radius: 0; padding: 26px 0 4px; margin-top: 30px; background: none; }
-.detail-sec > h2 { font-size: 17px; font-weight: 700; margin-bottom: 14px; letter-spacing: -0.2px; }
+.detail-sec > h2 { font-family: var(--font-serif); font-size: 19px; font-weight: 700; margin-bottom: 14px; letter-spacing: -0.2px; }
 .detail-sec > h2 .bar { display: none; }
 
 table.specs { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -644,8 +647,7 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
   .pg-layout .pg-info { display: contents; }
   .pg-layout .pg-col-galeria { grid-column: auto; grid-row: auto; order: 1; }
   .pg-layout .pg-catscreen { grid-column: auto; grid-row: auto; order: 2; }
-  .pg-layout .pg-title { grid-column: auto; grid-row: auto; order: 3; }
-  .pg-layout .pg-meta { grid-column: auto; grid-row: auto; order: 4; }
+  .pg-layout .pg-meta { grid-column: auto; grid-row: auto; order: 3; }
   .pg-layout .buybox-col { grid-column: auto; grid-row: auto; order: 5; top: 0; }
   .pg-layout .pg-descricao { grid-column: auto; grid-row: auto; order: 6; }
   .buybox-col { top: 0; }
@@ -742,12 +744,13 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
   margin-bottom: 12px;
 }
 .review-page-title {
+  font-family: var(--font-serif);
   font-size: clamp(22px, 2.8vw, 32px);
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ink);
   line-height: 1.25;
   margin: 0 0 12px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.2px;
 }
 .review-author-meta {
   display: flex;
@@ -769,6 +772,82 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
   border-radius: 4px;
   letter-spacing: 0.5px;
 }
+/* "How we score": linha fina de metodologia logo abaixo da byline. */
+.review-how-score {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: -10px 0 14px;
+  max-width: 78ch;
+}
+.review-how-score strong { color: var(--ink); }
+.review-how-score a { color: var(--buy-dark); font-weight: 600; }
+
+/* Selo editorial: terceiro bloco do .review-score-banner, alinhado a direita. */
+.review-award {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 116px;
+  padding: 9px 14px;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-s);
+  text-align: center;
+}
+.award-kicker {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.award-label {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.award-ouro { color: #8a6116; background: #fdf6e7; }
+.award-prata { color: #4a5568; background: var(--surface-2); }
+.award-valor { color: var(--buy-dark); background: var(--buy-soft); }
+
+/* "Bottom line": resumo do veredito + fatos-chave, sem CTA para nao
+   duplicar os botoes de cupom que ja existem na pagina. */
+.review-bottom-line {
+  border-left: 3px solid var(--buy);
+  background: var(--surface-2);
+  border-radius: 0 var(--radius-s) var(--radius-s) 0;
+  padding: 14px 18px;
+  margin: 16px 0 0;
+}
+.bl-kicker {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--buy-dark);
+  margin-bottom: 5px;
+}
+.bl-text {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 0 0 10px;
+  max-width: 66ch;
+}
+.bl-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.bl-facts strong { color: var(--ink); font-weight: 700; }
+
 .review-score-banner {
   display: flex;
   align-items: center;
@@ -1027,7 +1106,8 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
   border-bottom: 1px solid var(--line);
 }
 .review-verdict-head h2 {
-  font-size: 19px;
+  font-family: var(--font-serif);
+  font-size: 21px;
   font-weight: 800;
   color: var(--ink);
   margin: 0 0 6px;

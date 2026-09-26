@@ -390,6 +390,52 @@
       "</section>";
   }
 
+  /* ---------- 6b. Cues de review editorial americana ----------
+     Selo, linha de metodologia e "Bottom line". Tudo derivado dos mesmos
+     dados que ja alimentam o score, sem copy nova por produto. */
+  function premio(p, todos) {
+    var n = notas(p, todos);
+    var f = n.fatos;
+    var med = Number(f.medianaCategoria);
+    if (med > 0 && Number(f.preco) / med <= 0.5) {
+      return { rotulo: "Best Value", classe: "valor" };
+    }
+    if (n.score >= 8.8) return { rotulo: "Editor's Choice", classe: "ouro" };
+    if (n.score >= 8.0) return { rotulo: "Recommended", classe: "prata" };
+    return null;
+  }
+
+  function htmlPremio(p, todos) {
+    var pr = premio(p, todos);
+    if (!pr) return "";
+    return '<div class="review-award award-' + pr.classe + '">' +
+      '<span class="award-kicker">WattWheel</span>' +
+      '<span class="award-label">' + esc(pr.rotulo) + "</span></div>";
+  }
+
+  function htmlMetodologia() {
+    return '<p class="review-how-score"><strong>How we score:</strong> ' +
+      "weighted from the listing specs, the current price against the category median and the published buyer ratings. " +
+      '<a href="/about.html#how-it-works">How our reviews work</a>.</p>';
+  }
+
+  function htmlBottomLine(p, todos) {
+    var n = notas(p, todos);
+    var f = n.fatos;
+    var bits = [
+      "<span><strong>" + n.score.toFixed(1) + "/10</strong> review score</span>",
+      "<span><strong>" + esc(fmtMoeda(f.preco)) + "</strong>" +
+        (f.desconto ? " &middot; " + f.desconto + "% off" : "") + "</span>",
+      "<span><strong>" + (f.nota != null ? f.nota.toFixed(1) : "&mdash;") +
+        "</strong> retailer rating &middot; " + num(f.qtd) + " ratings</span>"
+    ];
+    if (f.cupom) bits.push("<span><strong>" + esc(f.cupom) + "</strong> coupon on file</span>");
+    return '<div class="review-bottom-line">' +
+      '<span class="bl-kicker">Bottom line</span>' +
+      '<p class="bl-text">' + esc(veredito(n).resumo) + "</p>" +
+      '<div class="bl-facts">' + bits.join("") + "</div></div>";
+  }
+
   /* ---------- 7. stars (espelha js/app.js e build.js) ---------- */
   function starsHTML(rating) {
     var full = Math.floor(rating);
@@ -425,26 +471,34 @@
       return x && nomeCurto(x).toLowerCase() === base;
     }).length > 1;
   }
+  /* Base do nome + desambiguacao. Dois SKUs do mesmo modelo truncam igual
+     no nomeCurto (EM200 vs EM200D), entao o titulo precisa do sufixo para
+     nao colidir: #id quando o preco bate, @preco quando difere. */
+  function baseUnica(p, todos) {
+    var base = nomeCurto(p);
+    if (!mesmoNome(p, todos)) return base;
+    var irmaos = (todos || []).filter(function (x) {
+      return x && nomeCurto(x).toLowerCase() === base.toLowerCase();
+    });
+    var mesmoPreco = irmaos.some(function (x) {
+      return Number(x.preco) === Number(p.preco);
+    });
+    if (mesmoPreco) {
+      return base + " #" + String(p.product_id || p.id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-4);
+    }
+    return base + " @" + fmtMoeda(notas(p, todos).fatos.preco);
+  }
   function titulo(p, todos) {
     var n = notas(p, todos);
-    var base = nomeCurto(p);
-    if (mesmoNome(p, todos)) {
-      var irmaos = (todos || []).filter(function (x) {
-        return x && nomeCurto(x).toLowerCase() === base.toLowerCase();
-      });
-      var mesmoPreco = irmaos.some(function (x) {
-        return Number(x.preco) === Number(p.preco);
-      });
-      if (mesmoPreco) {
-        base += " #" + String(p.product_id || p.id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-4);
-      } else {
-        base += " @" + fmtMoeda(n.fatos.preco);
-      }
-    }
-    return base + " review: " + n.score.toFixed(1) + "/10";
+    return baseUnica(p, todos) + " review: " + n.score.toFixed(1) + "/10";
   }
-  function h1(p) {
-    return p.nome + " review: our score, the specs and the best price";
+  /* O nome do parceiro e um titulo de SEO inflado ("48V 23AH Battery 750W*2
+     Dual Motors Recommended Top Speed...") e chega a 153 chars. No h1 ele
+     estourava 200 chars e ainda era repetido no .pg-title. O h1 usa
+     nomeCurto; as specs que sobraram continuam nos key-specs, na tabela e
+     na meta description. */
+  function h1(p, todos) {
+    return baseUnica(p, todos) + " review: our score, the specs and the best price";
   }
 
   /* ---------- 9. FAQ curado ----------
@@ -585,6 +639,7 @@
     nomeCurto: nomeCurto,
     mesmoNome: mesmoNome,
     titulo: titulo,
+    baseUnica: baseUnica,
     h1: h1,
     faq: faq,
     specsVisiveis: specsVisiveis,
@@ -592,6 +647,10 @@
     htmlCtaCupom: htmlCtaCupom,
     htmlScoreBanner: htmlScoreBanner,
     htmlSelos: htmlSelos,
+    htmlPremio: htmlPremio,
+    htmlMetodologia: htmlMetodologia,
+    htmlBottomLine: htmlBottomLine,
+    premio: premio,
     htmlProsCons: htmlProsCons,
     htmlBarras: htmlBarras,
     htmlRessalvas: htmlRessalvas,

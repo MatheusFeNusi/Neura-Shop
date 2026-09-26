@@ -414,7 +414,7 @@ function pagProduto(p, contexto) {
     '    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>' +
     '    REVIEWED &amp; SCORED' +
     '  </div>' +
-    '  <h1 class="review-page-title" id="review-title">' + esc(ReviewData.h1(p)) + "</h1>" +
+    '  <h1 class="review-page-title" id="review-title">' + esc(ReviewData.h1(p, contexto.produtos)) + "</h1>" +
     '  <div class="review-author-meta">' +
     '    <span class="author-item"><strong>Reviewed by</strong> ' + SITE_NAME + " editorial</span>" +
     '    <span class="sep">&bull;</span>' +
@@ -422,10 +422,13 @@ function pagProduto(p, contexto) {
     '    <span class="sep">&bull;</span>' +
     '    <span class="author-item"><strong>Verdict</strong> <span class="verdict-pill ' + verdict.classe + '">' + esc(verdict.rotulo.toUpperCase()) + "</span></span>" +
     "  </div>" +
+    ReviewData.htmlMetodologia() +
     '  <div class="review-score-banner">' +
     ReviewData.htmlScoreBanner(p, contexto.produtos) +
+    ReviewData.htmlPremio(p, contexto.produtos) +
     ReviewData.htmlSelos(p) +
     "  </div>" +
+    ReviewData.htmlBottomLine(p, contexto.produtos) +
     "</header>" +
 
     /* ---------- Imagem + botão de revelar cupom, logo abaixo do título ---------- */
@@ -439,7 +442,6 @@ function pagProduto(p, contexto) {
     "</div>" +
     '<div class="pg-info">' +
     '<div class="pg-catscreen"><a class="chip cat" id="pg-categoria" href="/catalog.html?cat=' + esc(p.categoria) + '">' + esc(p.categoria_nome) + '</a><span class="review-badge-inline">FULL REVIEW</span></div>' +
-    '<p class="pg-title" id="pg-titulo">' + esc(p.nome) + "</p>" +
     '<h2 class="review-subtitle">What the listing actually tells you</h2>' +
     '<div class="pg-meta">' +
     '<span class="pg-rating" id="pg-rating">' + starsHTML(p.rating || 5) + ' <strong>' + (p.rating || 0).toFixed(1) + "</strong> out of 5 <span class=\"count\">(" + num(p.avaliacoes) + " ratings)</span></span>" +

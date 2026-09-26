@@ -384,7 +384,7 @@ function renderReview(p) {
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>' +
         "REVIEWED &amp; SCORED" +
       "</div>" +
-      '<h1 class="review-page-title" id="review-title">' + esc(ReviewData.h1(p)) + "</h1>" +
+      '<h1 class="review-page-title" id="review-title">' + esc(ReviewData.h1(p, PRODUTOS)) + "</h1>" +
       '<div class="review-author-meta">' +
         '<span class="author-item"><strong>Reviewed by</strong> WattWheel editorial</span>' +
         '<span class="sep">&bull;</span>' +
@@ -392,10 +392,13 @@ function renderReview(p) {
         '<span class="sep">&bull;</span>' +
         '<span class="author-item"><strong>Verdict</strong> <span class="verdict-pill ' + v.classe + '">' + esc(v.rotulo.toUpperCase()) + "</span></span>" +
       "</div>" +
+      ReviewData.htmlMetodologia() +
       '<div class="review-score-banner">' +
         ReviewData.htmlScoreBanner(p, todos) +
+        ReviewData.htmlPremio(p, todos) +
         ReviewData.htmlSelos(p) +
-      "</div>";
+      "</div>" +
+      ReviewData.htmlBottomLine(p, todos);
   }
   if (slot) slot.innerHTML = ReviewData.htmlVeredito(p, todos);
 
@@ -1136,7 +1139,6 @@ function initProduto() {
     b.classList.add("on");
   });
 
-  $("#pg-titulo").textContent = p.nome;
   var descEl = $("#pg-descricao");
   if (descEl && p.descricao) descEl.innerHTML = window.ReviewData ? ReviewData.htmlDescricao(p.descricao) : descricaoHTML(p.descricao);
   setMetaDescricao(p, window.ReviewData ? ReviewData.notas(p, PRODUTOS) : null);
@@ -1338,7 +1340,7 @@ function injetarSchemaReview(p) {
   var article = {
     "@type": "Article",
     "headline": ReviewData.titulo(p, todos),
-    "name": ReviewData.h1(p),
+    "name": ReviewData.h1(p, todos),
     "description": n.lede,
     "url": url,
     "mainEntityOfPage": { "@type": "WebPage", "@id": url },
