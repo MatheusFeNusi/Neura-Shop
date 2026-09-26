@@ -73,18 +73,15 @@
               <div class="coupon-row">
                 <button class="coupon-code" id="cupom-codigo" type="button" data-codigo="" title="Click to copy"></button>
               </div>
+              <p class="coupon-compare">We <strong>compare prices at other stores</strong> before you buy — this code is the best price we found at the retailer.</p>
               <p class="coupon-note" id="cupom-nota"></p>
               <button class="btn-buy-big" id="btn-comprar-cupom">Go to retailer with coupon ↗</button>
             </div>
             <p class="redirect-note">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-              <span>You’ll be redirected to <strong id="parceiro-nome">the retailer</strong>, the retailer handling this product. WattWheel only curates and compares — we never sell, price or process your purchase.</span>
+              <span>You’ll be redirected to <strong id="parceiro-nome">the retailer</strong>, where this product is listed, sold and shipped.</span>
             </p>
             <button class="btn-partner" id="btn-parceiro">See product at retailer ↗</button>
-            <div class="comissao-note" id="comissao-note" hidden>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              <span><strong>Transparency:</strong> WattWheel is an affiliate — we may earn a commission on qualifying purchases made through this link, at no additional cost to you.</span>
-            </div>
         </div>
 
         <div class="trust-row">
@@ -111,12 +108,17 @@
 
     </div>
 
-    <div id="review-verdict-slot"></div>
-
     <section class="detail-sec comparar-sec" id="comparar-sec">
       <h2><span class="bar"></span> Compare prices at other stores</h2>
       <div id="comparar-tabela"></div>
     </section>
+
+    <div id="review-verdict-slot"></div>
+
+    <div class="cta-cupom">
+      <button class="btn-buy-big js-reveal-cupom" type="button">Reveal coupon code</button>
+      <p class="cta-cupom-note">Compare prices at other stores, then apply the code at the retailer checkout.</p>
+    </div>
 
     <section class="section pg-banner-sec" id="pg-banner-sec" hidden>
       <div class="container" style="padding-inline:0">
@@ -130,10 +132,20 @@
       <table class="specs" id="specs-tabela"></table>
     </section>
 
+    <div class="cta-cupom">
+      <button class="btn-buy-big js-reveal-cupom" type="button">Reveal coupon code</button>
+      <p class="cta-cupom-note">Compare prices at other stores, then apply the code at the retailer checkout.</p>
+    </div>
+
     <section class="detail-sec" id="reviews-sec">
       <h2><span class="bar"></span> Customer reviews</h2>
       <div id="reviews-lista"></div>
     </section>
+
+    <div class="cta-cupom">
+      <button class="btn-buy-big js-reveal-cupom" type="button">Reveal coupon code</button>
+      <p class="cta-cupom-note">Compare prices at other stores, then apply the code at the retailer checkout.</p>
+    </div>
 
     <section class="detail-sec" id="similares">
       <h2><span class="bar"></span> Compare similar products</h2>
@@ -144,7 +156,7 @@
     </section>
 
     <section class="detail-sec">
-      <h2><span class="bar"></span> Frequently asked questions</h2>
+      <h2><span class="bar"></span> Frequently asked questions about the coupon and shipping</h2>
       <div id="faq-lista"></div>
     </section>
 

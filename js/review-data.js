@@ -447,6 +447,133 @@
     return p.nome + " review: our score, the specs and the best price";
   }
 
+  /* ---------- 9. FAQ curado ----------
+     O aviso de afiliado canonico vive no card-warn e no rodape. O FAQ nao
+     repete "WattWheel nao vende" nem "ganhamos comissao" — sao as mesmas
+     frases de novo. Aqui ficam so as 3 perguntas que o leitor ainda nao tem. */
+  var FAQ = [
+    { p: "Where do the price and rating come from?",
+      a: "Straight from the current retailer listing. Confirm the price, rating and availability on the retailer's page before you buy." },
+    { p: "Is the displayed price final?",
+      a: "No. The price shown is a reference point collected from the retailer listing and it does change. Confirm the final price on the retailer's page before completing your order." },
+    { p: "Who handles shipping and returns?",
+      a: "Shipping, delivery dates and return policies are set by the retailer. Review those terms on the retailer's product page." }
+  ];
+  function faq() { return FAQ.map(function (f) { return { p: f.p, a: f.a }; }); }
+
+  /* ---------- 10. Tabela de specs sem repeticao ----------
+     Voltage/Battery/Top speed/Size ja aparecem nos key-specs, entao a linha
+     correspondente nao precisa repetir o mesmo valor duas vezes na pagina.
+     O descarte so acontece quando o valor CONCORDA com o key-spec (comparacao
+     numerica), nunca pelo rotulo sozinho: se a loja publicar um numero
+     diferente, a linha e informacao nova e fica. */
+  var RE_NUM = /\d+(?:\.\d+)?/;
+  function numero(v) {
+    var m = String(v == null ? "" : v).match(RE_NUM);
+    return m ? Number(m[0]) : null;
+  }
+  /* rotulo -> qual campo do rf precisa bater para a linha ser redundante */
+  var REDUNDANTES = [
+    { re: /^(voltage|voltagem)$/i, campo: "volt" },
+    { re: /^(battery|battery capacity|capacity|bateria)$/i, campo: "ah" },
+    { re: /^(top speed|max speed|speed|velocidade)$/i, campo: "vel" },
+    { re: /^(size|wheel size|tire size|tyre size|roda)$/i, campo: "pneu" }
+  ];
+  function specsVisiveis(specs, rf) {
+    if (!rf) return (specs || []).slice();
+    return (specs || []).filter(function (s) {
+      var alvo = REDUNDANTES.filter(function (r) { return r.re.test(String((s && s.rotulo) || "").trim()); })[0];
+      if (!alvo) return true;
+      var esperado = rf[alvo.campo];
+      if (esperado == null) return true;          /* sem key-spec: nada a repetir */
+      var informado = numero(s.valor);
+      return !(informado != null && informado === Number(esperado));
+    });
+  }
+
+  /* ---------- 11. Descricao sem repassar as specs ----------
+     A copy do parceiro repete voltagem, watt, autonomia e carga que ja
+     mostramos em key-specs e na tabela. Corta SO a sentenca que e repeticao
+     pura: contem token de spec e nao traz nenhum recurso novo (freio, luz,
+     suspensao, montagem, garantia...). Preserva a prosa util. */
+  var RE_SPEC = /\b\d+(?:\.\d+)?\s?(?:V|Ah|W|km\/h|kmh|km|kg|inch|")\b/gi;
+  var RE_EXTRAS = /\b(brakes?|disc|lights?|led|headlight|taillight|suspension|shock|assembly|assembled|tools?|warranty|guarantee|belt|rack|fender|display|throttle|pedals?|alarm|horn|usb|charger|waterproof|lock|removable|removal|support|instructions)\b/i;
+  var RE_BLOCO = /^(?:[\u{1F000}-\u{1FAFF}]|[\u2600-\u27BF])?\s*【([^】]+)】\s*(.*)$/u;
+  var RE_BLOCO_INICIO = /^(?:[\u{1F000}-\u{1FAFF}]|[\u2600-\u27BF])?\s*【/u;
+
+  function temSpec(s) { RE_SPEC.lastIndex = 0; return RE_SPEC.test(s); }
+  function sentencas(t) {
+    return String(t).split(/(?<=[.!?])\s+/).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+  function podarCorpo(t) {
+    return sentencas(t).filter(function (s) { return !temSpec(s) || RE_EXTRAS.test(s); });
+  }
+  function semSpecs(t) {
+    return String(t).replace(RE_SPEC, " ").replace(/\s+/g, " ")
+      .replace(/[\s,.;:\-–—()]+$/, "").replace(/\(\s*\)/g, "").trim();
+  }
+
+  function htmlDescricao(texto) {
+    if (!texto) return "";
+    var linhas = String(texto).split(/\n+/);
+    var out = [];
+    for (var i = 0; i < linhas.length; i++) {
+      var l = linhas[i].trim();
+      if (!l) continue;
+      var m = l.match(RE_BLOCO);
+      if (m && m[1]) {
+        var titulo = (m[1] || "").trim();
+        var emoji = (l.match(RE_BLOCO_INICIO) || [""])[0].replace(/【[\s\S]*$/, "").trim();
+        var corpo = m[2] || "";
+        var j = i + 1;
+        while (j < linhas.length) {
+          var lj = linhas[j].trim();
+          if (!lj) break;
+          if (RE_BLOCO_INICIO.test(lj)) break;
+          corpo += (corpo ? " " : "") + lj;
+          j++;
+        }
+        i = j - 1;
+        var kept = podarCorpo(corpo);
+        if (!kept.length) {
+          /* o bloco so restituia spec: fica o titulo sem os numeros */
+          var t2 = semSpecs(titulo);
+          if (!t2) continue;
+          out.push('<div class="d-item"><span class="d-titulo">' + esc((emoji ? emoji + " " : "") + t2) + "</span></div>");
+        } else {
+          out.push('<div class="d-item"><span class="d-titulo">' + esc((emoji ? emoji + " " : "") + titulo) + "</span>" +
+            '<span class="d-corpo">' + esc(kept.join(" ")) + "</span></div>");
+        }
+      } else {
+        var kept2 = podarCorpo(l);
+        if (kept2.length) out.push("<p>" + esc(kept2.join(" ")) + "</p>");
+      }
+    }
+    return out.join("");
+  }
+
+  /* ---------- 12. CTA de cupom repetido ao longo da review ----------
+     O botao de revelar cupom fica no buybox e e repetido em 3 secoes
+     (veredito, specs, reviews). Todos compartilham a classe
+     js-reveal-cupom / js-ir-parceiro para um unico listener, e todos
+     citam "Compare prices at other stores" — e a frase que o DSA usa
+     como headline no anuncio. */
+  function htmlCtaCupom(p, opts) {
+    opts = opts || {};
+    var esq = !!opts.esgotado;
+    var temCupom = !!(p && p.cupom) && !esq;
+    var nome = esc((p && p.merchant_nome) || "the retailer");
+    var btn = esq
+      ? '<button class="btn-buy-big" type="button" disabled>Currently unavailable</button>'
+      : (temCupom
+        ? '<button class="btn-buy-big js-reveal-cupom" type="button">Reveal coupon code</button>'
+        : '<button class="btn-buy-big js-ir-parceiro" type="button">Check price at ' + nome + "</button>");
+    var nota = esq
+      ? '<p class="cta-cupom-note">Check back later or compare prices at other stores.</p>'
+      : '<p class="cta-cupom-note">Compare prices at other stores, then apply the code at ' + nome + " checkout.</p>";
+    return '<div class="cta-cupom">' + btn + nota + "</div>";
+  }
+
   return {
     fatos: fatos,
     notas: notas,
@@ -459,6 +586,10 @@
     mesmoNome: mesmoNome,
     titulo: titulo,
     h1: h1,
+    faq: faq,
+    specsVisiveis: specsVisiveis,
+    htmlDescricao: htmlDescricao,
+    htmlCtaCupom: htmlCtaCupom,
     htmlScoreBanner: htmlScoreBanner,
     htmlSelos: htmlSelos,
     htmlProsCons: htmlProsCons,

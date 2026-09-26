@@ -86,36 +86,6 @@ function imgProd(p) {
   }
   return "";
 }
-function descricaoHTML(t) {
-  if (!t) return "";
-  const linhas = String(t).split(/\n+/);
-  const blocos = [];
-  for (let i = 0; i < linhas.length; i++) {
-    const l = linhas[i].trim();
-    if (!l) continue;
-    const m = l.match(/^([\u{1F000}-\u{1FAFF}]|[\u2600-\u27BF])?\s*【([^】]+)】\s*(.*)$/u);
-    if (m && m[2]) {
-      const titulo = (m[1] || "") + " " + m[2];
-      let corpo = m[3];
-      let j = i + 1;
-      const extra = [];
-      while (j < linhas.length) {
-        const lj = linhas[j].trim();
-        if (!lj) break;
-        if (lj.match(/^[\u{1F000}-\u{1FAFF}]?\s*【[^】]+】/u)) break;
-        extra.push(lj);
-        j++;
-      }
-      if (extra.length) corpo += (corpo ? " " : "") + extra.join(" ");
-      i = j - 1;
-      blocos.push('<div class="d-item"><span class="d-titulo">' + esc(titulo) + "</span>" +
-        (corpo ? '<span class="d-corpo">' + esc(corpo) + "</span>" : "") + "</div>");
-    } else {
-      blocos.push("<p>" + esc(l) + "</p>");
-    }
-  }
-  return blocos.join("");
-}
 function chaveBusca(p) {
   const w = [];
   if (p.marca) w.push(p.marca);
@@ -366,7 +336,6 @@ function pagProduto(p, contexto) {
     ": " + rev.score.toFixed(1) + "/10. " + ReviewData.pros(p, contexto.produtos)[0] +
     " Check the specs, the buyer ratings and the best price we found."
   );
-  const descricaoHTMLout = descricaoHTML(p.descricao);
   const disp = { em_estoque: ["In stock", "stock"], poucas_unidades: ["Only a few left", "soon"], esgotado: ["Currently unavailable", "out"] }[p.disponibilidade] || ["In stock", "stock"];
   const pct = pctDesc(p.preco, p.preco_anterior);
   const esgotado = p.disponibilidade === "esgotado";
@@ -381,10 +350,6 @@ function pagProduto(p, contexto) {
       : '<div class="row"><span class="now">' + fmt(p.preco) + "</span></div>") +
     '<div class="cash">Reference price from the retailer\'s listing — the final price is confirmed at checkout.</div>';
 
-  const specsHTML = (p.specs || []).map(s =>
-    "<tr><th>" + esc(s.rotulo) + "</th><td>" + esc(s.valor) + "</td></tr>").join("") ||
-    "<tr><th>Condition</th><td>New</td></tr>";
-
   const keySpecItems = [
     rf.watt != null ? [rf.isBike ? "Motor" : "Peak motor", rf.watt + "W"] : null,
     rf.wh != null ? ["Battery", rf.volt + "V " + rf.ah + "Ah · " + num(rf.wh) + "Wh"] : null,
@@ -393,6 +358,11 @@ function pagProduto(p, contexto) {
     rf.pneu != null ? [rf.isBike ? "Wheel size" : "Tire size", rf.pneu + "″"] : null,
     rf.carga != null ? ["Max load", rf.carga + " kg"] : null
   ].filter(Boolean);
+
+  /* Tabela sem repetir o que os key-specs ja mostram */
+  const specsHTML = ReviewData.specsVisiveis(p.specs, rf).map(s =>
+    "<tr><th>" + esc(s.rotulo) + "</th><td>" + esc(s.valor) + "</td></tr>").join("") ||
+    "<tr><th>Condition</th><td>New</td></tr>";
   const keySpecsHTML = keySpecItems.map(it =>
     '<div class="key-spec"><span class="key-spec-label">' + esc(it[0]) + '</span><span class="key-spec-value">' + esc(it[1]) + "</span></div>").join("");
 
@@ -412,12 +382,7 @@ function pagProduto(p, contexto) {
         '<div class="pg-banner-item"><img src="' + esc(u) + '" alt="Banner ' + (i + 1) + ' for ' + esc(p.nome) + '" loading="lazy"/></div>').join("") + "</div>"
     : "";
 
-  const genericas = [
-    { p: "Does WattWheel sell this item?", a: "No. WattWheel is an independent product discovery platform — the button takes you to the retailer, where your purchase is completed. WattWheel never sells, prices or processes payment." },
-    { p: "Is the displayed price final?", a: "Prices shown are references collected from retailer listings and can change. Please confirm the price on the retailer's page before completing your order." },
-    { p: "Who handles shipping and returns?", a: "Shipping, delivery dates and return policies are set by the retailer. Review those terms on the retailer's product page." }
-  ];
-  const faqHTML = (p.faq || []).concat(genericas).map(f =>
+  const faqHTML = ReviewData.faq().map(f =>
     '<div class="faq-item"><button class="faq-q" type="button">' + esc(f.p) + '<span class="chev">\u25BC</span></button><div class="faq-a">' + esc(f.a) + "</div></div>").join("");
 
   const similares = contexto.produtos.filter(x => x.id !== p.id && x.categoria === p.categoria).slice(0, 3);
@@ -482,7 +447,7 @@ function pagProduto(p, contexto) {
     '<span class="ref" id="pg-marca">Brand: ' + esc(p.marca) + "</span>" +
     '<span class="ref" id="pg-produto-id">Partner SKU: ' + esc(p.product_id) + "</span>" +
     "</div>" +
-    (p.descricao ? '<div class="pg-descricao" id="pg-descricao">' + descricaoHTMLout + "</div>" : "") +
+    (p.descricao ? '<div class="pg-descricao" id="pg-descricao">' + ReviewData.htmlDescricao(p.descricao) + "</div>" : "") +
     "</div>" +
     '<aside class="buybox-col">' +
     '<div class="buybox">' +
@@ -493,15 +458,13 @@ function pagProduto(p, contexto) {
     (p.video ? '<div class="video-row" id="video-row"><button class="btn-video" id="btn-video" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Watch video <span class="video-ext">▶</span></button></div>' : "") +
     (temCupom
       ? '<div class="coupon-box" id="cupom-box"><div class="coupon-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 0-4h20a2 2 0 0 1 0 4 2 2 0 0 0 0 4 2 2 0 0 1 0 4H2a2 2 0 0 1 0-4 2 2 0 0 0 0-4z"/><path d="M13 5v14M16 12h.01M10 12h.01"/></svg> Your coupon is ready — <strong>copy it</strong> and apply at checkout</div>' +
+        '<p class="coupon-compare">We <strong>compare prices at other stores</strong> before you buy — this code is the best price we found at ' + esc(p.merchant_nome) + ".</p>" +
         '<div class="coupon-row"><button class="coupon-code" id="cupom-codigo" type="button" data-codigo="' + esc(p.cupom) + '">' + esc(p.cupom) + "</button></div>" +
         '<p class="coupon-note" id="cupom-nota">Apply code at checkout on ' + esc(p.merchant_nome) + ".</p>" +
         '<button class="btn-buy-big" id="btn-comprar-cupom">Go to retailer with coupon ↗</button></div>'
       : "") +
-    '<p class="redirect-note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>You\u2019ll be redirected to <strong id="parceiro-nome">' + esc(p.merchant_nome) + "</strong>, the retailer handling this product. WattWheel only curates and compares — we never sell, price or process your purchase.</span></p>" +
+    '<p class="redirect-note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>You\u2019ll be redirected to <strong id="parceiro-nome">' + esc(p.merchant_nome) + "</strong>, where this product is listed, sold and shipped.</span></p>" +
     (temCupom ? "" : '<button class="btn-partner" id="btn-parceiro">See product at retailer \u2197</button>') +
-    (p.comissao
-      ? '<div class="comissao-note" id="comissao-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span><strong>Transparency:</strong> WattWheel is an affiliate — we may earn a commission on qualifying purchases made through this link, at no additional cost to you.</span></div>'
-      : "") +
     "</div>" +
     '<div class="trust-row"><div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span><strong>Secure checkout</strong>Handled entirely by the partner store.</span></div>' +
     '<div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="15" height="11" rx="2"/><path d="M16 9h3l3 3v5h-6"/><circle cx="6.5" cy="18.5" r="1.5"/><circle cx="17.5" cy="18.5" r="1.5"/></svg><span><strong>Shipping &amp; returns</strong>Terms set by the partner at checkout.</span></div>' +
@@ -510,23 +473,28 @@ function pagProduto(p, contexto) {
     "</aside>" +
     "</div>" +
 
-    /* ---------- Veredito + pros/cons + barras ---------- */
-    ReviewData.htmlVeredito(p, contexto.produtos) +
-
+    /* ---------- Comparacao de precos: sempre no comeco da review ---------- */
     '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Compare prices at other stores</h2>' +
     comparar + "</section>" +
+
+    /* ---------- Veredito + pros/cons + barras + CTA de cupom ---------- */
+    ReviewData.htmlVeredito(p, contexto.produtos) +
+    ReviewData.htmlCtaCupom(p, { esgotado: esgotado }) +
+
     (bannersHTML ? '<section class="section pg-banner-sec" id="pg-banner-sec"><div class="container" style="padding-inline:0"><div id="pg-banner-carousel">' + bannersHTML + "</div></div></section>" : "") +
     '<section class="detail-sec"><h2><span class="bar"></span> Specifications</h2>' +
     (keySpecsHTML ? '<div class="key-specs">' + keySpecsHTML + "</div>" : "") +
     '<table class="specs" id="specs-tabela">' + specsHTML + "</table></section>" +
+    ReviewData.htmlCtaCupom(p, { esgotado: esgotado }) +
     '<section class="detail-sec" id="reviews-sec">' +
     '<h2><span class="bar"></span> Customer reviews</h2>' +
     '<div id="reviews-lista"><div class="reviews-summary"><span class="reviews-score">' + (p.rating || 0).toFixed(1) + "</span>" +
     '<span class="reviews-stars">' + starsHTML(p.rating || 5) + "</span>" +
     '<span class="reviews-count">' + num(p.avaliacoes) + " reviews</span></div>" +
     '<div class="reviews-lista">' + reviewsHTML + "</div></div></section>" +
+    ReviewData.htmlCtaCupom(p, { esgotado: esgotado }) +
     '<section class="detail-sec"><h2><span class="bar"></span> Compare similar products</h2>' + simCards + "</section>" +
-    '<section class="detail-sec"><h2><span class="bar"></span> Frequently asked questions</h2><div id="faq-lista">' + faqHTML + "</div></section>" +
+    '<section class="detail-sec"><h2><span class="bar"></span> Frequently asked questions about the coupon and shipping</h2><div id="faq-lista">' + faqHTML + "</div></section>" +
     (relCards ? '<section class="section"><div class="container" style="padding-inline:0"><div class="section-head"><h2>You may also like</h2><a class="link-all" href="/catalog.html">View all ›</a></div>' + relCards + "</div></section>" : "") +
     "</main>" +
     seedScript(p) +

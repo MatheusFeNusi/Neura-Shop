@@ -1138,7 +1138,7 @@ function initProduto() {
 
   $("#pg-titulo").textContent = p.nome;
   var descEl = $("#pg-descricao");
-  if (descEl && p.descricao) descEl.innerHTML = descricaoHTML(p.descricao);
+  if (descEl && p.descricao) descEl.innerHTML = window.ReviewData ? ReviewData.htmlDescricao(p.descricao) : descricaoHTML(p.descricao);
   setMetaDescricao(p, window.ReviewData ? ReviewData.notas(p, PRODUTOS) : null);
   if (window.ReviewData) injetarSchemaReview(p);
   if (!seed) injetarSchema(p);
@@ -1173,9 +1173,7 @@ function initProduto() {
   }
   $("#preco-bloco").innerHTML = precoHTML + '<div class="cash">Reference price from the retailer\'s listing — the final price is confirmed at checkout.</div>';
 
-  if (p.comissao) {
-    $("#comissao-note").innerHTML = "<strong>Transparency:</strong> WattWheel is an affiliate — we may earn a commission on qualifying purchases made through this link, at no additional cost to you.";
-  }
+  /* O aviso de afiliado canonico esta no card-warn e no rodape; nao repetimos aqui. */
 
   // Clone-replace interactive buttons so stale listeners don't stack on background re-render
   var btn = $("#btn-comprar");
@@ -1232,11 +1230,48 @@ function initProduto() {
 
   var specsEl = $("#specs-tabela");
   if (specsEl) {
-    specsEl.innerHTML = (p.specs && p.specs.length)
-      ? p.specs.map(function (s) {
+    /* Tabela sem repetir o que os key-specs ja mostram */
+    var rf = window.ReviewData ? ReviewData.fatos(p) : null;
+    var listaSpecs = window.ReviewData ? ReviewData.specsVisiveis(p.specs, rf) : (p.specs || []);
+    specsEl.innerHTML = (listaSpecs && listaSpecs.length)
+      ? listaSpecs.map(function (s) {
           return "<tr><th>" + esc(s.rotulo) + "</th><td>" + esc(s.valor) + "</td></tr>";
         }).join("")
       : "<tr><th>Condition</th><td>New</td></tr>";
+  }
+
+  /* ---------- CTAs de cupom repetidos (veredito, specs, reviews) ----------
+     Sao botoes ESTATICOS no HTML, entao nao usam cloneNode: o guard
+     data-bound evita listener duplicado se initProduto rodar de novo. */
+  var temCupomCta = !!p.cupom && !esgotado;
+  var ctas = document.querySelectorAll(".js-reveal-cupom, .js-ir-parceiro");
+  for (var c = 0; c < ctas.length; c++) {
+    if (ctas[c].getAttribute("data-bound")) continue;
+    ctas[c].setAttribute("data-bound", "1");
+    ctas[c].addEventListener("click", function () {
+      if (temCupomCta) { revelarCupom(p); return; }
+      irAoParceiro(p);
+    });
+  }
+  if (!temCupomCta && !esgotado) {
+    /* sem cupom: o CTA vira "Check price at <loja>". O data-bound NAO e
+       limpo de proposito — o listener ja decide a acao pela variavel
+       temCupomCta, e limpar aqui permitiria um segundo listener. */
+    for (var c2 = 0; c2 < ctas.length; c2++) {
+      if (ctas[c2].classList.contains("js-reveal-cupom")) {
+        ctas[c2].className = "btn-buy-big js-ir-parceiro";
+        ctas[c2].textContent = "Check price at " + esc(p.merchant_nome);
+      }
+    }
+  }
+  if (esgotado) {
+    for (var c3 = 0; c3 < ctas.length; c3++) {
+      if (ctas[c3].classList.contains("js-reveal-cupom")) {
+        ctas[c3].className = "btn-buy-big";
+        ctas[c3].textContent = "Currently unavailable";
+        ctas[c3].disabled = true;
+      }
+    }
   }
 
   renderSimilares(p);
@@ -1249,13 +1284,13 @@ function initProduto() {
     faqOld.parentNode.replaceChild(faqClone, faqOld);
     faq = faqClone;
   }
-  var genericas = [
-    { p: "Does WattWheel sell this item?", a: "No. WattWheel is an independent product discovery platform — the button takes you to the retailer, where your purchase is completed. WattWheel never sells, prices or processes payment." },
-    { p: "Is the displayed price final?", a: "Prices shown are references collected from retailer listings and can change. Please confirm the price on the retailer's page before completing your order." },
+  var genericas = window.ReviewData ? ReviewData.faq() : [
+    { p: "Where do the price and rating come from?", a: "Straight from the current retailer listing. Confirm the price, rating and availability on the retailer's page before you buy." },
+    { p: "Is the displayed price final?", a: "No. The price shown is a reference point collected from the retailer listing and it does change. Confirm the final price on the retailer's page before completing your order." },
     { p: "Who handles shipping and returns?", a: "Shipping, delivery dates and return policies are set by the retailer. Review those terms on the retailer's product page." }
   ];
   if (faq) {
-    faq.innerHTML = p.faq.concat(genericas).map(function (f) {
+    faq.innerHTML = genericas.map(function (f) {
       return '<div class="faq-item"><button class="faq-q" type="button">' + esc(f.p) +
         '<span class="chev">\u25BC</span></button><div class="faq-a">' + esc(f.a) + "</div></div>";
     }).join("");

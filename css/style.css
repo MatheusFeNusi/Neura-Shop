@@ -468,6 +468,13 @@ button { font-family: inherit; }
 .coupon-code:empty { display: none; }
 .coupon-note { font-size: 12.5px; color: var(--muted); margin: 0 0 10px; }
 .coupon-box .btn-buy-big { width: 100%; }
+.coupon-compare { font-size: 12.5px; line-height: 1.5; color: var(--muted); margin: 0 0 10px; }
+.coupon-compare strong { color: var(--ink); }
+
+/* CTA de cupom repetido entre as secoes da review */
+.cta-cupom { margin: 22px 0 4px; }
+.cta-cupom .btn-buy-big { width: 100%; max-width: 420px; }
+.cta-cupom-note { font-size: 12.5px; line-height: 1.5; color: var(--muted); margin: 9px 0 0; }
 
 /* ---------- Compare prices at other stores ---------- */
 .comparar-sec { border-top: 0; border-bottom: 1px solid var(--line); padding: 16px 0 22px; margin-top: 8px; }
