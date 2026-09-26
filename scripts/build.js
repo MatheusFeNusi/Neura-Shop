@@ -463,11 +463,7 @@ function pagProduto(p, contexto) {
     "  </div>" +
     "</header>" +
 
-    /* ---------- Veredito + pros/cons + barras ---------- */
-    ReviewData.htmlVeredito(p, contexto.produtos) +
-
-    '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Compare prices at other stores</h2>' +
-    comparar + "</section>" +
+    /* ---------- Imagem + botão de revelar cupom, logo abaixo do título ---------- */
     '<div class="pg-layout">' +
     '<div class="pg-col-galeria">' +
     '<div class="gallery-img">' + (fotos[0] ? '<img id="foto-main" src="' + fotos[0] + '" alt="' + esc(p.nome) + '"/>' : "") + "</div>" +
@@ -513,6 +509,12 @@ function pagProduto(p, contexto) {
     '<div class="card-warn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><strong>Affiliate disclosure.</strong> WattWheel is an independent product discovery website. We don\u2019t sell or stock products — this item is sold by the retailer shown, and your purchase is completed on the retailer\u2019s site. As an affiliate, we may earn a commission on qualifying purchases, at no additional cost to you. <a href="/about.html#disclosure">Read our full disclosure</a>.</span></div>' +
     "</aside>" +
     "</div>" +
+
+    /* ---------- Veredito + pros/cons + barras ---------- */
+    ReviewData.htmlVeredito(p, contexto.produtos) +
+
+    '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Compare prices at other stores</h2>' +
+    comparar + "</section>" +
     (bannersHTML ? '<section class="section pg-banner-sec" id="pg-banner-sec"><div class="container" style="padding-inline:0"><div id="pg-banner-carousel">' + bannersHTML + "</div></div></section>" : "") +
     '<section class="detail-sec"><h2><span class="bar"></span> Specifications</h2>' +
     (keySpecsHTML ? '<div class="key-specs">' + keySpecsHTML + "</div>" : "") +
