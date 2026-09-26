@@ -25,7 +25,9 @@ slugs.forEach(s => {
   const html = fs.readFileSync(path.join(dir, s, "index.html"), "utf8");
   const tag = s;
 
-  /* 1: comparar-sec antes do veredito e antes de specs/reviews/faq */
+  /* 1: comparacao-sec logo abaixo do header e antes do veredito e do resto */
+  const iHead = html.indexOf('class="review-hero-head"');
+  const iGal = html.indexOf('class="pg-layout"');
   const iCmp = html.indexOf('class="detail-sec comparar-sec"');
   const iVer = html.indexOf("review-verdict");
   const iSpec = html.indexOf('id="specs-tabela"');
@@ -33,6 +35,9 @@ slugs.forEach(s => {
   const iFaq = html.indexOf('id="faq-lista"');
   if (iCmp < 0) err(tag + ": secao de comparacao ausente");
   else {
+    if (iHead < 0) err(tag + ": header da review ausente");
+    else if (!(iHead < iCmp && iCmp < iGal))
+      err(tag + ": comparacao deveria ficar logo abaixo do header, antes da imagem");
     if (iCmp > iVer) err(tag + ": comparacao ainda aparece DEPOIS do veredito");
     if (iCmp > iSpec) err(tag + ": comparacao ainda aparece DEPOIS das specs");
     if (iCmp > iRev) err(tag + ": comparacao ainda aparece DEPOIS das reviews");
@@ -64,10 +69,17 @@ slugs.forEach(s => {
 });
 
 /* ---------- 5: paridade com o shell client-side ---------- */
+const shellHead = shell.indexOf('class="review-hero-head"');
+const shellGal = shell.indexOf('class="pg-layout"');
 const shellCmp = shell.indexOf('id="comparar-sec"');
 const shellVer = shell.indexOf('id="review-verdict-slot"');
 if (shellCmp < 0) err("product.html: secao de comparacao ausente");
-else if (shellCmp > shellVer) err("product.html: comparacao ainda depois do veredito");
+else {
+  if (shellVer < 0) err("product.html: slot do veredito ausente");
+  else if (shellCmp > shellVer) err("product.html: comparacao ainda depois do veredito");
+  if (!(shellHead < shellCmp && shellCmp < shellGal))
+    err("product.html: comparacao deveria ficar logo abaixo do header, antes da imagem");
+}
 const shellCtas = (shell.match(/class="cta-cupom"/g) || []).length;
 if (shellCtas !== 3) err("product.html: esperado 3 CTA de cupom, veio " + shellCtas);
 if (!/compare prices at other stores/i.test(janelaCupom(shell)))

@@ -431,6 +431,10 @@ function pagProduto(p, contexto) {
     ReviewData.htmlBottomLine(p, contexto.produtos) +
     "</header>" +
 
+    /* ---------- Comparacao de precos: logo abaixo do header, antes da imagem ---------- */
+    '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Compare prices at other stores</h2>' +
+    comparar + "</section>" +
+
     /* ---------- Imagem + botão de revelar cupom, logo abaixo do título ---------- */
     '<div class="pg-layout">' +
     '<div class="pg-col-galeria">' +
@@ -474,10 +478,6 @@ function pagProduto(p, contexto) {
     '<div class="card-warn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><strong>Affiliate disclosure.</strong> WattWheel is an independent product discovery website. We don\u2019t sell or stock products — this item is sold by the retailer shown, and your purchase is completed on the retailer\u2019s site. As an affiliate, we may earn a commission on qualifying purchases, at no additional cost to you. <a href="/about.html#disclosure">Read our full disclosure</a>.</span></div>' +
     "</aside>" +
     "</div>" +
-
-    /* ---------- Comparacao de precos: sempre no comeco da review ---------- */
-    '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Compare prices at other stores</h2>' +
-    comparar + "</section>" +
 
     /* ---------- Veredito + pros/cons + barras + CTA de cupom ---------- */
     ReviewData.htmlVeredito(p, contexto.produtos) +
