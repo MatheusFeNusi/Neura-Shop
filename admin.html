@@ -82,6 +82,22 @@
           Título
           <input type="text" name="nome" required/>
         </label>
+        <div class="col-full" id="previa-bloco">
+          <div class="previa-head">O que o visitante vai ver</div>
+          <div class="previa-row">
+            <span class="previa-label">Título na página (H1)</span>
+            <span class="previa-valor" id="previa-h1">—</span>
+          </div>
+          <div class="previa-row">
+            <span class="previa-label">Título no Google</span>
+            <span class="previa-valor" id="previa-seo">—</span>
+          </div>
+          <div class="previa-row">
+            <span class="previa-label">Selo</span>
+            <span class="previa-valor" id="previa-selo">—</span>
+          </div>
+          <p class="previa-nota" id="previa-nota"></p>
+        </div>
         <label class="col-full">
           Link de redirecionamento (afiliado)
           <input type="url" name="url_afiliado" placeholder="https://…"/>
@@ -175,6 +191,7 @@
   <div id="app-footer"></div>
   <script src="js/config.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/review-data.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>

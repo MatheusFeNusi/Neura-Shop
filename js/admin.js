@@ -237,7 +237,7 @@ function aoEntrar() {
     return;
   }
   btn.disabled = true;
-  if (err) err.textContent = "Entrandoâ€¦";
+  if (err) err.textContent = "Entrando…";
   authLogin(email, pass).then(function () {
     if (err) err.textContent = "";
     btn.disabled = false;
@@ -273,7 +273,7 @@ function renderAdmin() {
   var fatia = listaFiltrada.slice(inicio, inicio + PG_POR_PAGINA);
 
   document.getElementById("admin-count").textContent =
-    total + " produtos Â· pÃ¡g " + (paginaAtual + 1) + "/" + totalPaginas;
+    total + " produtos · pág " + (paginaAtual + 1) + "/" + totalPaginas;
 
   var list = document.getElementById("admin-list");
   if (!fatia.length) {
@@ -293,9 +293,9 @@ function renderAdmin() {
     pager.innerHTML = "";
   } else {
     var botoes = [];
-    if (paginaAtual > 0) botoes.push('<button class="btn btn-light" type="button" data-pg="' + (paginaAtual - 1) + '">â€¹ Anterior</button>');
+    if (paginaAtual > 0) botoes.push('<button class="btn btn-light" type="button" data-pg="' + (paginaAtual - 1) + '">‹ Anterior</button>');
     botoes.push('<span class="pager-info">' + (paginaAtual + 1) + " / " + totalPaginas + "</span>");
-    if (paginaAtual < totalPaginas - 1) botoes.push('<button class="btn btn-light" type="button" data-pg="' + (paginaAtual + 1) + '">PrÃ³xima â€º</button>');
+    if (paginaAtual < totalPaginas - 1) botoes.push('<button class="btn btn-light" type="button" data-pg="' + (paginaAtual + 1) + '">Próxima ›</button>');
     pager.innerHTML = botoes.join("");
     $$("[data-pg]", pager).forEach(function (b) {
       b.addEventListener("click", function () { paginaAtual = Number(b.dataset.pg); renderAdmin(); });
@@ -308,9 +308,9 @@ function linhaProduto(p) {
     '<img class="admin-thumb" src="' + esc(imgProd(p, 0)) + '" alt="" loading="lazy"/>' +
     '<div class="admin-row-main">' +
     '<div class="admin-row-titulo">' + esc(p.nome) + "</div>" +
-    '<div class="admin-row-meta">' + esc(p.marca || "â€”") + " Â· " + esc(p.categoria_nome || p.categoria || "â€”") +
-    " Â· " + num(p.rating) + "â˜… (" + num(p.avaliacoes) + ")</div>" +
-    '<div class="admin-row-link">Link: <span class="link-val">' + esc(p.url_afiliado || "â€”") + "</span></div>" +
+    '<div class="admin-row-meta">' + esc(p.marca || "—") + " · " + esc(p.categoria_nome || p.categoria || "—") +
+    " · " + num(p.rating) + "★ (" + num(p.avaliacoes) + ")</div>" +
+    '<div class="admin-row-link">Link: <span class="link-val">' + esc(p.url_afiliado || "—") + "</span></div>" +
     "</div>" +
     '<div class="admin-row-preco">' + fmt(p.preco) + "</div>" +
     '<span class="admin-avail ' + esc(p.disponibilidade) + '">' + chipDispTexto(p.disponibilidade) + "</span>" +
@@ -369,6 +369,93 @@ function criarLinhaBanner(url) {
   rm.addEventListener("click", function () { div.parentNode.removeChild(div); });
   div.appendChild(input); div.appendChild(rm);
   return div;
+}
+/* ---------- Prévia do que a página vai mostrar ----------
+   O H1 da review não é mais o `nome` cru: a página deriva um nome curto e
+   desambigua SKUs irmãos. O selo também é derivado (preço contra a mediana da
+   categoria + score). Sem esta prévia o editor mexe no `nome` no escuro e
+   só descobre o resultado depois do build. */
+function previaDerivada() {
+  var f = document.getElementById("form-edicao");
+  var elH1 = document.getElementById("previa-h1");
+  var elSeo = document.getElementById("previa-seo");
+  var elSelo = document.getElementById("previa-selo");
+  var elNota = document.getElementById("previa-nota");
+  if (!f || !elH1 || !window.ReviewData) return;
+  var R = window.ReviewData;
+
+  var p = PRODUTOS.find(function (x) { return x.id === idEmEdicao; }) || {};
+  /* o rascunho precisa ser o que está nos inputs, não o que está salvo */
+  var rascunho = Object.assign({}, p, {
+    nome: f.nome.value.trim() || p.nome || "",
+    preco: f.preco.value === "" ? p.preco : Number(f.preco.value),
+    preco_anterior: f.preco_anterior.value === "" ? null : Number(f.preco_anterior.value),
+    rating: f.rating.value === "" ? p.rating : Number(f.rating.value),
+    avaliacoes: f.avaliacoes.value === "" ? p.avaliacoes : Number(f.avaliacoes.value)
+  });
+  var todos = PRODUTOS.map(function (x) { return x.id === idEmEdicao ? rascunho : x; });
+
+  var h1 = "", seo = "", selo = "";
+  try {
+    h1 = R.h1(rascunho, todos);
+    seo = R.titulo(rascunho, todos);
+  } catch (e) {
+    h1 = "(não foi possível derivar: " + e.message + ")";
+  }
+  var pr = null;
+  try { pr = R.premio(rascunho, todos); } catch (e) { pr = null; }
+  selo = pr ? pr.rotulo : "sem selo";
+
+  elH1.textContent = h1;
+  elSeo.textContent = seo;
+  elSelo.textContent = selo;
+
+  /* avisos que o editor precisa ver antes de salvar */
+  var avisos = [];
+  if (h1.length > 120) avisos.push("O H1 fica com " + h1.length + " caracteres. Acima de 120 o Google trunca.");
+  var base = "";
+  try { base = R.baseUnica(rascunho, todos); } catch (e) { base = ""; }
+  if (base && base !== R.nomeCurto(rascunho)) {
+    avisos.push("O nome curto colide com outro SKU, então o H1 ganhou o sufixo \"" +
+      base.slice(R.nomeCurto(rascunho).length).trim() + "\".");
+  }
+  if (rascunho.preco_anterior != null && rascunho.preco > 0 &&
+      rascunho.preco_anterior > rascunho.preco * 3) {
+    avisos.push("O preço anterior é mais de 3x o atual. A FTC trata preço de referência inflado como publicidade enganosa.");
+  }
+  elNota.textContent = avisos.join(" ");
+  elNota.className = avisos.length ? "previa-nota previa-alerta" : "previa-nota";
+}
+
+/* Nomes de avaliador repetidos entre produtos é o que gerou o problema de
+   compliance: 5 nomes cobriam 38 produtos, com texto idêntico. O editor
+   precisa ver o conflito na hora. */
+function avisarReviewersRepetidos() {
+  var alvos = document.querySelectorAll("#edit-reviews input.campo-nome");
+  if (!alvos.length) return;
+  var cont = {};
+  PRODUTOS.forEach(function (x) {
+    if (x.id === idEmEdicao) return;
+    (x.reviews || []).forEach(function (r) {
+      var k = String(r.nome || "").trim().toLowerCase();
+      if (k) cont[k] = (cont[k] || 0) + 1;
+    });
+  });
+  var repetidos = [];
+  alvos.forEach(function (inp) {
+    var k = String(inp.value || "").trim().toLowerCase();
+    if (k && cont[k]) repetidos.push(inp.value.trim() + " (já usado em " + cont[k] + " produtos)");
+  });
+  if (!repetidos.length) return;
+  var aviso = document.createElement("p");
+  aviso.className = "previa-nota previa-alerta";
+  aviso.textContent = "Avaliador repetido: " + repetidos.join("; ") +
+    ". Reaproveitar o mesmo nome entre produtos é testimonial fabricado (FTC 16 CFR 465).";
+  var bloco = document.getElementById("previa-bloco");
+  if (bloco && !bloco.querySelector(".previa-dup")) {
+    aviso.className = "previa-nota previa-alerta previa-dup";
+    bloco.appendChild(aviso);
+  }
 }
 function criarLinhaReview(r) {
   var div = document.createElement("div");
@@ -473,7 +560,7 @@ function lerEditReviews() {
 function abrirModal(id) {
   idEmEdicao = id;
   var p = PRODUTOS.find(function (x) { return x.id === id; });
-  if (!p) { toast("Produto nÃ£o encontrado."); return; }
+  if (!p) { toast("Produto não encontrado."); return; }
   var f = document.getElementById("form-edicao");
   f.nome.value = p.nome || "";
   f.url_afiliado.value = p.url_afiliado || "";
@@ -495,11 +582,42 @@ function abrirModal(id) {
   f.destaque.checked = !!p.destaque;
   f.descricao.value = p.descricao || "";
   montarEditReviews(p.reviews);
-  document.getElementById("modal-titulo").textContent = "Editar Â· " + id;
+  document.getElementById("modal-titulo").textContent = "Editar · " + id;
   var linkVer = document.getElementById("btn-ver-modal");
   if (linkVer) linkVer.href = "product.html?id=" + encodeURIComponent(id);
   document.getElementById("modal").hidden = false;
   document.body.classList.add("modal-open");
+  ligarPrevia();
+  previaDerivada();
+  avisarReviewersRepetidos();
+}
+/* Idempotente de propósito: abrirModal roda uma vez por produto e os inputs do
+   form são os mesmos nós, então ligar aqui dentro acumularia listener a cada
+   abertura (o mesmo bug que o commit f3f9747 já corrigiu). */
+function ligarPrevia() {
+  var f = document.getElementById("form-edicao");
+  if (!f || f.dataset.previaLigada === "1") return;
+  f.dataset.previaLigada = "1";
+  ["nome", "preco", "preco_anterior", "rating", "avaliacoes"].forEach(function (k) {
+    if (f[k]) f[k].addEventListener("input", function () {
+      previaDerivada();
+      avisarReviewersRepetidos();
+    });
+  });
+  f.addEventListener("input", function (ev) {
+    if (ev.target && ev.target.classList && ev.target.classList.contains("campo-nome"))
+      avisarReviewersRepetidos();
+  });
+  f.addEventListener("click", function (ev) {
+    if (ev.target && ev.target.classList && ev.target.classList.contains("btn-add")) {
+      setTimeout(function () { previaDerivada(); avisarReviewersRepetidos(); }, 0);
+    }
+  });
+  f.addEventListener("click", function (ev) {
+    if (ev.target && ev.target.classList && ev.target.classList.contains("edit-rm")) {
+      setTimeout(function () { avisarReviewersRepetidos(); }, 0);
+    }
+  });
 }
 function fecharModal() {
   document.getElementById("modal").hidden = true;
@@ -569,7 +687,7 @@ function reverterProduto() {
       toast("Produto revertido ao estado original do banco.");
     }).catch(function (e) { toast("Falha ao reverter: " + e.message); });
   } else {
-    toast("Registro original nÃ£o encontrado.");
+    toast("Registro original não encontrado.");
     fecharModal();
   }
 }
@@ -578,12 +696,12 @@ function excluirProduto(id) {
   var p = PRODUTOS.find(function (x) { return x.id === id; });
   if (!p) return;
   var nome = p.nome || id;
-  if (!confirm("Excluir \"" + nome + "\" (" + id + ")?\n\nO produto serÃ¡ removido do banco e deixarÃ¡ de aparecer no site. Esta aÃ§Ã£o nÃ£o pode ser desfeita.")) return;
+  if (!confirm("Excluir \"" + nome + "\" (" + id + ")?\n\nO produto será removido do banco e deixará de aparecer no site. Esta ação não pode ser desfeita.")) return;
   supaDelete(id).then(function () {
     PRODUTOS = PRODUTOS.filter(function (x) { return x.id !== id; });
     listaOriginal = listaOriginal.filter(function (x) { return x.id !== id; });
     renderAdmin();
-    toast("Produto " + id + " excluÃ­do do banco.");
+    toast("Produto " + id + " excluído do banco.");
   }).catch(function (e) {
     toast("Falha ao excluir: " + e.message);
   });
