@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 var PG_POR_PAGINA = 60;
 var SUPA = window.SUPA_CONFIG || {};
@@ -101,7 +101,13 @@ function authLogin(email, pass) {
   }).then(function (r) {
     if (!r.ok) {
       return r.json().then(function (b) {
-        throw new Error((b && (b.msg || b.error_description)) || "Falha ao entrar.");
+        var rawMsg = (b && (b.msg || b.error_description || b.message || b.error)) || "Falha ao entrar.";
+        if (/invalid.*credential/i.test(rawMsg)) {
+          rawMsg = "E-mail ou senha incorretos (ou usuário não criado no Supabase).";
+        } else if (/email not confirmed/i.test(rawMsg)) {
+          rawMsg = "E-mail pendente de confirmação no Supabase.";
+        }
+        throw new Error(rawMsg);
       });
     }
     return r.json();
@@ -145,6 +151,13 @@ function mostrarEditor() {
 
 function initAdmin() {
   restaurarSessao();
+  var loginForm = document.getElementById("login-form");
+  if (loginForm) {
+    loginForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      aoEntrar();
+    });
+  }
   document.getElementById("btn-login").addEventListener("click", aoEntrar);
   document.getElementById("login-pass").addEventListener("keydown", function (e) { if (e.key === "Enter") aoEntrar(); });
   document.getElementById("btn-logout").addEventListener("click", authLogout);

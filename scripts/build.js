@@ -11,11 +11,15 @@
 
 const fs = require("fs");
 const path = require("path");
+const ReviewData = require("../js/review-data.js");
 
 const ROOT = path.join(__dirname, "..");
 const OUT = ROOT;
 
 const SITE_URL = process.env.SITE_URL || "https://neura-shop66.vercel.app";
+const SITE_NAME = "WattWheel";
+const BUILD_DATE = new Date().toISOString().slice(0, 10);
+const BUILD_MONTH = new Date().toLocaleString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 
 /* ---------- Supabase config (read from js/config.js) ---------- */
 function supaConfig() {
@@ -28,13 +32,6 @@ function supaConfig() {
 }
 
 async function carregarProdutos() {
-  const cfg = supaConfig();
-  if (cfg.url && cfg.anon) {
-    try {
-      const rows = await fetchPaginas(cfg);
-      if (rows && rows.length) return { origem: "supa", produtos: rows.map(r => r.dados) };
-    } catch (e) { console.warn("[build] Supabase falhou, usando products.json:", e.message); }
-  }
   const local = JSON.parse(fs.readFileSync(path.join(ROOT, "products.json"), "utf8"));
   return { origem: "json", produtos: local.produtos || [] };
 }
@@ -282,6 +279,7 @@ const FOOT = [
   "  </div>",
   "</div>",
   '<script src="/js/config.js"></script>',
+  '<script src="/js/review-data.js"></script>',
   '<script src="/js/app.js"></script>',
   "</body>\n</html>"
 ].join("\n");
@@ -290,8 +288,10 @@ function seedScript(p) {
   return '<script type="application/json" id="produto-seed">' + jsonEmbed(p) + "</" + "script>";
 }
 
-function schemaProduto(p, canonicalPage) {
+function schemaProduto(p, canonicalPage, contexto) {
   const img = imgProd(p);
+  const rn = ReviewData.notas(p, (contexto || {}).produtos);
+  const reviews = (p.reviews && p.reviews.length) ? p.reviews : [];
   const schema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -314,13 +314,41 @@ function schemaProduto(p, canonicalPage) {
   if (p.rating != null && isFinite(Number(p.rating))) {
     schema.aggregateRating = { "@type": "AggregateRating", ratingValue: Number(p.rating).toFixed(1), reviewCount: Number(p.avaliacoes) || 0 };
   }
+  if (reviews.length) {
+    schema.review = reviews.map(r => ({
+      "@type": "Review",
+      author: { "@type": "Person", name: r.nome },
+      reviewRating: { "@type": "Rating", ratingValue: Number(r.nota != null ? r.nota : 5).toFixed(1), bestRating: 5, worstRating: 1 },
+      reviewBody: r.texto
+    }));
+  }
   if (p.faq && p.faq.length) {
     schema.faqPage = {
       "@type": "FAQPage",
       mainEntity: p.faq.map(f => ({ "@type": "Question", name: f.p, acceptedAnswer: { "@type": "Answer", text: f.a } }))
     };
   }
-  return jsonLd(schema);
+  const grafo = {
+    "@context": "https://schema.org",
+    "@graph": [
+      schema,
+      {
+        "@type": "Article",
+        "@id": SITE_URL + canonicalPage + "#review",
+        headline: p.nome + " review: our verdict",
+        description: (p.descricao || "").replace(/\s+/g, " ").slice(0, 200),
+        url: SITE_URL + canonicalPage,
+        image: img || undefined,
+        datePublished: BUILD_DATE,
+        dateModified: BUILD_DATE,
+        author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL + "/about.html" },
+        publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+        mainEntityOfPage: { "@id": SITE_URL + canonicalPage },
+        about: { "@type": "Product", name: p.nome }
+      }
+    ]
+  };
+  return jsonLd(grafo);
 }
 
 function pagProduto(p, contexto) {
@@ -329,8 +357,15 @@ function pagProduto(p, contexto) {
   if (p.img && /^https?:\/\//i.test(String(p.img))) fotos.push(p.img);
   if (p.fotos && p.fotos.length) p.fotos.forEach(u => { if (u && /^https?:\/\//i.test(u) && fotos.indexOf(u) === -1) fotos.push(u); });
   const canonical = urlProduto(p);
-  const title = p.nome + " | Compare Prices & Coupon | WattWheel";
-  const metadata = (p.descricao || "").replace(/\s+/g, " ").slice(0, 150) + " Compare prices, ratings and specs, then check the price and buy directly at the retailer.";
+  const rev = ReviewData.notas(p, contexto.produtos);
+  const rf = rev.fatos;
+  const verdict = ReviewData.veredito(rev);
+  const title = ReviewData.titulo(p, contexto.produtos) + " | " + SITE_NAME;
+  const metadata = esc(
+    "We scored the " + (p.nome || "").split(/\s+(?=[A-Z])/)[0] + " " + (rf.isBike ? "e-bike" : "e-scooter") +
+    ": " + rev.score.toFixed(1) + "/10. " + ReviewData.pros(p, contexto.produtos)[0] +
+    " Check the specs, the buyer ratings and the best price we found."
+  );
   const descricaoHTMLout = descricaoHTML(p.descricao);
   const disp = { em_estoque: ["In stock", "stock"], poucas_unidades: ["Only a few left", "soon"], esgotado: ["Currently unavailable", "out"] }[p.disponibilidade] || ["In stock", "stock"];
   const pct = pctDesc(p.preco, p.preco_anterior);
@@ -349,6 +384,17 @@ function pagProduto(p, contexto) {
   const specsHTML = (p.specs || []).map(s =>
     "<tr><th>" + esc(s.rotulo) + "</th><td>" + esc(s.valor) + "</td></tr>").join("") ||
     "<tr><th>Condition</th><td>New</td></tr>";
+
+  const keySpecItems = [
+    rf.watt != null ? [rf.isBike ? "Motor" : "Peak motor", rf.watt + "W"] : null,
+    rf.wh != null ? ["Battery", rf.volt + "V " + rf.ah + "Ah · " + num(rf.wh) + "Wh"] : null,
+    rf.alcance != null ? ["Est. range", "~" + rf.alcance + " km"] : null,
+    rf.vel != null ? ["Top speed", rf.vel + " km/h"] : null,
+    rf.pneu != null ? [rf.isBike ? "Wheel size" : "Tire size", rf.pneu + "″"] : null,
+    rf.carga != null ? ["Max load", rf.carga + " kg"] : null
+  ].filter(Boolean);
+  const keySpecsHTML = keySpecItems.map(it =>
+    '<div class="key-spec"><span class="key-spec-label">' + esc(it[0]) + '</span><span class="key-spec-value">' + esc(it[1]) + "</span></div>").join("");
 
   const reviews = (p.reviews && p.reviews.length) ? p.reviews : [];
   const reviewsHTML = reviews.map(r => {
@@ -392,10 +438,34 @@ function pagProduto(p, contexto) {
   const html =
     HEAD_COMMON(title, metadata, canonical, fotos[0]) +
     BODY_OPEN +
-    '<main class="container">' +
+    '<main class="container review-page">' +
     '<nav class="crumb"><a href="/">Home</a><span class="sep">›</span>' +
     '<a href="/catalog.html?cat=' + esc(p.categoria) + '">' + esc(p.categoria_nome || p.categoria) + "</a>" +
-    '<span class="sep">›</span><span>' + esc(p.marca) + "</span></nav>" +
+    '<span class="sep">›</span><span>' + esc(p.marca) + " Review</span></nav>" +
+
+    /* ---------- Review hero ---------- */
+    '<header class="review-hero-head">' +
+    '  <div class="review-badge-tag">' +
+    '    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>' +
+    '    REVIEWED &amp; SCORED' +
+    '  </div>' +
+    '  <h1 class="review-page-title" id="review-title">' + esc(ReviewData.h1(p)) + "</h1>" +
+    '  <div class="review-author-meta">' +
+    '    <span class="author-item"><strong>Reviewed by</strong> ' + SITE_NAME + " editorial</span>" +
+    '    <span class="sep">&bull;</span>' +
+    '    <span class="author-item"><strong>Updated</strong> ' + esc(BUILD_MONTH) + "</span>" +
+    '    <span class="sep">&bull;</span>' +
+    '    <span class="author-item"><strong>Verdict</strong> <span class="verdict-pill ' + verdict.classe + '">' + esc(verdict.rotulo.toUpperCase()) + "</span></span>" +
+    "  </div>" +
+    '  <div class="review-score-banner">' +
+    ReviewData.htmlScoreBanner(p, contexto.produtos) +
+    ReviewData.htmlSelos(p) +
+    "  </div>" +
+    "</header>" +
+
+    /* ---------- Veredito + pros/cons + barras ---------- */
+    ReviewData.htmlVeredito(p, contexto.produtos) +
+
     '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Compare prices at other stores</h2>' +
     comparar + "</section>" +
     '<div class="pg-layout">' +
@@ -407,8 +477,9 @@ function pagProduto(p, contexto) {
     "</div>" +
     "</div>" +
     '<div class="pg-info">' +
-    '<div class="pg-catscreen"><a class="chip cat" id="pg-categoria" href="/catalog.html?cat=' + esc(p.categoria) + '">' + esc(p.categoria_nome) + "</a></div>" +
-    '<h1 class="pg-title" id="pg-titulo">' + esc(p.nome) + "</h1>" +
+    '<div class="pg-catscreen"><a class="chip cat" id="pg-categoria" href="/catalog.html?cat=' + esc(p.categoria) + '">' + esc(p.categoria_nome) + '</a><span class="review-badge-inline">FULL REVIEW</span></div>' +
+    '<p class="pg-title" id="pg-titulo">' + esc(p.nome) + "</p>" +
+    '<h2 class="review-subtitle">What the listing actually tells you</h2>' +
     '<div class="pg-meta">' +
     '<span class="pg-rating" id="pg-rating">' + starsHTML(p.rating || 5) + ' <strong>' + (p.rating || 0).toFixed(1) + "</strong> out of 5 <span class=\"count\">(" + num(p.avaliacoes) + " ratings)</span></span>" +
     '<span id="pg-merchant">Available at <span class="merchant-chip">' + esc(p.merchant_nome || p.merchant) + "</span></span>" +
@@ -444,6 +515,7 @@ function pagProduto(p, contexto) {
     "</div>" +
     (bannersHTML ? '<section class="section pg-banner-sec" id="pg-banner-sec"><div class="container" style="padding-inline:0"><div id="pg-banner-carousel">' + bannersHTML + "</div></div></section>" : "") +
     '<section class="detail-sec"><h2><span class="bar"></span> Specifications</h2>' +
+    (keySpecsHTML ? '<div class="key-specs">' + keySpecsHTML + "</div>" : "") +
     '<table class="specs" id="specs-tabela">' + specsHTML + "</table></section>" +
     '<section class="detail-sec" id="reviews-sec">' +
     '<h2><span class="bar"></span> Customer reviews</h2>' +
@@ -456,7 +528,7 @@ function pagProduto(p, contexto) {
     (relCards ? '<section class="section"><div class="container" style="padding-inline:0"><div class="section-head"><h2>You may also like</h2><a class="link-all" href="/catalog.html">View all ›</a></div>' + relCards + "</div></section>" : "") +
     "</main>" +
     seedScript(p) +
-    schemaProduto(p, canonical) +
+    schemaProduto(p, canonical, contexto) +
     FOOT;
   return html;
 }
@@ -480,6 +552,7 @@ function pagCategoria(slug, cat, produtos) {
     "</main>" +
     '<div id="app-footer"></div>' +
     '<script src="/js/config.js"></script>' +
+    '<script src="/js/review-data.js"></script>' +
     '<script src="/js/app.js"></script>' +
     "</body>\n</html>";
   return html;

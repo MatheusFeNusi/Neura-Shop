@@ -14,8 +14,12 @@
 
   <div id="app-header"></div>
 
-  <main class="container">
+  <main class="container review-page">
     <nav class="crumb" id="crumb"></nav>
+
+    <header class="review-hero-head" id="review-hero"></header>
+
+    <div id="review-verdict-slot"></div>
 
     <section class="detail-sec comparar-sec" id="comparar-sec">
       <h2><span class="bar"></span> Compare prices at other stores</h2>
@@ -32,9 +36,12 @@
       <div class="pg-info">
         <div class="pg-catscreen">
           <a class="chip" id="pg-categoria" href="catalog.html">All categories</a>
+          <span class="review-badge-inline">FULL REVIEW</span>
         </div>
 
-        <h1 class="pg-title" id="pg-titulo">—</h1>
+        <p class="pg-title" id="pg-titulo">—</p>
+
+        <h2 class="review-subtitle">What the listing actually tells you</h2>
 
         <div class="pg-meta">
           <span class="pg-rating" id="pg-rating"></span>
@@ -43,7 +50,7 @@
           <span class="ref" id="pg-produto-id"></span>
         </div>
 
-        <p class="pg-descricao" id="pg-descricao"></p>
+        <div class="pg-descricao" id="pg-descricao"></div>
       </div>
 
       <aside class="buybox-col">
@@ -119,6 +126,7 @@
 
     <section class="detail-sec">
       <h2><span class="bar"></span> Specifications</h2>
+      <div class="key-specs" id="key-specs"></div>
       <table class="specs" id="specs-tabela"></table>
     </section>
 
@@ -162,6 +170,7 @@
   </div>
 
   <script src="js/config.js"></script>
+  <script src="js/review-data.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
