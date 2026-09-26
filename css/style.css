@@ -648,8 +648,13 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
   .pg-layout .pg-info { display: contents; }
   .pg-layout .pg-col-galeria { grid-column: auto; grid-row: auto; order: 1; }
   .pg-layout .pg-catscreen { grid-column: auto; grid-row: auto; order: 2; }
-  .pg-layout .pg-meta { grid-column: auto; grid-row: auto; order: 3; }
-  .pg-layout .buybox-col { grid-column: auto; grid-row: auto; order: 5; top: 0; }
+  /* O subtitulo precisa de order explicito: com .pg-info em display:contents
+     ele vira item do grid, e sem isso ficaria com order 0, acima da imagem. */
+  .pg-layout .review-subtitle { grid-column: auto; grid-row: auto; order: 3; }
+  /* O buybox sobe para logo abaixo do subtitulo, para o botao de cupom e o de
+     video ficarem acima da dobra. So o que esta abaixo dele foi empurrado. */
+  .pg-layout .buybox-col { grid-column: auto; grid-row: auto; order: 4; top: 0; }
+  .pg-layout .pg-meta { grid-column: auto; grid-row: auto; order: 5; }
   .pg-layout .pg-descricao { grid-column: auto; grid-row: auto; order: 6; }
   .buybox-col { top: 0; }
   .pg-banner-item { border-radius: 10px; }
