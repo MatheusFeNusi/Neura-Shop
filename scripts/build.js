@@ -241,9 +241,9 @@ function cardHTML(p) {
     '<a class="p-name" href="' + urlProduto(p) + '">' + esc(p.nome) + "</a>" +
     estrelasCard(p) +
     '<div class="price">' +
-    (p.preco_anterior ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" : "") +
+    (pctDesc(p.preco, p.preco_anterior) != null ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" : "") +
     '<span class="now">' + fmt(p.preco) + "</span>" +
-    (p.preco_anterior ? '<span class="save">Save ' + fmt(p.preco_anterior - p.preco) + "</span>" : "") +
+    (pctDesc(p.preco, p.preco_anterior) != null ? '<span class="save">Save ' + fmt(p.preco_anterior - p.preco) + "</span>" : "") +
     "</div>" +
     '<a class="merchant" href="/store.html?loja=' + encodeURIComponent(p.merchant || "x") + '">' + esc(p.merchant_nome || p.merchant) + "</a>" +
     (esgotado
@@ -382,10 +382,10 @@ function pagProduto(p, contexto) {
   const temCupom = p.cupom && !esgotado;
 
   const precoBloco =
-    (p.preco_anterior
+    (pct != null
       ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" +
         '<div class="row"><span class="now">' + fmt(p.preco) + "</span>" +
-        (pct != null ? '<span class="pct">-' + pct + "%</span>" : "") +
+        '<span class="pct">-' + pct + "%</span>" +
         '<span class="save">You save ' + fmt(p.preco_anterior - p.preco) + "</span></div>"
       : '<div class="row"><span class="now">' + fmt(p.preco) + "</span></div>") +
     '<div class="cash">Reference price from the retailer\'s listing — the final price is confirmed at checkout.</div>';

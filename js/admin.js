@@ -681,6 +681,14 @@ marca: f.marca.value.trim() || p.marca,
     faq: p.faq
   };
   if (p.id) novo.id = p.id;
+  /* Preco acima do "de" e quase sempre digito errado (659 vira 6594). O site
+     nao mostra mais "Was/Save" nesse caso, mas avisar aqui evita o dado torto. */
+  if (novo.preco_anterior != null && isFinite(novo.preco_anterior) && novo.preco >= novo.preco_anterior) {
+    var ok = window.confirm("O preco novo (" + fmt(novo.preco) + ") e maior ou igual ao preco anterior (" +
+      fmt(novo.preco_anterior) + "). O site vai mostrar so o preco atual, sem Was/Save." +
+      "\n\nQuer salvar assim? Se o valor estiver errado, clique em Cancelar e corrija o campo.");
+    if (!ok) { document.getElementById("btn-salvar").disabled = false; return; }
+  }
   var btn = document.getElementById("btn-salvar");
   btn.disabled = true;
   supaPatch(idEmEdicao, novo).then(function () {

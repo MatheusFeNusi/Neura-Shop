@@ -803,7 +803,7 @@
       "fotos": [],
       "icone": "caixa",
       "marca": "GOKEEP",
-      "preco": 659,
+      "preco": 6594,
       "specs": [
         {
           "valor": "GOKEEP",
@@ -887,9 +887,11 @@
       ],
       "img": "https://imgaz.staticbg.com/thumb/gallery/oaupload/banggood/images/6D/67/e6fb89ee-2b58-4ae3-b129-42385a1fea86.png.webp",
       "nome": "GOKEEP F4 Electric Scooter 48V 15.6AH 250W(Peak 1000W) Motor Top Speed 25KM/H 10Inch Tire 40KM Mileage 120kg Max Load",
+      "cupom": null,
+      "fotos": [],
       "icone": "caixa",
       "marca": "GOKEEP",
-      "preco": 574,
+      "preco": 5459,
       "specs": [
         {
           "valor": "GOKEEP",
@@ -932,7 +934,10 @@
           "rotulo": "Availability"
         }
       ],
+      "video": null,
       "rating": 0,
+      "banners": [],
+      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -941,9 +946,11 @@
       "avaliacoes": 0,
       "product_id": "WW-2054347",
       "url_afiliado": "https://usa.banggood.com/US-DIRECT-GOKEEP-F4-Electric-Scooter-48V-15_6AH-250W(Peak-1000W)-Motor-Top-Speed-25KM-or-H-10Inch-Tire-40KM-Mileage-120kg-Max-Load-p-2054347.html?cur_warehouse=USA&ID=6287837&rmmds=CategorySportsPop&trace_id=ca331790339563550",
+      "lojas_compare": [],
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 1399.99,
+      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -1236,7 +1243,7 @@
       "fotos": [],
       "icone": "caixa",
       "marca": "GOKEEP",
-      "preco": 569.49,
+      "preco": 5652,
       "specs": [
         {
           "valor": "GOKEEP",
