@@ -501,6 +501,24 @@
     return baseUnica(p, todos) + " review: our score, the specs and the best price";
   }
 
+  /* ---------- 8b. Video ----------
+     O feed traz URL de BUSCA do YouTube (/results?search_query=), que nao tem
+     video ID e portanto nao cabe em iframe: o YouTube responde com
+     X-Frame-Options e o navegador recusa com "A conexao com www.youtube.com
+     foi recusada". Antes o codigo devolvia a URL crua e o modal a enquadrava,
+     entao o botao estava quebrado nas 38 paginas. Sem ID extraivel o botao
+     abre o link em nova aba, que e o que o admin promete no rotulo do campo. */
+  function videoEmbed(url) {
+    var raw = String(url || "").trim();
+    if (!raw) return "";
+    var m = raw.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+    return m ? "https://www.youtube.com/embed/" + m[1] + "?rel=0&autoplay=1" : "";
+  }
+  function videoRotulo(p) {
+    if (!p || !p.video) return "Watch video";
+    return videoEmbed(p.video) ? "Watch video" : "Search this product on YouTube";
+  }
+
   /* ---------- 9. FAQ curado ----------
      O aviso de afiliado canonico vive no card-warn e no rodape. O FAQ nao
      repete "WattWheel nao vende" nem "ganhamos comissao" — sao as mesmas
@@ -641,6 +659,8 @@
     titulo: titulo,
     baseUnica: baseUnica,
     h1: h1,
+    videoEmbed: videoEmbed,
+    videoRotulo: videoRotulo,
     faq: faq,
     specsVisiveis: specsVisiveis,
     htmlDescricao: htmlDescricao,

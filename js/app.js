@@ -1432,11 +1432,8 @@ function renderBanners(p) {
 
 /* ---------- Video (popup embed) ---------- */
 function videoEmbedURL(url) {
-  if (!url) return "";
-  var raw = String(url).trim();
-  var m = raw.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
-  if (m) return "https://www.youtube.com/embed/" + m[1] + "?rel=0&autoplay=1";
-  return raw;
+  if (!window.ReviewData) return "";
+  return ReviewData.videoEmbed(url);
 }
 
 function renderVideo(p) {
@@ -1447,8 +1444,17 @@ function renderVideo(p) {
   if (!row || !btn || !modal || !frame) return;
   if (!p.video) { row.hidden = true; return; }
   row.hidden = false;
+  /* URL de busca do YouTube nao tem video ID e nao pode ser enquadrada: nesses
+     casos o botao abre em nova aba, em vez de abrir um modal que o navegador
+     recusa com "A conexao com www.youtube.com foi recusada". */
+  var embed = videoEmbedURL(p.video);
+  var ext = btn.querySelector(".video-ext");
+  if (ext) ext.textContent = embed ? "▶" : "↗";
+  var lbl = btn.querySelector(".video-label");
+  if (lbl) lbl.textContent = window.ReviewData ? ReviewData.videoRotulo(p) : "Watch video";
   btn.onclick = function () {
-    frame.innerHTML = '<iframe src="' + esc(videoEmbedURL(p.video)) + '" title="Product video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    if (!embed) { window.open(p.video, "_blank", "noopener"); return; }
+    frame.innerHTML = '<iframe src="' + esc(embed) + '" title="Product video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
     modal.hidden = false;
     document.body.style.overflow = "hidden";
   };
