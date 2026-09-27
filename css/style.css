@@ -75,10 +75,10 @@ button { font-family: inherit; }
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 18px rgba(16, 42, 74, 0.18);
 }
 
-.hdr-top { display: flex; align-items: center; gap: 22px; padding: 14px 0; }
+.hdr-top { display: flex; align-items: center; gap: 22px; padding: 10px 0; }
 
 .brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.brand-logo { height: 38px; width: auto; display: block; object-fit: contain; }
+.brand-logo { height: 52px; width: auto; display: block; object-fit: contain; }
 .brand-name { font-size: 23px; font-weight: 700; letter-spacing: -0.4px; color: #fff; }
 .brand-name em { font-style: normal; }
 .brand-tag { display: block; font-size: 11px; font-weight: 500; color: rgba(255, 255, 255, 0.6); margin-top: 0; }
@@ -638,8 +638,8 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
 }
 
 @media (max-width: 880px) {
-  .hdr-top { flex-wrap: wrap; gap: 12px; padding: 12px 0; }
-  .brand-logo { height: 30px; }
+  .hdr-top { flex-wrap: wrap; gap: 12px; padding: 10px 0; }
+  .brand-logo { height: 34px; }
   .brand-name { font-size: 19px; }
   .brand-tag { font-size: 10px; }
   .search-box { order: 3; flex-basis: 100%; max-width: none; }

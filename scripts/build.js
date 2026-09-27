@@ -237,7 +237,7 @@ function cardHTML(p) {
   const esgotado = p.disponibilidade === "esgotado";
   const badge = pctDesc(p.preco, p.preco_anterior) != null ? '<span class="badge">-' + pctDesc(p.preco, p.preco_anterior) + "%</span>" : "";
   const img = imgProd(p);
-  return '<article class="pcard">' +
+  return '<article class="pcard" data-pid="' + esc(p.id) + '">' +
     '<a class="media" href="' + urlProduto(p) + '">' + badge +
     (img ? '<img src="' + img + '" alt="' + esc(p.nome) + '" loading="lazy"/>' : "") +
     "</a>" +
@@ -455,7 +455,9 @@ function pagProduto(p, contexto) {
 
     /* ---------- Comparacao de precos: topo da pagina, acima do hero ---------- */
     '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Compare prices at other stores</h2>' +
-    comparar + "</section>" +
+    /* O id deixa o renderComparar() do js/app.js reescrever esse bloco com o
+       preco do admin: sem ele, a tabela de lojas ficava no valor do build. */
+    '<div id="comparar-tabela">' + comparar + "</div></section>" +
 
     /* ---------- Review hero ---------- */
     '<header class="review-hero-head">' +
@@ -731,8 +733,9 @@ function pagCategoria(slug, cat, produtos) {
     '<div class="page-head"><p class="kicker">' + esc(cat.nome) + "</p>" +
     '<h1>' + esc(cat.nome) + "</h1>" +
     "<p>" + esc(metadata) + "</p>" +
-    '<p class="count" style="margin-top:10px">' + produtos.length + " products · " +
-    "from " + fmt(min) + " to " + fmt(max) + " (median " + fmt(med) + ")" +
+    '<p class="count" style="margin-top:10px" data-cat-slug="' + esc(cat.slug || "") + '">' + produtos.length + " products · " +
+    "from <span data-preco-resumo=\"min\">" + fmt(min) + "</span> to <span data-preco-resumo=\"max\">" + fmt(max) +
+    "</span> (median <span data-preco-resumo=\"med\">" + fmt(med) + "</span>)" +
     (comWas ? " · " + comWas + " below list price" : "") + " · prices checked " + esc(BUILD_MONTH) + "</p></div>" +
 
     (listas.length ? '<section class="detail-sec" id="sub-listas"><h2><span class="bar"></span> Narrow it down</h2>' +

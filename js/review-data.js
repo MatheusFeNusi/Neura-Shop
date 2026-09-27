@@ -954,18 +954,64 @@
 
     var tbody = ps.map(function (p, i) {
       var f = facts[i];
-      return "<tr>" +
+      /* data-cmp-id/data-cmp-col: o js/app.js usa para reescrever as colunas de
+         preco com o dado do admin, sem esperar o proximo deploy. */
+      return '<tr data-cmp-id="' + esc(p.id != null ? p.id : "") + '">' +
         '<th scope="row" class="cmp-prod"><a href="' + esc(urlOf(p)) + '">' + esc(nomeCurto(p)) + "</a>" +
         '<span class="cmp-marca">' + esc(p.marca || "") + "</span></th>" +
         cols.map(function (c, j) {
           var v = c.num(f);
           var lead = melhor[j] != null && v === melhor[j];
-          return '<td class="' + (lead ? "cmp-best" : "") + '">' + esc(c.val(f)) + "</td>";
+          return '<td data-cmp-col="' + j + '" class="' + (lead ? "cmp-best" : "") + '">' + esc(c.val(f)) + "</td>";
         }).join("") +
         "</tr>";
     }).join("");
 
     return '<div class="alt-scroll"><table class="alt-table cmp-table">' + thead + "<tbody>" + tbody + "</tbody></table></div>";
+  }
+
+  /* Preco ao vivo na tabela comparativa. A tabela e HTML do build: se o admin
+     muda um preco, ela so corrigiria no proximo deploy. Aqui as tres colunas
+     de dinheiro (Price, Was, Discount) sao reescritas com o dado atual e a
+     marcacao de "melhor valor" da coluna Price e refeita, porque ela depende
+     dos precos de todas as linhas da tabela. */
+  function syncComparativo(table, porId) {
+    if (!table || !porId) return 0;
+    var linhas = [].slice.call(table.querySelectorAll("tr[data-cmp-id]"));
+    if (!linhas.length) return 0;
+    var fatosLinha = [];
+    var mudou = 0;
+    linhas.forEach(function (tr) {
+      var p = porId[tr.getAttribute("data-cmp-id")];
+      if (!p) { fatosLinha.push(null); return; }
+      var f = fatos(p);
+      fatosLinha.push(f);
+      var textos = [
+        f.preco > 0 ? fmtMoeda(f.preco) : "-",
+        f.desconto != null ? fmtMoeda(f.lista) : "-",
+        f.desconto != null ? "-" + f.desconto + "%" : "-"
+      ];
+      textos.forEach(function (txt, j) {
+        var td = tr.querySelector('td[data-cmp-col="' + j + '"]');
+        if (td && td.textContent !== txt) { td.textContent = txt; mudou++; }
+      });
+    });
+    var vals = fatosLinha
+      .map(function (f) { return f && f.preco > 0 ? f.preco : null; })
+      .filter(function (v) { return v != null; });
+    var melhor = null;
+    if (vals.length >= 2) {
+      var alvo = Math.min.apply(null, vals);
+      melhor = vals.filter(function (v) { return v === alvo; }).length === 1 ? alvo : null;
+    }
+    linhas.forEach(function (tr, i) {
+      var td = tr.querySelector('td[data-cmp-col="0"]');
+      if (!td) return;
+      var f = fatosLinha[i];
+      if (f != null && melhor != null && f.preco === melhor) td.classList.add("cmp-best");
+      else td.classList.remove("cmp-best");
+    });
+    return mudou;
   }
 
   /* Potencia com o pico quando o anuncio declara os dois: esconder o pico faz
@@ -1053,6 +1099,7 @@
     rotuloAlt: rotuloAlt,
     motorTxt: motorTxt,
     htmlComparativo: htmlComparativo,
+    syncComparativo: syncComparativo,
     specline: specline,
     htmlDescricao: htmlDescricao,
     htmlCtaCupom: htmlCtaCupom,
