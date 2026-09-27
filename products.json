@@ -81,7 +81,6 @@
       ],
       "img": "https://pxunbqwpiauhzpugcgwm.supabase.co/storage/v1/object/sign/Matheus%20Nunes/JANSNO%20X60%20Electric%20Bike%2048V%2023AH%20Battery%20750W*2%20Dual%20Motors%20Recommended%20Top%20Speed%2025KM/img1%20(1).png?token=eyJraWQiOiI0NjVjODZhMS0xMjdhLTQ1ZjktYjNlMC1hMTFlOWU2MWMxYmUiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJNYXRoZXVzIE51bmVzL0pBTlNOTyBYNjAgRWxlY3RyaWMgQmlrZSA0OFYgMjNBSCBCYXR0ZXJ5IDc1MFcqMiBEdWFsIE1vdG9ycyBSZWNvbW1lbmRlZCBUb3AgU3BlZWQgMjVLTS9pbWcxICgxKS5wbmciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzkwNTA3NDQzLCJleHAiOjIwNzQzMzE0NDN9._cWTCZqEP5RW6pn3uS0zliFisDH7t0Qeh063pMV7ZJHwgWB-IeBmM73vbOHnZbDi94iZcs72dSDn14-h_pEILw",
       "nome": "WQ-W4 Pro Electric Scooter 36V 10Ah Battery 350W Motor Recommended Top Speed 25KM/H 8.5inch Tires 25KM/H Top Speed 25-30KM Max Mileage Range 120KG Max Load Folding E-Scooter XIAOMI M365",
-      "cupom": "BG742ae7",
       "fotos": [],
       "icone": "caixa",
       "marca": "WQ-W4",
@@ -137,26 +136,14 @@
         }
       ],
       "video": "https://www.youtube.com/results?search_query=WQ-W4%20WQ-W4%20Pro%20Electric%20Scooter",
-      "rating": 4.8,
+      "rating": 0,
       "banners": [],
-      "reviews": [
-        {
-          "nome": "Ethan Carter",
-          "nota": 5,
-          "texto": "I absolutely love this e-vehicle! The motor gives it incredible power, and the ride feels smooth and stable. The battery lasts a long time and it handles steep hills effortlessly. Definitely worth every penny!"
-        },
-        {
-          "nome": "Marcus Vance",
-          "nota": 4.9,
-          "texto": "Impressed with the range and hill-climbing torque. Solid frame, responsive brakes, and the headlight is very bright for night rides. Very satisfied!"
-        }
-      ],
       "comissao": 3,
       "destaque": true,
       "merchant": "partner-store",
       "categoria": "scooters-eletricos",
       "descricao": "🛴 【36V 10Ah Removable Lithium Battery】\nEnjoy long-distance rides with the high-capacity 36V 10Ah lithium battery. The removable design makes charging simple and convenient at home, work, or wherever you have access to power. Under optimal riding conditions, it provides reliable energy for extended daily commutes.\n\n🛴 【350W High-Torque Motor】\nExperience responsive acceleration with the powerful 350W motor system. Engineered to deliver impressive torque, this electric scooter easily navigates steep inclines, city streets, and rugged paths with smooth, consistent power output.\n\n🛴 【Extended Riding Range & Smart Power】\nThe 36V 10Ah battery system is optimized for maximum efficiency, offering up to 25KM per full charge. Intelligent energy management balances throttle control and pedal/power assist for longer trips.\n\n🛴 【All-Terrain Design & Robust Frame】\nBuilt with a durable, high-strength frame paired with 8.5inch tires for maximum stability and traction. Designed to cushion shocks on uneven pavement, gravel, and dirt roads. Supports a maximum payload capacity of 120KG Max Load.\n\n🛴 【Dual Disc Brakes & Night Safety Lighting】\nFeatures high-precision front and rear disc brakes for strong, predictable stopping power. Integrated ultra-bright LED headlights and rear brake lights ensure maximum visibility during night commutes.\n\n🛴 【Quick Assembly & Warranty Support】\nArrives 85%–90% pre-assembled with setup tools and clear instructions included. Backed by dedicated customer support and standard warranty coverage for total peace of mind.",
-      "avaliacoes": 14,
+      "avaliacoes": 0,
       "product_id": "WW-1991948",
       "url_afiliado": "https://usa.banggood.com/custlink/Dmmlr1DHPT",
       "lojas_compare": [
@@ -168,7 +155,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 579.99,
-      "cupom_descricao": "Apply code at checkout on retailer page",
       "disponibilidade": "em_estoque"
     },
     {
@@ -189,7 +175,6 @@
       ],
       "img": "https://imgaz1.staticbg.com/thumb/gallery/oaupload/banggood/images/EA/93/4937c181-91f2-4e3c-a718-b496da873f7e.jpg.webp",
       "nome": "ENGWE Y400 Electric Scooter 13.5Ah 48V 500W (PEAK 740W) Recommended Top Speed 25KM/H 10 Inches Folding Electric Scooter 50km Mileage Max Load 120Kg",
-      "cupom": "SAVE10",
       "fotos": [],
       "icone": "caixa",
       "marca": "ENGWE",
@@ -243,7 +228,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -256,7 +240,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 999.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -277,7 +260,6 @@
       ],
       "img": "https://imgaz1.staticbg.com/thumb/gallery/oaupload/banggood/images/77/80/38a89463-11f9-47fb-8968-81025d279e4e.jpg.webp",
       "nome": "Freeboy J30 MAX Electric Scooter 60V 38Ah, 6000W Dual Motor, 90-100km Range, 150kg Load",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "Freeboy",
@@ -331,7 +313,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -344,7 +325,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 2599.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -365,7 +345,6 @@
       ],
       "img": "https://imgaz.staticbg.com/thumb/gallery/oaupload/banggood/images/03/22/ba66df9d-0503-4d03-ade5-79f1ae00af0d.jpg.webp",
       "nome": "Freeboy J05 MAX Electric Scooter 15Ah 36V 500W Motor Recommended Top Speed 25KM/H 10 Inches Tire Electric Scooter 35-40km Mileage Max Load 150Kg",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "Freeboy",
@@ -419,7 +398,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -432,7 +410,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 899.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -453,7 +430,6 @@
       ],
       "img": "https://imgaz1.staticbg.com/thumb/gallery/oaupload/banggood/images/D6/09/7b3b9a83-0221-4968-baa1-24745f482579.jpg.webp",
       "nome": "Freeboy J01 Electric Scooter 15Ah 48V 800W Motor Recommended Top Speed 25KM/H 10 Inches Tire Electric Scooter 50-55km Mileage Max Load 150Kg",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "Freeboy",
@@ -507,7 +483,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -520,7 +495,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 999.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -541,7 +515,6 @@
       ],
       "img": "https://imgaz3.staticbg.com/thumb/gallery/oaupload/banggood/images/84/D4/6fe93727-cabc-4d4c-8286-436aaf7b6816.jpg.webp",
       "nome": "Freeboy H8 Electric Scooter 28Ah 60V 3000W*2 Dual Motor Recommended Top Speed 25KM/H 11 Inches Tire Electric Scooter 80-90km Mileage Max Load 150Kg",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "Freeboy",
@@ -595,7 +568,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -608,7 +580,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 2199.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -629,7 +600,6 @@
       ],
       "img": "https://imgaz2.staticbg.com/thumb/gallery/oaupload/banggood/images/4F/4E/12ac2449-7073-44cc-8758-0bb5ea4c6412.jpg.webp",
       "nome": "Freeboy J15 MAX Electric Scooter 18Ah 48V 1600W Motor Recommended Top Speed 25KM/H 11 Inches Tire Electric Scooter 45-50km Mileage Max Load 150Kg",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "Freeboy",
@@ -683,7 +653,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -696,7 +665,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 1299.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -798,7 +766,6 @@
       ],
       "img": "https://imgaz.staticbg.com/thumb/gallery/oaupload/banggood/images/18/99/f3937ed6-0aab-4a6b-bb7b-0232b1af5048.png.webp",
       "nome": "GOKEEP F5 Electric Scooter 20Ah 52V 1000W Recommended Top Speed 25KM/H 11 Inches Folding Electric Scooter 43km Mileage Max Load 120Kg",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "GOKEEP",
@@ -852,7 +819,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -865,7 +831,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 1599.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -886,7 +851,6 @@
       ],
       "img": "https://imgaz.staticbg.com/thumb/gallery/oaupload/banggood/images/6D/67/e6fb89ee-2b58-4ae3-b129-42385a1fea86.png.webp",
       "nome": "GOKEEP F4 Electric Scooter 48V 15.6AH 250W(Peak 1000W) Motor Top Speed 25KM/H 10Inch Tire 40KM Mileage 120kg Max Load",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "GOKEEP",
@@ -936,7 +900,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -949,7 +912,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 1399.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -970,7 +932,6 @@
       ],
       "img": "https://imgaz.staticbg.com/thumb/gallery/oaupload/banggood/images/B1/1E/5f0634a0-0094-4be2-987b-2f133d17308c.jpg.webp",
       "nome": "BOYUEDA S5 Electric Scooter 38Ah 60V 3000W*2 Dual Motor Recommended Top Speed 25KM/H 11in Folding Moped Electric Scooter 100-120KM Mileage Electric Scooter Max Load 200Kg",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "BOYUEDA",
@@ -1024,7 +985,6 @@
       "video": null,
       "rating": 4.7,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": true,
       "merchant": "partner-store",
@@ -1037,7 +997,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 1299,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -1058,7 +1017,6 @@
       ],
       "img": "https://imgaz2.staticbg.com/thumb/gallery/oaupload/banggood/images/61/BA/da06e22a-84c0-4c60-b992-f8d93b320814.jpg.webp",
       "nome": "BOYUEDA S3-11 Electric Scooter With Seat 38Ah 6000W Recommended Top Speed 25KM/H 60V Oil Brake 11 Inch Electric Scooter 150-200Kg Max Load 100Km Range EU Direct USA Direct",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "BOYUEDA",
@@ -1116,7 +1074,6 @@
       "video": null,
       "rating": 4.93,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": true,
       "merchant": "partner-store",
@@ -1129,7 +1086,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 1199.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -1150,7 +1106,6 @@
       ],
       "img": "https://imgaz3.staticbg.com/thumb/gallery/oaupload/banggood/images/84/A2/b7df137d-a6d2-4312-b35a-af8c342f92be.jpg.webp",
       "nome": "TOURSOR X8P Electric Scooter 60V 38.8AH Battery 4000W*2 Dual Motors Recommended Top Speed 25KM/H 14inch Off-Road Tires 110KM Max Mileage 200KG Max Load Folding E-Scooter",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "TOURSOR",
@@ -1204,7 +1159,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -1217,7 +1171,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 3049.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -1238,7 +1191,6 @@
       ],
       "img": "https://imgaz2.staticbg.com/thumb/gallery/oaupload/banggood/images/6D/42/6cb06fd4-c480-40c2-ba80-91ff7bff5b3c.png.webp",
       "nome": "GOKEEP F5 Electric Scooter 20Ah 52V 1000W Recommended Top Speed 25KM/H 11 Inches Folding Electric Scooter 43km Mileage Max Load 120Kg",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "GOKEEP",
@@ -1292,7 +1244,6 @@
       "video": null,
       "rating": 4.82,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": true,
       "merchant": "partner-store",
@@ -1305,7 +1256,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": null,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -1326,7 +1276,6 @@
       ],
       "img": "https://imgaz1.staticbg.com/thumb/gallery/oaupload/banggood/images/A6/7A/03860811-decf-4bd3-beaa-97afe2005d91.jpg.webp",
       "nome": "COASTA L9pro Electric Scooter 36V 20Ah 350W*2 Dual Motors Recommended Top Speed 25KM/H 8.5inch 40KM Mileage 120KG Payload Folding E-Scooter",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "COASTA",
@@ -1380,7 +1329,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -1393,7 +1341,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 1029.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -1499,7 +1446,6 @@
       ],
       "img": "https://imgaz2.staticbg.com/thumb/gallery/oaupload/banggood/images/56/1E/7b75670d-d8aa-47ca-9bc2-4179e34c7c75.jpg.webp",
       "nome": "OOTD T10 Electric Scooter 48V 18AH Battery 900W Motor Recommended Top Speed 25KM/H 11inches Tires 80KM Max Mileage 120KG Max Load Folding E-Scooter",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "OOTD",
@@ -1557,7 +1503,6 @@
       "video": null,
       "rating": 5,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -1570,7 +1515,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Scooters",
       "preco_anterior": 1379.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -1591,7 +1535,6 @@
       ],
       "img": "https://imgaz2.staticbg.com/thumb/gallery/oaupload/banggood/images/E0/60/1ff07ec5-e5d7-4f1e-a4d5-eb462956a277.jpg.webp",
       "nome": "Shengmilo S600 Electric Bike 48V 17.5AH SamsungBattery 1000W*2 Dual Motors Recommended Top Speed 25KM/H 26inch Tires 90KM Max Mileage 150KG Max Load Electric Bicycle",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "Shengmilo",
@@ -1645,7 +1588,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -1658,7 +1600,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 2879.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -1679,7 +1620,6 @@
       ],
       "img": "https://imgaz1.staticbg.com/thumb/gallery/oaupload/banggood/images/D5/07/ce371e96-d096-426a-b867-cebdfe389d21.jpg.webp",
       "nome": "SINOHON EM200 Electric Bike 48V 12.5AH Battery 500W Recommended Top Speed 25KM/H Motor 26 Inch Electric Bicycle 65-85 KM Mileage Range Max Load 150KG SINOHON EM200",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "SINOHON",
@@ -1733,7 +1673,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -1746,7 +1685,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 499,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -1848,7 +1786,6 @@
       ],
       "img": "https://imgaz3.staticbg.com/thumb/gallery/oaupload/banggood/images/01/37/9cfbbe18-4256-402f-97d2-d614083feccc.jpg.webp",
       "nome": "SINOHON EM200G Electric Bike 48V 15.6AH Battery 500W Motor Recommended Top Speed 25KM/H 26 Inch Electric Bicycle 40-60 KM Mileage Range Max Load 150KG SINOHON EM200G",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "SINOHON",
@@ -1902,7 +1839,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -1915,7 +1851,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 489,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -1936,7 +1871,6 @@
       ],
       "img": "https://imgaz2.staticbg.com/thumb/gallery/oaupload/banggood/images/90/51/bd123c5b-4dd5-48bd-872a-ef58e35c8691.jpg.webp",
       "nome": "SINOHON EM200 Electric Bike 48V 12.5AH Battery 500W Motor Recommended Top Speed 25KM/H 26 Inch Electric Bicycle 40-60 KM Mileage Range Max Load 150KG SINOHON EM200",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "SINOHON",
@@ -1990,7 +1924,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -2003,7 +1936,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 489,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -2024,7 +1956,6 @@
       ],
       "img": "https://imgaz3.staticbg.com/thumb/gallery/oaupload/banggood/images/B7/4B/7ad2886d-36b6-4e88-9893-d11aff34e6df.png.webp",
       "nome": "URLIFE E20 Electric Bike 48V 13AH 500W(Peak 1000W) Motor Recommended Top Speed 25KM/H 20inch Tire 130KM Max Mileage 120KG Max Load Electric Bicycle",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "URLIFE",
@@ -2078,20 +2009,18 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
       "categoria": "bicicletas-eletricas",
       "descricao": "An electric bike curated from the retailer catalog with live price and real ratings. Sold by the retailer, where the final price is confirmed at checkout.",
-      "avaliacoes": 1,
+      "avaliacoes": 0,
       "product_id": "WW-2045222",
       "url_afiliado": "https://usa.banggood.com/custlink/3GDjWTvPjb",
       "lojas_compare": [],
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 699.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -2112,7 +2041,6 @@
       ],
       "img": "https://imgaz3.staticbg.com/thumb/gallery/oaupload/banggood/images/3A/16/dcd30b54-8f4e-4b5f-adc9-efbf2fb8d737.png.webp",
       "nome": "URLIFE T2 Electric Bike 48V 15.6AH 250W(Peak 1500W) Motor Recommended Top Speed 25KM/H 20inch Fat Tire 160KM Max Mileage 120KG Max Load Electric Bicycle",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "URLIFE",
@@ -2166,20 +2094,18 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
       "categoria": "bicicletas-eletricas",
       "descricao": "An electric bike curated from the retailer catalog with live price and real ratings. Sold by the retailer, where the final price is confirmed at checkout.",
-      "avaliacoes": 1,
+      "avaliacoes": 0,
       "product_id": "WW-2045223",
       "url_afiliado": "https://usa.banggood.com/custlink/3D3jcfKPo7",
       "lojas_compare": [],
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 999.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -2200,7 +2126,6 @@
       ],
       "img": "https://imgaz2.staticbg.com/thumb/gallery/oaupload/banggood/images/2E/32/8e8167be-ef75-49d3-8b67-1c69ad699530.jpg.webp",
       "nome": "JANSNO X90 Electric Bike 48V 14Ah Battery 48V 750W Motor Recommended Top Speed 25KM/H 16inch Tires 45KM Max Mileage 150KG Max Load Electric Bicycle",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "JANSNO",
@@ -2254,7 +2179,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -2267,7 +2191,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 2079.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -2288,7 +2211,6 @@
       ],
       "img": "https://imgaz3.staticbg.com/thumb/gallery/oaupload/banggood/images/FA/9D/38cc3e02-d314-4d48-ab45-156b6791e18e.jpg.webp",
       "nome": "DRVETION AT20 Electric Bike 48V 15Ah Battery 750W Motor Recommended Top Speed 25KM/H 20*4.0inch Tires 45KM Max Mileage Range 150KG Max Load Folding Electric Bicycle",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "DRVETION",
@@ -2342,7 +2264,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -2355,7 +2276,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 1979.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -2512,7 +2432,7 @@
       "merchant": "partner-store",
       "categoria": "bicicletas-eletricas",
       "descricao": "An electric bike curated from the retailer catalog with live price and real ratings. Sold by the retailer, where the final price is confirmed at checkout.",
-      "avaliacoes": 1,
+      "avaliacoes": 0,
       "product_id": "WW-2032208",
       "url_afiliado": "https://usa.banggood.com/EU-Direct-JANSNO-X70-Electric-Bike-48V-14AH+20AH-Dual-Batteries-750W-Motor-Recommended-Top-Speed-25KM-or-H-20inches-Tires-120KM-Max-Mileage-150KG-Max-Load-Electric-Bicycle-p-2032208.html?cur_warehouse=USA&ID=6287836&rmmds=CategorySportsPop&trace_id=12f11790339822238",
       "merchant_nome": "Partner store",
@@ -2538,7 +2458,6 @@
       ],
       "img": "https://imgaz3.staticbg.com/thumb/gallery/oaupload/banggood/images/DF/32/4a2582a4-c05d-47f9-9b9d-036d8179a9e1.jpg.webp",
       "nome": "GIDUCTON EC100 Electric Bike 48V 12AH 750W Motor Recommended Top Speed 25KM/H 20inch Tire 50KM Max Mileage 120KG Max Load Electric Bicycle",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "GIDUCTON",
@@ -2592,7 +2511,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -2605,7 +2523,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 1099.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -2626,7 +2543,6 @@
       ],
       "img": "https://imgaz2.staticbg.com/thumb/gallery/oaupload/banggood/images/E1/4A/9489430c-2be4-45e2-9d4b-4f621bb340fc.jpg.webp",
       "nome": "PAMILA E3 Electric Bike 15.6Ah 48V 1000W Mid Motor Recommended Top Speed 25KM/H 20*3.0 Inches Tire Electric Bike 50-60km Mileage Max Load 150Kg",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "PAMILA",
@@ -2680,7 +2596,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -2693,7 +2608,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 1599.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -2714,7 +2628,6 @@
       ],
       "img": "https://imgaz3.staticbg.com/thumb/gallery/oaupload/banggood/images/23/A5/16c22e39-b655-4cbe-ad0f-864fc2523f5e.jpg.webp",
       "nome": "Shengmilo S900 Electric Bike 60V 30AH Battery 1500W Motor Recommended Top Speed 25KM/H 20*4.0inch Tires 90KM Max Mileage 150KG Max Load Electric Bicycle",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "Shengmilo",
@@ -2768,7 +2681,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -2781,7 +2693,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 3579.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -2802,7 +2713,6 @@
       ],
       "img": "https://imgaz3.staticbg.com/thumb/gallery/oaupload/banggood/images/02/83/8d450649-3443-4a4b-9df9-8655c0750daa.jpg.webp",
       "nome": "DRVETION AT20 Electric Bike 48V 20Ah Battery 750W Motor Recommended Top Speed 25KM/H 20*4.0inch Tires 90-120KM Max Mileage 150KG Max Load Folding Electric Bicycle",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "DRVETION",
@@ -2856,7 +2766,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -2869,7 +2778,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 2129.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -2890,7 +2798,6 @@
       ],
       "img": "https://imgaz1.staticbg.com/thumb/gallery/oaupload/banggood/images/FB/4E/2c2fff18-ada7-45ba-ae77-4eb56860d616.jpg.webp",
       "nome": "HAPPYRUN HR-G50 Electric Bike 48V 18Ah Battery 750W Motor Recommended Top Speed 25KM/H 20inch Tires 110KM Mileage 120KG Max Load Electric Bicycle",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "HAPPYRUN",
@@ -2944,7 +2851,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -2957,7 +2863,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 1959.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -2978,7 +2883,6 @@
       ],
       "img": "https://imgaz3.staticbg.com/thumb/gallery/oaupload/banggood/images/A2/05/5b8e91ac-8039-436b-9591-30796a318c0a.jpg.webp",
       "nome": "QUNT BK20 Electric Bike 48V 18AH Battery 500W Motor Recommended Top Speed 25KM/H 20inch Tires 110KM Max Range 120KG Max Load Electric Bicycle",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "QUNT",
@@ -3032,7 +2936,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -3045,7 +2948,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 1519.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -3066,7 +2968,6 @@
       ],
       "img": "https://imgaz1.staticbg.com/thumb/gallery/oaupload/banggood/images/B3/FF/781d0b54-4f2e-4664-9ff6-5f1ccd6b193a.jpg.webp",
       "nome": "DRVETION CT20 Electric Bike 48V 15AH Battery 750W Motor Recommended Top Speed 25KM/H 20*4.0inch Fat Tires 40-80KM Max Mileage 150KG Max Load Folding Electric Bicycle",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "DRVETION",
@@ -3120,7 +3021,6 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
@@ -3133,7 +3033,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 2029.99,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -3154,7 +3053,6 @@
       ],
       "img": "https://imgaz1.staticbg.com/thumb/gallery/oaupload/banggood/images/01/16/0b88a404-b786-4aad-932c-6c11100064cc.jpg.webp",
       "nome": "RANDRIDE YX80M-2 48V 20Ah 2*1000W Recommended Top Speed 25KM/H 26*4.0 Inch Electric Bike 40-90KM Max Range Max Load 200KG",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "RANDRIDE",
@@ -3208,20 +3106,18 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
       "categoria": "bicicletas-eletricas",
       "descricao": "An electric bike curated from the retailer catalog with live price and real ratings. Sold by the retailer, where the final price is confirmed at checkout.",
-      "avaliacoes": 3,
+      "avaliacoes": 0,
       "product_id": "WW-1998730",
       "url_afiliado": "https://usa.banggood.com/custlink/mDDlrfDPbp",
       "lojas_compare": [],
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 1399,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -3242,7 +3138,6 @@
       ],
       "img": "https://imgaz.staticbg.com/thumb/gallery/oaupload/banggood/images/81/4F/04d021db-d0cb-430a-beb7-f8fa6ddc9ca4.jpg.webp",
       "nome": "SINOHON A20 Electric Bike 48V 22AH 1000W Motor Recommended Top Speed 25KM/H 20inch 80KM Max Mileage 150KG Max Load Electric Bicycle",
-      "cupom": null,
       "fotos": [],
       "icone": "caixa",
       "marca": "SINOHON",
@@ -3292,20 +3187,18 @@
       "video": null,
       "rating": 0,
       "banners": [],
-      "reviews": [],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
       "categoria": "bicicletas-eletricas",
       "descricao": "An electric bike curated from the retailer catalog with live price and real ratings. Sold by the retailer, where the final price is confirmed at checkout.",
-      "avaliacoes": 28,
+      "avaliacoes": 0,
       "product_id": "WW-2021488",
       "url_afiliado": "https://usa.banggood.com/custlink/3mKOc7mHNY",
       "lojas_compare": [],
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": null,
-      "cupom_descricao": "",
       "disponibilidade": "em_estoque"
     },
     {
@@ -3326,7 +3219,6 @@
       ],
       "img": "https://pxunbqwpiauhzpugcgwm.supabase.co/storage/v1/object/sign/Matheus%20Nunes/JANSNO%20X60%20Electric%20Bike%2048V%2023AH%20Battery%20750W*2%20Dual%20Motors%20Recommended%20Top%20Speed%2025KM/Captura%20de%20tela%202026-09-26%20205352.png?token=eyJraWQiOiI0NjVjODZhMS0xMjdhLTQ1ZjktYjNlMC1hMTFlOWU2MWMxYmUiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJNYXRoZXVzIE51bmVzL0pBTlNOTyBYNjAgRWxlY3RyaWMgQmlrZSA0OFYgMjNBSCBCYXR0ZXJ5IDc1MFcqMiBEdWFsIE1vdG9ycyBSZWNvbW1lbmRlZCBUb3AgU3BlZWQgMjVLTS9DYXB0dXJhIGRlIHRlbGEgMjAyNi0wOS0yNiAyMDUzNTIucG5nIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc5MDQ2Njk4MSwiZXhwIjoyMDQyNzU0OTgxfQ.heVuYMAKTJ6gCl3Y91mCaUy53XclyWYonzvKB9CfPFaiUHZOALsJbYLH8aFScNKf-uDPqQJcrnurJCMiWFDP1Q",
       "nome": "JANSNO X60 Electric Bike 48V 23AH Battery 750W*2 Dual Motors Recommended Top Speed 25KM/H 20inches Tires 80KM Max Mileage 150KG Max Load Electric Bicycle",
-      "cupom": "WATTWHEEL15",
       "fotos": [],
       "icone": "caixa",
       "marca": "JANSNO",
@@ -3378,26 +3270,14 @@
         }
       ],
       "video": "https://youtu.be/iKgb_lJxmCg",
-      "rating": 4.8,
+      "rating": 0,
       "banners": [],
-      "reviews": [
-        {
-          "nome": "Marcus Vance",
-          "nota": 4.9,
-          "texto": "Impressed with the range and hill-climbing torque. Solid frame, responsive brakes, and the headlight is very bright for night rides. Very satisfied!"
-        },
-        {
-          "nome": "David Miller",
-          "nota": 4.8,
-          "texto": "Top-notch quality! The tires handle rough pavement and gravel with ease, and the suspension absorbs bumps really well."
-        }
-      ],
       "comissao": 3,
       "destaque": false,
       "merchant": "partner-store",
       "categoria": "bicicletas-eletricas",
       "descricao": "🚲 【48V 23Ah Removable Lithium Battery】\nEnjoy long-distance rides with the high-capacity 48V 23Ah lithium battery. The removable design makes charging simple and convenient at home, work, or wherever you have access to power. Under optimal riding conditions, it provides reliable energy for extended daily commutes.\n\n🚲 【750W*2 High-Torque Motor】\nExperience responsive acceleration with the powerful 750W*2 motor system. Engineered to deliver impressive torque, this electric bike easily navigates steep inclines, city streets, and rugged paths with smooth, consistent power output.\n\n🚲 【Extended Riding Range & Smart Power】\nThe 48V 23Ah battery system is optimized for maximum efficiency, offering up to 25KM per full charge. Intelligent energy management balances throttle control and pedal/power assist for longer trips.\n\n🚲 【All-Terrain Design & Robust Frame】\nBuilt with a durable, high-strength frame paired with 20inch tires for maximum stability and traction. Designed to cushion shocks on uneven pavement, gravel, and dirt roads. Supports a maximum payload capacity of 150KG Max Load.\n\n🚲 【Dual Disc Brakes & Night Safety Lighting】\nFeatures high-precision front and rear disc brakes for strong, predictable stopping power. Integrated ultra-bright LED headlights and rear brake lights ensure maximum visibility during night commutes.\n\n🚲 【Quick Assembly & Warranty Support】\nArrives 85%–90% pre-assembled with setup tools and clear instructions included. Backed by dedicated customer support and standard warranty coverage for total peace of mind.",
-      "avaliacoes": 26,
+      "avaliacoes": 0,
       "product_id": "WW-2032209",
       "url_afiliado": "https://usa.banggood.com/custlink/vG3LJwv3e0",
       "lojas_compare": [
@@ -3417,7 +3297,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 2629.99,
-      "cupom_descricao": "Apply code at checkout on retailer page",
       "disponibilidade": "em_estoque"
     }
   ]

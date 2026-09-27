@@ -1,5 +1,24 @@
 "use strict";
 
+/* AVISO - script parcialmente neutralizado.
+
+   Este script gerava dado que parecia coletado e nao era:
+   - CUSTOMER_REVIEWS: depoimentos com nome de pessoa ficticia ("Ethan Carter",
+     "Marcus Vance"...). O build emitia schema.review com author Person, e o
+     Google le isso como avaliacao de comprador real. Proibido pela regra da FTC
+     de 2024 e pela politica de dados estruturados do Google.
+   - COUPON_LIST: codigos de desconto inventados, exibidos como se tivessem sido
+     encontrados em outra loja.
+   - p.rating = 4.8 / p.avaliacoes = (idx % 25) + 14: nota e contagem derivadas
+     do indice do produto, nao de avaliacao real. O build chegou a publicar
+     aggregateRating com ratingValue 0.0 em 31 das 38 paginas.
+
+   Tudo isso foi removido do pacote publicado por semDadosFabricados() no
+   scripts/build.js. As partes de texto/descricao continuam funcionando.
+   NAO reintroduza reviews, cupom, rating ou avaliacoes aqui. Se voce tiver
+   dado real de Banggood ou de outro fornecedor, cadastre no admin - o build
+   respeita o que estiver la. */
+
 const fs = require('fs');
 const path = require('path');
 
@@ -146,15 +165,14 @@ const COUPON_LIST = ["BG742ae7", "NEURA10", "E-RIDE DEALS15", "SAVE50", "OFFER20
 function enrichSingleProduct(p, idx) {
   p.descricao = generateRichDescription(p);
   p.lojas_compare = generateLojasCompare(p);
-  
-  const rev1 = CUSTOMER_REVIEWS[idx % CUSTOMER_REVIEWS.length];
-  const rev2 = CUSTOMER_REVIEWS[(idx + 2) % CUSTOMER_REVIEWS.length];
-  p.reviews = [rev1, rev2];
 
-  p.rating = 4.8;
-  p.avaliacoes = (idx % 25) + 14;
-  p.cupom = COUPON_LIST[idx % COUPON_LIST.length];
-  p.cupom_descricao = "Apply code at checkout on retailer page";
+  /* Reviews, cupom, rating e avaliacoes NAO sao gerados aqui - ver o aviso no
+     topo do arquivo. Se o produto ja vier com dado real, ele e preservado. */
+  delete p.reviews;
+  delete p.cupom;
+  delete p.cupom_descricao;
+  p.rating = 0;
+  p.avaliacoes = 0;
 
   if (!p.video) {
     const q = encodeURIComponent((p.marca || '') + ' ' + (p.nome || '').split(' ').slice(0, 4).join(' '));

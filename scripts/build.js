@@ -50,6 +50,35 @@ function renomearMarcaLegada(valor) {
   return valor;
 }
 
+/* Remove do pacote publicado o dado que foi fabricado, nao coletado.
+
+   reviews: depoimentos com autor ficticio (Ethan Carter, Marcus Vance...) que o
+     script scratch/enrich_all_products.js escrevia no produto. O build emitia
+     schema.review com author Person, ou seja, o Google lia como avaliacao de
+     comprador real - e o texto do "Marcus Vance" saia repetido palavra por
+     palavra em produtos diferentes.
+   cupom/cupom_descricao: codigo de desconto inventado na mesma lista, numa
+     pagina que afirmava ser "o melhor preco que encontramos em outras lojas".
+   rating/avaliacoes: 4.8 e um contador derivado do indice do produto. Nao ha
+     dado real de avaliacao em lugar nenhum do catalogo (36 dos 38 produtos
+     estavam com 0/0), entao o campo some em vez de virar nota inventada.
+
+   Os campos continuam no admin: quem tiver acesso a dado real de nota,
+   avaliacao ou cupom cadastra la e o build respeita. */
+function semDadosFabricados(produtos) {
+  (produtos || []).forEach(p => {
+    /* Produto que chegou com review de autor ficticio teve a nota e a
+       contagem da mesma execucao do enrich, entao as duas caem juntas. */
+    const comReviewFicticia = !!(p.reviews && p.reviews.length);
+    delete p.reviews;
+    delete p.cupom;
+    delete p.cupom_descricao;
+    const r = Number(p.rating);
+    if (comReviewFicticia || !isFinite(r) || r <= 0) { p.rating = 0; p.avaliacoes = 0; }
+  });
+  return produtos;
+}
+
 /* A comparacao de lojas nao tem link: o card da loja mostra so o preco e a
    saida e o link de afiliado do produto (url_afiliado). A url que veio no dado
    da loja e de busca no retailer, entao sai do pacote publicado - no admin ela
@@ -81,10 +110,10 @@ async function carregarProdutos() {
     produtos: local.produtos || []
   };
   const cfg = supaConfig();
-  if (process.env.SEM_SUPABASE === "1") return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: renomearMarcaLegada(base.produtos) } };
+  if (process.env.SEM_SUPABASE === "1") return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: semDadosFabricados(renomearMarcaLegada(base.produtos)) } };
   if (!cfg.url || !cfg.anon) {
     console.warn("[build] js/config.js sem url/anon do Supabase -> usando products.json");
-    return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: renomearMarcaLegada(base.produtos) } };
+    return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: semDadosFabricados(renomearMarcaLegada(base.produtos)) } };
   }
   try {
     const rows = await fetchPaginas(cfg);
@@ -99,7 +128,7 @@ async function carregarProdutos() {
       todos.push(d);
     });
     if (!todos.length) throw new Error("admin sem produtos");
-    const produtos = limparUrlDasLojas(ordenarComoLocal(renomearMarcaLegada(todos), base.produtos));
+    const produtos = semDadosFabricados(limparUrlDasLojas(ordenarComoLocal(renomearMarcaLegada(todos), base.produtos)));
     const store = { marca: base.marca, categorias: base.categorias, produtos };
     fs.writeFileSync(arquivo, JSON.stringify(store, null, 2), "utf8");
     console.log("[build] products.json sincronizado com o admin (" + produtos.length + " produtos)");
@@ -355,9 +384,15 @@ function schemaProduto(p, canonicalPage, contexto) {
       seller: { "@type": "Organization", name: p.merchant_nome || p.merchant }
     }
   };
-  if (p.rating != null && isFinite(Number(p.rating))) {
+  /* AggregateRating so com nota real e maior que zero. Emitir ratingValue 0.0
+     e reviewCount 0 e schema invalido, e foi o que 31 das 38 paginas publicaram
+     (o numero vinha do indice do produto no enrich, nao de avaliacao real). */
+  if (p.rating != null && isFinite(Number(p.rating)) && Number(p.rating) > 0) {
     schema.aggregateRating = { "@type": "AggregateRating", ratingValue: Number(p.rating).toFixed(1), reviewCount: Number(p.avaliacoes) || 0 };
   }
+  /* Reviews de cliente so entram com dado coletado. O build nao gera autor nem
+     texto: um review com Person no schema e lido pelo Google como avaliacao de
+     comprador. */
   if (reviews.length) {
     schema.review = reviews.map(r => ({
       "@type": "Review",
@@ -569,18 +604,23 @@ function pagProduto(p, contexto) {
     (keySpecsHTML ? '<div class="key-specs">' + keySpecsHTML + "</div>" : "") +
     '<table class="specs" id="specs-tabela">' + specsHTML + "</table></section>" +
     ReviewData.htmlCtaCupom(p, { esgotado: esgotado }) +
-    '<section class="detail-sec" id="reviews-sec">' +
-    '<h2><span class="bar"></span> Customer reviews</h2>' +
-    '<div id="reviews-lista"><div class="reviews-summary">' +
-    (temNota(p) ? '<span class="reviews-score">' + Number(p.rating).toFixed(1) + "</span>" +
-      '<span class="reviews-stars">' + starsHTML(Number(p.rating)) + "</span>" : "") +
-    '<span class="reviews-count">' + num(p.avaliacoes) + " reviews</span></div>" +
-    '<div class="reviews-lista">' + reviewsHTML + "</div></div></section>" +
+    /* A secao so sai com o que mostrar. Sem nota e sem review, ela viraria um
+       "Customer reviews / 0 reviews" vazio - que e o que 33 das 38 paginas
+       passaram a exibir depois de remover as reviews fabricadas. */
+    ((temNota(p) || reviews.length)
+      ? '<section class="detail-sec" id="reviews-sec">' +
+        '<h2><span class="bar"></span> Customer reviews</h2>' +
+        '<div id="reviews-lista"><div class="reviews-summary">' +
+        (temNota(p) ? '<span class="reviews-score">' + Number(p.rating).toFixed(1) + "</span>" +
+          '<span class="reviews-stars">' + starsHTML(Number(p.rating)) + "</span>" : "") +
+        '<span class="reviews-count">' + num(p.avaliacoes) + " reviews</span></div>" +
+        '<div class="reviews-lista">' + reviewsHTML + "</div></div></section>"
+      : "") +
     ReviewData.htmlCtaCupom(p, { esgotado: esgotado }) +
     '<div id="alt-slot">' + ReviewData.htmlAlternativas(p, contexto.produtos, { urlOf: urlProduto }) + "</div>" +
     clustersDoProdutoHTML(p, contexto.produtos) +
     '<section class="detail-sec"><h2><span class="bar"></span> Compare similar products</h2>' + simCards + "</section>" +
-    '<section class="detail-sec"><h2><span class="bar"></span> Frequently asked questions about the coupon and shipping</h2><div id="faq-lista">' + faqHTML + "</div></section>" +
+    '<section class="detail-sec"><h2><span class="bar"></span> Frequently asked questions</h2><div id="faq-lista">' + faqHTML + "</div></section>" +
     (relCards ? '<section class="section"><div class="container" style="padding-inline:0"><div class="section-head"><h2>You may also like</h2><a class="link-all" href="/catalog.html">View all ›</a></div>' + relCards + "</div></section>" : "") +
     "</main>" +
     seedScript(p) +
