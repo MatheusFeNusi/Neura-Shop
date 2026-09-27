@@ -355,6 +355,7 @@ const HEAD_COMMON = (title, desc, canonical, ogImg) =>
   '<link rel="icon" type="image/png" href="/img/favicon.png"/>\n' +
   '<base href="/"/>\n' +
   '<link rel="stylesheet" href="/css/style.css"/>\n' +
+  '<meta name="google-site-verification" content="j-YwcxLAtBZBULhbwrtQfbUlzThBrNd3XqM7oZsGK-E" />\n' +
   TAGS_GOOGLE +
   "</head>\n";
 
