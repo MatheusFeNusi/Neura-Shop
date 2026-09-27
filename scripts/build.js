@@ -148,12 +148,15 @@ function compararHTML(p, fotos) {
   const img = fotos[0] || "";
   const precos = lojas.map(l => Number(l.preco)).filter(x => isFinite(x));
   const melhor = precos.length ? Math.min.apply(null, precos) : null;
+  /* "Lowest" so quando a loja e a unica mais barata: com as tres no mesmo
+     preco de referencia, marcar todas deixa a tabela sem sentido. */
+  const unico = melhor != null && precos.filter(x => x === melhor).length === 1;
   return '<div class="comparar">' + lojas.map(l => {
     const tem = l.preco != null && isFinite(Number(l.preco));
     let precoHTML = "";
     if (tem) {
       const n = Number(l.preco);
-      precoHTML = '<small class="comparar-preco">' + fmt(n) + (n === melhor ? '<span class="comparar-best">Lowest</span>' : "") + "</small>";
+      precoHTML = '<small class="comparar-preco">' + fmt(n) + (unico && n === melhor ? '<span class="comparar-best">Lowest</span>' : "") + "</small>";
     }
     /* Sem link: o admin cadastra a URL de cada loja depois (ReviewData.url
        volta a ser usada no href quando isso existir). */
@@ -459,6 +462,7 @@ function pagProduto(p, contexto) {
     '    REVIEWED &amp; SCORED' +
     '  </div>' +
     '  <h1 class="review-page-title" id="review-title">' + esc(ReviewData.h1(p, contexto.produtos)) + "</h1>" +
+    ReviewData.specline(p) +
     '  <div class="review-author-meta">' +
     '    <span class="author-item"><strong>Reviewed by</strong> ' + SITE_NAME + " editorial</span>" +
     '    <span class="sep">&bull;</span>' +
@@ -521,6 +525,9 @@ function pagProduto(p, contexto) {
 
     /* ---------- Veredito + pros/cons + barras + CTA de cupom ---------- */
     ReviewData.htmlVeredito(p, contexto.produtos) +
+    /* O slot e reescrito pelo app.js quando a pagina troca de produto sem
+       recarregar; no build ele ja vem preenchido com o produto certo. */
+    '<div id="para-quem-slot">' + ReviewData.htmlParaQuem(p, contexto.produtos) + "</div>" +
     ReviewData.htmlCtaCupom(p, { esgotado: esgotado }) +
 
     (bannersHTML ? '<section class="section pg-banner-sec" id="pg-banner-sec"><div class="container" style="padding-inline:0"><div id="pg-banner-carousel">' + bannersHTML + "</div></div></section>" : "") +
@@ -536,6 +543,7 @@ function pagProduto(p, contexto) {
     '<span class="reviews-count">' + num(p.avaliacoes) + " reviews</span></div>" +
     '<div class="reviews-lista">' + reviewsHTML + "</div></div></section>" +
     ReviewData.htmlCtaCupom(p, { esgotado: esgotado }) +
+    '<div id="alt-slot">' + ReviewData.htmlAlternativas(p, contexto.produtos, { urlOf: urlProduto }) + "</div>" +
     '<section class="detail-sec"><h2><span class="bar"></span> Compare similar products</h2>' + simCards + "</section>" +
     '<section class="detail-sec"><h2><span class="bar"></span> Frequently asked questions about the coupon and shipping</h2><div id="faq-lista">' + faqHTML + "</div></section>" +
     (relCards ? '<section class="section"><div class="container" style="padding-inline:0"><div class="section-head"><h2>You may also like</h2><a class="link-all" href="/catalog.html">View all ›</a></div>' + relCards + "</div></section>" : "") +

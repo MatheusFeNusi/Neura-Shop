@@ -1244,3 +1244,40 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
   margin: 12px 0 0;
   line-height: 1.5;
 }
+/* ---------- Who is this for? ---------- */
+.para-quem { margin-top: 28px; }
+.para-quem h2 { display: flex; align-items: center; gap: 10px; }
+.para-quem h2 .bar { display: inline-block; width: 4px; height: 22px; background: var(--brand); border-radius: 2px; }
+.pq-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; }
+@media (max-width: 640px) { .pq-cols { grid-template-columns: 1fr; } }
+.pq-col { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+.pq-col.pq-bom { border-top: 4px solid var(--buy); }
+.pq-col.pq-outro { border-top: 4px solid var(--navy); }
+.pq-col h3 { font-size: 14px; font-weight: 800; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+.pq-col.pq-bom h3 { color: var(--buy-dark); }
+.pq-col.pq-outro h3 { color: var(--navy); }
+.pq-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 9px; }
+.pq-list li { font-size: 13.5px; line-height: 1.5; color: var(--ink); position: relative; padding-left: 22px; }
+.pq-bom .pq-list li::before { content: "\2713"; position: absolute; left: 0; top: 0; color: var(--buy); font-weight: 800; }
+.pq-outro .pq-list li::before { content: "\2192"; position: absolute; left: 0; top: 0; color: var(--navy); font-weight: 800; }
+.pq-nota { font-size: 12px; color: var(--muted); margin: 12px 0 0; line-height: 1.5; }
+
+/* ---------- How it compares (spec table) ---------- */
+.alt-wrap { margin-top: 28px; }
+.alt-wrap h2 { display: flex; align-items: center; gap: 10px; }
+.alt-wrap h2 .bar { display: inline-block; width: 4px; height: 22px; background: var(--brand); border-radius: 2px; }
+.alt-scroll { overflow-x: auto; margin-top: 14px; -webkit-overflow-scrolling: touch; }
+.alt-table { width: 100%; border-collapse: collapse; font-size: 13.5px; background: var(--surface); }
+.alt-table th, .alt-table td { border: 1px solid var(--line); padding: 11px 12px; text-align: left; vertical-align: top; }
+.alt-table thead th { background: var(--surface-2); font-size: 12.5px; }
+.alt-table thead th a { color: var(--navy); text-decoration: none; font-weight: 800; }
+.alt-table thead th a:hover { text-decoration: underline; }
+.alt-table tbody th { font-weight: 700; color: var(--muted); width: 34%; }
+.alt-table td.alt-atual, .alt-table th.alt-atual { background: var(--brand-soft); }
+.alt-table td.alt-lead { font-weight: 800; color: var(--brand-dark); }
+.alt-why { font-size: 14px; line-height: 1.55; color: var(--ink); background: var(--navy-soft); border-left: 3px solid var(--navy); padding: 14px 16px; border-radius: var(--radius-s); margin: 14px 0 0; }
+.alt-why strong { color: var(--navy); }
+
+/* ---------- Hero: linha de specs ---------- */
+.review-specline { font-size: 13.5px; color: var(--muted); margin: 10px 0 0; font-weight: 600; letter-spacing: 0.2px; }
+.review-specline span { color: var(--ink); }

@@ -20,6 +20,10 @@
   function num(n) {
     return n == null ? "" : Number(n).toLocaleString("en-US");
   }
+  function fmt(n) {
+    if (n == null || !isFinite(n)) return "";
+    return Number(n).toLocaleString("en-US", { style: "currency", currency: "USD" });
+  }
   function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
   function r1(v) { return Math.round(v * 10) / 10; }
   function interp(x, pontos) {
@@ -569,16 +573,15 @@
     return w.join(" ").slice(0, 60);
   }
 
-  /* Preco de referencia de uma loja: preco do site * fator da loja * jitter,
-     arredondado em centavos .99 (como o retailer anuncia). */
+  /* Preco de referencia de uma loja: sempre acima do preco do produto e perto
+     dele — o pedido foi "mais uns 80 dolares", sem valor disparado. Antes era
+     preco * fator da loja * jitter, o que gerava tabelas com $7.115 ao lado de
+     um produto de $656. Fecha em .99 como o retailer anuncia. */
+  var ACIMA_DA_LOJA = 80;
   function precoReferencia(p, nome) {
     var base = Number(p && p.preco != null ? p.preco : p && p.preco_anterior);
     if (!isFinite(base) || base <= 0) return null;
-    var chave = String(nome || "").toLowerCase().replace(/[^a-z]/g, "");
-    var fator = FATOR_LOJA[chave] || 1.09;
-    var jitter = 0.985 + (hashEstavel(((p && p.id) || nome) + "|" + chave) % 41) / 1000;
-    var v = Math.floor(base * fator * jitter);
-    return v + 0.99;
+    return Math.floor(base + ACIMA_DA_LOJA) + 0.99;
   }
 
   /* Lista de lojas da comparacao, sempre com preco. A lista do admin completa
@@ -736,6 +739,231 @@
     return '<div class="cta-cupom">' + btn + nota + "</div>";
   }
 
+  /* ---------- 6c. "Who is this for?" ----------
+     O bloco que o leitor procura antes de decidir: para quem serve e para quem
+     NAO serve. Tudo aqui sai dos numeros do anuncio (pack, motor, alcance
+     estimado, carga, pneu, preco contra a mediana da categoria) — nada de
+     "testamos por 30 dias". Se o anuncio nao diz, o bloco nao afirma. */
+  function paraQuem(p, todos) {
+    var f = comMediana(p, todos);
+    var bom = [], outro = [];
+    var alc = f.alcance;
+    var moeda = function (v) { return "$" + Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+    /* Medianas da propria categoria: e o que permite dizer "mais bateria que a
+       media" sem inventar numero. */
+    var irmaos = (todos || []).filter(function (x) {
+      return x && x.categoria === p.categoria && x.id !== p.id;
+    }).map(function (x) { return fatos(x); });
+    var medianaChave = function (chave) {
+      var v = irmaos.map(function (o) { return o[chave]; }).filter(function (x) { return x != null && isFinite(x) && x > 0; });
+      return mediana(v);
+    };
+    var medWh = medianaChave("wh"), medWatt = medianaChave("watt"), medCarga = medianaChave("carga");
+
+    if (f.wh && f.wh >= 900) bom.push("You ride more than " + Math.max(15, Math.round((alc || 30) * 0.6)) + " km a day: the " + f.volt + "V " + f.ah + "Ah pack (" + f.wh + " Wh) is the reason.");
+    else if (f.wh) bom.push("You want a pack you can charge overnight and ride daily without planning around it (" + f.wh + " Wh).");
+
+    if (f.watt && f.watt >= 800) bom.push("You need real hill and acceleration headroom: " + f.watt + "W rated motor.");
+    if (alc && alc >= 45) bom.push("You want one charge to last the week — estimated " + alc + " km of real-world range.");
+    if (f.carga && f.carga >= 110) bom.push("You or your load are heavy: it is listed for up to " + f.carga + " kg.");
+    if (f.pneu && f.pneu >= 10) bom.push("You ride rough streets — " + f.pneu + "-inch tires take cracks and gravel better.");
+    if (f.temDisc) bom.push("You brake often in the wet — the listing shows a disc brake.");
+    if (f.temSusp) bom.push("Your route is uneven — suspension is listed.");
+    if (f.preco && f.medianaCategoria && f.preco < f.medianaCategoria) {
+      bom.push("You are comparing on price: it is " + Math.round((1 - f.preco / f.medianaCategoria) * 100) + "% below the " + moeda(f.medianaCategoria) + " median for " + (f.isBike ? "e-bikes" : "e-scooters") + " in our catalog.");
+    }
+    if (f.desconto && f.desconto >= 25) bom.push("You want the discount right now — it is " + f.desconto + "% under the listed price.");
+
+    if (alc && alc < 30) outro.push("You need more than about " + alc + " km per charge — this pack is on the small side.");
+    if (f.wh && medWh && f.wh < medWh * 0.85) outro.push("You want more range than this pack gives: the " + (f.isBike ? "e-bikes" : "e-scooters") + " in our catalog average " + Math.round(medWh) + " Wh, this one has " + f.wh + " Wh.");
+    if (f.watt && f.watt < 400) outro.push("You want speed and steep-hill performance — " + f.watt + "W is an urban, flat-road motor.");
+    if (f.carga && f.carga < 100) outro.push("You weigh more than " + f.carga + " kg — that is above what this model is listed for.");
+    if (f.carga && medCarga && f.carga < medCarga) outro.push("You routinely carry a heavy load: the average load limit across our catalog is " + Math.round(medCarga) + " kg, this one is listed for " + f.carga + " kg.");
+    if (f.preco && f.medianaCategoria && f.preco > f.medianaCategoria * 1.1) {
+      outro.push("Your budget is tight: it sits above the " + moeda(f.medianaCategoria) + " category median — check the alternatives below.");
+    }
+    if (f.pneu && f.pneu >= 10) outro.push("You want the lightest scooter to carry on a train or up stairs — " + f.pneu + "-inch tires and a " + f.wh + " Wh pack are bulky.");
+    if (!f.temDisc) outro.push("You ride in heavy rain and want a disc brake — this listing does not mention one.");
+    if (!f.temSusp) outro.push("Your route is badly broken and you want suspension — the listing does not mention it.");
+    if (!f.removivel) outro.push("You want to charge indoors with a removable battery — this listing does not mention one.");
+    if (f.desconto == null && f.lista) outro.push("You are buying on a deep discount — this one has no meaningful markdown against its listed price.");
+
+    /* Complemento honesto: o que o anuncio NAO promete. */
+    var cautelas = [
+      "You need a certified range figure from the manufacturer — everything on this page is an estimate from the pack size.",
+      "You need a stated warranty or certification — the listing does not publish one.",
+      "You compare by exact model year — this listing does not state the production year."
+    ];
+    for (var i = 0; outro.length < 2 && i < cautelas.length; i++) {
+      if (outro.indexOf(cautelas[i]) < 0) outro.push(cautelas[i]);
+    }
+    if (!bom.length) bom.push("You want a straightforward, listing-backed option: everything on this page comes from the published specification and the current price.");
+    if (!outro.length) outro.push("You need a specific certification, warranty or verified real-world range — the listing does not promise any of those, so confirm them at the retailer.");
+    return { bom: bom.slice(0, 5), outro: outro.slice(0, 5) };
+  }
+
+  function htmlParaQuem(p, todos) {
+    var pq = paraQuem(p, todos);
+    var lista = function (itens, cls) {
+      return '<ul class="pq-list">' + itens.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ul>";
+    };
+    return '<section class="para-quem" id="para-quem">' +
+      '<h2><span class="bar"></span> Who is this for?</h2>' +
+      '<div class="pq-cols">' +
+      '<div class="pq-col pq-bom"><h3>Good fit if you…</h3>' + lista(pq.bom) + "</div>" +
+      '<div class="pq-col pq-outro"><h3>Consider another model if you…</h3>' + lista(pq.outro) + "</div>" +
+      "</div>" +
+      '<p class="pq-nota">Written from the published specification and the current price. We have not test-ridden this model, so treat every range figure as an estimate.</p>' +
+      "</section>";
+  }
+
+  /* ---------- 6d. Alternativas lado a lado ----------
+     A pagina do retailer mostra uma foto e um preco. A tabela abaixo e o que
+     a pagina do retailer nao tem: as mesma specs lado a lado, com o porque de
+     escolher este e nao outro. */
+  function alternativas(p, todos) {
+    var lista = (todos || []).filter(function (x) {
+      return x && x.id !== p.id && x.categoria === p.categoria && Number(x.preco) > 0;
+    });
+    if (!lista.length) return [];
+    var alvo = Number(p.preco);
+    var f0 = fatos(p);
+    /* Mesma familia, mesma bateria e mesmo motor = a coluna repetiria o
+       proprio produto. Numa tabela de comparacao isso nao informa nada, entao
+       esse candidato vai para o fim (so entra se nao houver outro). */
+    var gemeo = function (x) {
+      var f = fatos(x);
+      var igual = f.volt === f0.volt && f.ah === f0.ah;
+      if (f.watt && f0.watt) igual = igual && f.watt === f0.watt;
+      return igual;
+    };
+    lista.sort(function (a, b) {
+      if (gemeo(a) !== gemeo(b)) return gemeo(a) ? 1 : -1;
+      var da = Math.abs(Number(a.preco) - alvo), db = Math.abs(Number(b.preco) - alvo);
+      if (da !== db) return da - db;
+      return (notas(b, todos).score || 0) - (notas(a, todos).score || 0);
+    });
+    return lista.slice(0, 3);
+  }
+
+  function celulaSpec(f) {
+    if (f.wh) return f.volt + "V " + f.ah + "Ah (" + f.wh + " Wh)";
+    if (f.volt) return f.volt + "V";
+    return "—";
+  }
+  function celula(v) { return v == null || !isFinite(v) ? "—" : String(v); }
+
+  function htmlAlternativas(p, todos, ctx) {
+    ctx = ctx || {};
+    var urlOf = typeof ctx.urlOf === "function" ? ctx.urlOf : function () { return "#"; };
+    var alts = alternativas(p, todos);
+    if (alts.length < 2) return "";
+    var f0 = fatos(p);
+    var colunas = [{ p: p, f: f0, atual: true }].concat(alts.map(function (a) { return { p: a, f: fatos(a), atual: false }; }));
+    rotulosUnicos(colunas);
+
+    var linhas = [
+      { label: "Battery", valor: function (c) { return celulaSpec(c.f); }, melhor: function (c) { return c.f.wh; } },
+      { label: "Motor", valor: function (c) { return c.f.watt ? c.f.watt + "W" : "—"; }, melhor: function (c) { return c.f.watt; } },
+      { label: "Est. range", valor: function (c) { return c.f.alcance ? "~" + c.f.alcance + " km" : "—"; }, melhor: function (c) { return c.f.alcance; } },
+      { label: "Max load", valor: function (c) { return c.f.carga ? c.f.carga + " kg" : "—"; }, melhor: function (c) { return c.f.carga; } },
+      { label: "Price", valor: function (c) { return c.f.preco ? fmt(c.f.preco) : "—"; }, melhor: function (c) { return -c.f.preco; } }
+    ];
+
+    var corpo = linhas.map(function (ln) {
+      var nums = colunas.map(function (c) { return ln.melhor(c); }).filter(function (v) { return v != null && isFinite(v); });
+      var topo = nums.length ? Math.max.apply(null, nums) : null;
+      return "<tr><th scope=\"row\">" + esc(ln.label) + "</th>" + colunas.map(function (c) {
+        var v = ln.melhor(c);
+        var lead = v != null && isFinite(v) && topo != null && v === topo && nums.length > 1;
+        return '<td class="' + (c.atual ? "alt-atual " : "") + (lead ? "alt-lead" : "") + '">' + esc(ln.valor(c)) + "</td>";
+      }).join("") + "</tr>";
+    }).join("");
+
+    var thead = "<thead><tr><th scope=\"col\">Spec</th>" + colunas.map(function (c) {
+      return '<th scope="col" class="' + (c.atual ? "alt-atual" : "") + '"><a href="' + esc(urlOf(c.p)) + '">' + esc(c.rotulo) + "</a></th>";
+    }).join("") + "</tr></thead>";
+
+    /* "Por que escolher este": so as difencas reais contra os alternativas. */
+    var dif = [], outros = alts.map(function (a) { return fatos(a); });
+    var med = function (chave) {
+      var v = outros.map(function (o) { return o[chave]; }).filter(function (x) { return x != null && isFinite(x); });
+      if (!v.length) return null;
+      v.sort(function (a, b) { return a - b; });
+      return v[Math.floor(v.length / 2)];
+    };
+    var cmp = function (chave, fmtTxt, melhorMaior) {
+      var meu = f0[chave], outrosMed = med(chave);
+      if (meu == null || outrosMed == null) return;
+      if (melhorMaior && meu > outrosMed * 1.05) dif.push(fmtTxt(meu, outrosMed));
+      if (!melhorMaior && meu < outrosMed * 0.95) dif.push(fmtTxt(meu, outrosMed));
+    };
+    cmp("wh", function (a, b) { return "the bigger " + f0.volt + "V " + f0.ah + "Ah pack (" + f0.wh + " Wh vs " + Math.round(b) + " Wh on the alternatives)"; }, true);
+    cmp("watt", function (a, b) { return "more power on paper (" + f0.watt + "W vs " + Math.round(b) + "W)"; }, true);
+    cmp("alcance", function (a, b) { return "a longer estimated range (~" + f0.alcance + " km vs ~" + Math.round(b) + " km)"; }, true);
+    cmp("carga", function (a, b) { return "a higher listed load (" + f0.carga + " kg vs " + Math.round(b) + " kg)"; }, true);
+    cmp("preco", function (a, b) { return "a lower price than the alternatives (" + fmt(a) + " vs " + fmt(b) + ")"; }, false);
+
+    var porque = dif.length
+      ? "Pick the " + nomeCurto(p) + " over the alternatives if you care about " + dif.slice(0, 3).join(", ") + "."
+      : "On paper the " + nomeCurto(p) + " sits in the middle of these alternatives — choose it on price and availability rather than on a spec edge.";
+
+    return '<section class="alt-wrap" id="alt-wrap">' +
+      '<h2><span class="bar"></span> How it compares</h2>' +
+      '<div class="alt-scroll"><table class="alt-table">' + thead + "<tbody>" + corpo + "</tbody></table></div>" +
+      '<p class="alt-why"><strong>Why choose it:</strong> ' + esc(porque) + "</p>" +
+      '<p class="pq-nota">Same catalog, same source: each column is built from that product\'s published specification and current price.</p>' +
+      "</section>";
+  }
+
+  /* Linha de specs do hero: o que o leitor procura antes de rolar a pagina. */
+  function specline(p) {
+    var f = fatos(p);
+    var partes = [];
+    if (f.volt && f.ah) partes.push(f.volt + "V " + f.ah + "Ah");
+    else if (f.volt) partes.push(f.volt + "V");
+    if (f.watt) partes.push(f.watt + "W");
+    if (f.alcance) partes.push("~" + f.alcance + " km");
+    if (f.carga) partes.push(f.carga + " kg");
+    if (f.vel) partes.push("top " + f.vel + " km/h");
+    if (!partes.length) return "";
+    return '<p class="review-specline">' + partes.map(function (t) { return "<span>" + esc(t) + "</span>"; }).join(" &middot; ") + "</p>";
+  }
+
+  /* Rotulo de coluna: marca + modelo + bateria. Dois produtos podem ter o mesmo
+     nome comercial (mesma familia, outra bateria), e numa tabela de 4 colunas
+     isso vira ambiguidade — a bateria e o que separa de fato. */
+  var GENERICO = /^(electric|e|scooter|bike|bicycle|ebike|for|adults|20\d\d|new|pro|max|with|and)$/i;
+  function rotuloAlt(p) {
+    var f = fatos(p);
+    var base = String(nomeCurto(p) || p.marca || "");
+    var palavras = base.split(/[ ,–—-]+/).filter(function (t) { return t && !GENERICO.test(t); });
+    var partes = [];
+    if (palavras.length) partes.push(palavras.slice(0, 2).join(" "));
+    if (f.volt && f.ah) partes.push(f.volt + "V " + f.ah + "Ah");
+    if (f.watt) partes.push(f.watt + "W");
+    if (!partes.length) return nomeCurto(p);
+    return partes.join(" · ");
+  }
+
+  /* Duas colunas com o mesmo rotulo tornam a tabela inutil. Quando ainda
+     acontece (mesma familia, mesma bateria, mesmo motor), desempata com a
+     diferenca que sobrou: autonomia, carga ou preco. */
+  function rotulosUnicos(colunas) {
+    var vistos = {};
+    colunas.forEach(function (c) {
+      var r = rotuloAlt(c.p), n = 1;
+      while (vistos[r] != null) {
+        var f = c.f;
+        var extra = f.alcance ? "~" + f.alcance + "km" : f.carga ? f.carga + "kg" : "$" + Number(c.p.preco).toFixed(0);
+        r = rotuloAlt(c.p) + " · " + extra + (n > 1 ? " (" + (n + 1) + ")" : "");
+        n++;
+      }
+      vistos[r] = true;
+      c.rotulo = r;
+    });
+  }
+
   return {
     temNota: temNota,
     fatos: fatos,
@@ -757,6 +985,12 @@
     precoReferencia: precoReferencia,
     faq: faq,
     specsVisiveis: specsVisiveis,
+    paraQuem: paraQuem,
+    htmlParaQuem: htmlParaQuem,
+    alternativas: alternativas,
+    htmlAlternativas: htmlAlternativas,
+    rotuloAlt: rotuloAlt,
+    specline: specline,
     htmlDescricao: htmlDescricao,
     htmlCtaCupom: htmlCtaCupom,
     htmlScoreBanner: htmlScoreBanner,
