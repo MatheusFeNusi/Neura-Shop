@@ -538,22 +538,13 @@
   }
 
   /* ---------- 8c. Comparacao com outras lojas ----------
-     Os precos das outras lojas sao de REFERENCIA (mock): o admin ainda nao
-     cadastra loja por loja, entao o que vem do feed e o que falta e derivado
-     do preco do produto com um fator por loja e um jitter deterministico
-     (mesmo produto + mesma loja cai sempre no mesmo valor, e o build e o
-     client-side continuam batendo). O card tambem parou de ser link: sem URL
-     de redirecionamento cadastrada o <a> levava para a busca do retailer sem
-     o usuario ter pedido nada — o href volta quando o admin trazer o link. */
-  var LOJAS_COMPARE = [
-    { nome: "Amazon", chave: "amazon", url: "https://www.amazon.com/s?k=" },
-    { nome: "Walmart", chave: "walmart", url: "https://www.walmart.com/search?q=" },
-    { nome: "AliExpress", chave: "aliexpress", url: "https://www.aliexpress.com/wholesale?SearchText=" }
-  ];
-  /* Amazon encarece um pouco mais que a Walmart/AliExpress: o preco do site
-     continua sendo o mais barato da tabela, que e o argumento de venda. */
-  var FATOR_LOJA = { amazon: 1.06, walmart: 1.09, aliexpress: 1.07 };
-
+     So entra loja com preco REAL cadastrado no admin (produto.lojas_compare).
+     Antes, o que faltava era derivado do preco do produto (+80,99) e jogado
+     em Amazon/Walmart/AliExpress, o que colocava tres numeros inventados na
+     mesa como se fossem pesquisa de preco. Nao ha mais lista padrao de lojas
+     nem preco derivado: sem dado, a tabela nao aparece.
+     Tambem nao ha url de redirecionamento - o card da loja nao e link e a
+     saida continua sendo o preco do site, pelo link de afiliado do produto. */
   function hashEstavel(s) {
     var h = 0;
     var t = String(s == null ? "" : s);
@@ -578,43 +569,17 @@
     return w.join(" ").slice(0, 60);
   }
 
-  /* Preco de referencia de uma loja: sempre acima do preco do produto e perto
-     dele — o pedido foi "mais uns 80 dolares", sem valor disparado. Antes era
-     preco * fator da loja * jitter, o que gerava tabelas com $7.115 ao lado de
-     um produto de $656. Fecha em .99 como o retailer anuncia. */
-  var ACIMA_DA_LOJA = 80;
-  function precoReferencia(p, nome) {
-    var base = Number(p && p.preco != null ? p.preco : p && p.preco_anterior);
-    if (!isFinite(base) || base <= 0) return null;
-    return Math.floor(base + ACIMA_DA_LOJA) + 0.99;
-  }
-
-  /* Lista de lojas da comparacao, sempre com preco. A lista do admin completa
-     a tabela: as lojas cadastradas entram no lugar da padrao e as que faltam
-     recebem o preco de referencia, para todo produto ter as mesmas lojas. O
-     url continua sendo montado (so que o admin cadastre o link depois, o
-     render volta a usar). */
+  /* Lojas da comparacao: somente as cadastradas no admin que trazem preco
+     numerico. Devolve [] quando o produto nao tem dado de loja nenhum, e quem
+     chama usa isso para nao renderizar a secao. */
   function lojasCompare(p) {
-    var doAdmin = {};
-    ((p && p.lojas_compare) || []).forEach(function (l) {
-      if (l && l.nome) doAdmin[String(l.nome).toLowerCase().replace(/[^a-z]/g, "")] = l;
-    });
-    var base = Object.keys(doAdmin).length ? doAdmin : {};
-    var lista = LOJAS_COMPARE.slice();
-    Object.keys(doAdmin).forEach(function (k) {
-      var i = lista.map(function (l) { return l.chave; }).indexOf(k);
-      if (i > -1) lista[i] = Object.assign({}, lista[i], doAdmin[k], { chave: lista[i].chave });
-      else lista.push(Object.assign({ url: "" }, doAdmin[k], { chave: k }));
-    });
-    var q = encodeURIComponent(chaveBusca(p));
-    return lista.map(function (l) {
-      var temPreco = l.preco != null && isFinite(Number(l.preco));
-      return {
-        nome: l.nome,
-        preco: temPreco ? Number(l.preco) : precoReferencia(p, l.nome),
-        url: l.url != null ? l.url + q : ""
-      };
-    });
+    return ((p && p.lojas_compare) || [])
+      .filter(function (l) {
+        return l && l.nome && l.preco != null && isFinite(Number(l.preco)) && Number(l.preco) > 0;
+      })
+      .map(function (l) {
+        return { nome: l.nome, preco: Number(l.preco) };
+      });
   }
 
   /* ---------- 9. FAQ curado ----------
@@ -1089,7 +1054,6 @@
     videoRotulo: videoRotulo,
     lojasCompare: lojasCompare,
     chaveBusca: chaveBusca,
-    precoReferencia: precoReferencia,
     faq: faq,
     specsVisiveis: specsVisiveis,
     paraQuem: paraQuem,

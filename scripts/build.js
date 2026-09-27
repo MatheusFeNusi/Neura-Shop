@@ -50,6 +50,17 @@ function renomearMarcaLegada(valor) {
   return valor;
 }
 
+/* A comparacao de lojas nao tem link: o card da loja mostra so o preco e a
+   saida e o link de afiliado do produto (url_afiliado). A url que veio no dado
+   da loja e de busca no retailer, entao sai do pacote publicado - no admin ela
+   continua guardada. */
+function limparUrlDasLojas(produtos) {
+  (produtos || []).forEach(p => {
+    (p.lojas_compare || []).forEach(l => { if (l && typeof l === "object") delete l.url; });
+  });
+  return produtos;
+}
+
 /* Ordem de exibicao: segue products.json (mantem slugs/URLs) e acrescenta
    produtos novos do admin no final. */
 function ordenarComoLocal(produtos, local) {
@@ -88,7 +99,7 @@ async function carregarProdutos() {
       todos.push(d);
     });
     if (!todos.length) throw new Error("admin sem produtos");
-    const produtos = ordenarComoLocal(renomearMarcaLegada(todos), base.produtos);
+    const produtos = limparUrlDasLojas(ordenarComoLocal(renomearMarcaLegada(todos), base.produtos));
     const store = { marca: base.marca, categorias: base.categorias, produtos };
     fs.writeFileSync(arquivo, JSON.stringify(store, null, 2), "utf8");
     console.log("[build] products.json sincronizado com o admin (" + produtos.length + " produtos)");
@@ -164,6 +175,10 @@ function imgProd(p) {
 }
 function compararHTML(p, fotos) {
   const lojas = ReviewData.lojasCompare(p);
+  /* Sem loja com preco real cadastrado, a secao nao e gerada: antes saiam tres
+     numeros derivados do preco do produto, com nome de retailer, como se
+     fossem pesquisa de preco. */
+  if (!lojas.length) return "";
   const img = fotos[0] || "";
   const precos = lojas.map(l => Number(l.preco)).filter(x => isFinite(x));
   const melhor = precos.length ? Math.min.apply(null, precos) : null;
@@ -177,13 +192,14 @@ function compararHTML(p, fotos) {
       const n = Number(l.preco);
       precoHTML = '<small class="comparar-preco">' + fmt(n) + (unico && n === melhor ? '<span class="comparar-best">Lowest</span>' : "") + "</small>";
     }
-    /* Sem link: o admin cadastra a URL de cada loja depois (ReviewData.url
-       volta a ser usada no href quando isso existir). */
+    /* Sem link: o card da loja nao redireciona para o retailer. */
     return '<div class="comparar-loja">' +
       (img ? '<img class="comparar-thumb" src="' + img + '" alt="" loading="lazy"/>' : "") +
       '<span class="comparar-loja-nome">' + esc(l.nome) + precoHTML + '<small class="comparar-cta">Price reference</small></span></div>';
   }).join("") + "</div>";
-}const SCHEMA_DISP = {
+}
+
+const SCHEMA_DISP = {
   em_estoque: "https://schema.org/InStock",
   poucas_unidades: "https://schema.org/LimitedAvailability",
   esgotado: "https://schema.org/OutOfStock"
@@ -470,11 +486,12 @@ function pagProduto(p, contexto) {
     '<a href="/catalog.html?cat=' + esc(p.categoria) + '">' + esc(p.categoria_nome || p.categoria) + "</a>" +
     '<span class="sep">›</span><span>' + esc(p.marca) + " Review</span></nav>" +
 
-    /* ---------- Comparacao de precos: topo da pagina, acima do hero ---------- */
-    '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Compare prices at other stores</h2>' +
-    /* O id deixa o renderComparar() do js/app.js reescrever esse bloco com o
-       preco do admin: sem ele, a tabela de lojas ficava no valor do build. */
-    '<div id="comparar-tabela">' + comparar + "</div></section>" +
+        /* ---------- Comparacao de precos: topo da pagina, acima do hero ----------
+           So sai quando o produto tem loja com preco real no admin. O id deixa
+           o renderComparar() do js/app.js reescrever o bloco com o dado vivo. */
+        (comparar ? '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Compare prices at other stores</h2>' +
+        '<div id="comparar-tabela">' + comparar + "</div></section>" : "") +
+
 
     /* ---------- Review hero ---------- */
     '<header class="review-hero-head">' +
