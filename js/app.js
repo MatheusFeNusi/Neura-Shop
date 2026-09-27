@@ -601,12 +601,20 @@ function renderFooter() {
     '<li><a href="about.html#cookies">Cookie policy</a></li>' +
     "</ul></div>" +
     "</div>" +
-    '<div class="foot-bottom"><span>© 2026 ' + esc((DADOS.marca && DADOS.marca.nome) ? DADOS.marca.nome : String(DADOS.marca || "WattWheel")) + ' — independent product discovery for electric scooters &amp; electric bikes. All products and retailers shown in this demo are fictional.</span><span>Built to validate the independent product curation model for e-mobility gear.</span></div>' +
+    '<div class="foot-bottom"><span>© 2026 ' + esc(nomeMarca()) + ' — independent product discovery for electric scooters &amp; electric bikes. All products and retailers shown in this demo are fictional.</span><span>Built to validate the independent product curation model for e-mobility gear.</span></div>' +
     "</div></footer>";
   var slot = $("#app-footer") || $(".site-footer");
   if (!slot) return;
   var newFooter = f.firstElementChild || f;
   slot.parentNode.replaceChild(newFooter, slot);
+}
+/* O rodape pode ser desenhado antes dos dados chegarem (o boot monta o
+   chrome primeiro): usa o fallback embutido enquanto DADOS for null. */
+function nomeMarca() {
+  var d = DADOS || STORE_FALLBACK || {};
+  var m = d.marca;
+  if (m && typeof m === "object") return m.nome || "WattWheel";
+  return String(m || "WattWheel");
 }
 
 /* ---------- Load data (Supabase -> products.json -> fallback) ---------- */
@@ -750,13 +758,19 @@ function renderPaginaAtual() {
 }
 
 /* Header e rodape tem de existir mesmo sem rede: na pagina de produto o seed do
-   build ja traz dados, e antes de esperar o Supabase nao pode ficar tudo vazio. */
+   build ja traz dados, e antes de esperar o Supabase nao pode ficar tudo vazio.
+   Cada parte e desenhada por conta propria: se o chrome falhar, os produtos
+   ainda tem de aparecer. */
 function garantirEstrutura() {
   if (typeof document === "undefined") return;
-  var h = document.getElementById("app-header");
-  if (h && !h.firstElementChild) renderHeader();
-  var f = document.getElementById("app-footer");
-  if (f && !f.firstElementChild) renderFooter();
+  try {
+    var h = document.getElementById("app-header");
+    if (h && !h.firstElementChild) renderHeader();
+  } catch (e) { if (window.console) console.error("[app] header:", e); }
+  try {
+    var f = document.getElementById("app-footer");
+    if (f && !f.firstElementChild) renderFooter();
+  } catch (e) { if (window.console) console.error("[app] rodape:", e); }
 }
 
 function hidratarSeedProduto() {
@@ -776,8 +790,7 @@ function hidratarSeedProduto() {
      colisao nao acontece e o link do card sairia sem o sufixo (-5760). */
   var naUrl = location.pathname.match(/^\/products\/([^/]+)\/?$/);
   if (naUrl) SLUG_FINAL[p.id] = decodeURIComponent(naUrl[1]);
-  renderHeader();
-  renderFooter();
+  garantirEstrutura();
   initProduto();
   return true;
 }
