@@ -324,6 +324,23 @@ function jsonLd(obj) {
 }
 
 /* ---------- Templates ---------- */
+
+/* Tag de conversao do Google Ads. O evento e disparado por irAoParceiro(),
+   em js/app.js, no clique de saida pro link de afiliado - e o unico ponto do
+   site que representa a acao que vale como conversao. Sem isso o Google Ads
+   registra clique de saida mas nunca converte. */
+const GOOGLE_AW = "AW-11103748612";
+const TAGS_GOOGLE =
+  '<!-- Google tag (gtag.js) -->\n' +
+  '<script async src="https://www.googletagmanager.com/gtag/js?id=' + GOOGLE_AW + '"></script>\n' +
+  '<script>\n' +
+  "  window.dataLayer = window.dataLayer || [];\n" +
+  "  function gtag(){dataLayer.push(arguments);}\n" +
+  "  gtag('js', new Date());\n" +
+  "  gtag('config', '" + GOOGLE_AW + "');\n" +
+  "  window.NS_GOOGLE_AW = '" + GOOGLE_AW + "';\n" +
+  "</script>\n";
+
 const HEAD_COMMON = (title, desc, canonical, ogImg) =>
   '<!DOCTYPE html>\n<html lang="en-US">\n<head>\n' +
   '<meta charset="UTF-8"/>\n' +
