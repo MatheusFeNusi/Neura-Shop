@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Explore e-scooter &amp; e-bike gear — compare prices | E-Ride Deals</title>
+  <meta name="description" content="Discover curated electric scooter and e-bike gear — e-scooters, e-bikes, batteries, chargers, tires, brakes, helmets, lights and more. Filter by price, brand, rating and discount, then check the deal and buy directly at the retailer."/>
+  <link rel="icon" type="image/png" href="img/favicon.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <meta name="google-site-verification" content="j-YwcxLAtBZBULhbwrtQfbUlzThBrNd3XqM7oZsGK-E" />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11103748612"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-11103748612');
+  </script>
+</head>
+<body data-page="categoria">
+
+  <div id="app-header"></div>
+
+  <main class="container">
+    <nav class="crumb"><a href="index.html">Home</a><span class="sep">›</span><span>Gear</span></nav>
+
+    <div class="page-head" id="cat-head"></div>
+
+    <div class="layout-cat" id="layout-cat">
+
+      <aside id="sidebar">
+        <button class="btn btn-light filtros-toggle" id="filtros-toggle" style="border-color:var(--line)">Show filters</button>
+        <form class="filtros" id="filtros-form" onsubmit="return false">
+          <h3>Category</h3>
+          <div class="fgroup" id="filtro-cat"></div>
+
+          <h3>Brand</h3>
+          <div class="fgroup" id="filtro-marca"><p class="filtro-empty">Loading…</p></div>
+
+          <h3>Store</h3>
+          <div class="fgroup" id="filtro-loja"><p class="filtro-empty">Loading…</p></div>
+
+          <h3>Discount</h3>
+          <div class="fgroup" id="filtro-desc">
+            <label class="chk"><input type="radio" name="desc" value="0" checked/><span>Any discount</span></label>
+            <label class="chk"><input type="radio" name="desc" value="10"/><span>10%+ off</span></label>
+            <label class="chk"><input type="radio" name="desc" value="20"/><span>20%+ off</span></label>
+            <label class="chk"><input type="radio" name="desc" value="30"/><span>30%+ off</span></label>
+          </div>
+
+          <h3>Rating</h3>
+          <div class="fgroup" id="filtro-rend"></div>
+
+          <h3>Price ($)</h3>
+          <div class="fgroup">
+            <div class="price-range">
+              <input type="number" id="fmin" placeholder="Min" min="0"/>
+              <span class="range-sep">–</span>
+              <input type="number" id="fmax" placeholder="Max" min="0"/>
+            </div>
+          </div>
+
+          <h3>Availability</h3>
+          <div class="fgroup" id="filtro-disp"></div>
+        </form>
+      </aside>
+
+      <div>
+        <div class="toolbar">
+          <span class="count" id="cat-count"></span>
+          <label class="visually-hidden" for="ordenar">Sort by</label>
+          <select id="ordenar">
+            <option value="rel">Sort: Featured</option>
+            <option value="menor">Price: Low to High</option>
+            <option value="maior">Price: High to Low</option>
+            <option value="nota">Top Rated</option>
+            <option value="desc">Biggest Discount</option>
+            <option value="pop">Most Popular</option>
+          </select>
+        </div>
+        <div class="grid-cards" id="cat-grid"></div>
+        <div class="pager" id="cat-pager"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="app-footer"></div>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

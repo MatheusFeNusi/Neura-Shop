@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>E-mobility gear — E-Ride Deals</title>
+  <link rel="icon" type="image/png" href="img/favicon.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <meta name="google-site-verification" content="j-YwcxLAtBZBULhbwrtQfbUlzThBrNd3XqM7oZsGK-E" />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11103748612"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-11103748612');
+  </script>
+</head>
+<body data-page="produto">
+
+  <div id="app-header"></div>
+
+  <main class="container review-page">
+    <nav class="crumb" id="crumb"></nav>
+
+    <section class="detail-sec comparar-sec" id="comparar-sec">
+      <h2><span class="bar"></span> Compare prices at other stores</h2>
+      <div id="comparar-tabela"></div>
+    </section>
+
+    <header class="review-hero-head" id="review-hero"></header>
+
+    <div class="pg-layout">
+
+      <div class="pg-col-galeria">
+        <div class="gallery-img"><img id="foto-main" alt=""/></div>
+        <div class="thumbs" id="fotos-thumb"></div>
+      </div>
+
+      <div class="pg-info">
+        <div class="pg-catscreen">
+          <a class="chip" id="pg-categoria" href="catalog.html">All categories</a>
+          <span class="review-badge-inline">FULL REVIEW</span>
+        </div>
+
+        <h2 class="review-subtitle">What the listing actually tells you</h2>
+
+        <div class="pg-meta">
+          <span class="pg-rating" id="pg-rating"></span>
+          <span id="pg-merchant"></span>
+          <span class="ref" id="pg-marca"></span>
+          <span class="ref" id="pg-produto-id"></span>
+        </div>
+
+        <div class="pg-descricao" id="pg-descricao"></div>
+      </div>
+
+      <aside class="buybox-col">
+
+        <div class="buybox">
+          <div class="buybox-stock">
+            <span class="chip" id="pg-disponibilidade"><span data-dot></span>In stock</span>
+          </div>
+
+          <div class="buybox-price">
+            <div id="preco-bloco"></div>
+          </div>
+
+          <div class="buybox-sec">
+            <button class="btn-buy-big" id="btn-comprar">Check price at retailer</button>
+            <div class="video-row" id="video-row" hidden>
+              <button class="btn-video" id="btn-video" type="button">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <span class="video-label">Search this product on YouTube</span> <span class="video-ext">↗</span>
+              </button>
+            </div>
+            <div class="coupon-box" id="cupom-box" hidden>
+              <div class="coupon-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 0-4h20a2 2 0 0 1 0 4 2 2 0 0 0 0 4 2 2 0 0 1 0 4H2a2 2 0 0 1 0-4 2 2 0 0 0 0-4z"/><path d="M13 5v14M16 12h.01M10 12h.01"/></svg>
+                Your coupon is ready — <strong>copy it</strong> and apply at checkout
+              </div>
+              <div class="coupon-row">
+                <button class="coupon-code" id="cupom-codigo" type="button" data-codigo="" title="Click to copy"></button>
+              </div>
+              <p class="coupon-compare">We <strong>compare prices at other stores</strong> before you buy — this code is the best price we found at the retailer.</p>
+              <p class="coupon-note" id="cupom-nota"></p>
+              <button class="btn-buy-big" id="btn-comprar-cupom">Go to retailer with coupon ↗</button>
+            </div>
+            <p class="redirect-note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+              <span>You’ll be redirected to <strong id="parceiro-nome">the retailer</strong>, where this product is listed, sold and shipped.</span>
+            </p>
+            <button class="btn-partner" id="btn-parceiro">See product at retailer ↗</button>
+        </div>
+
+        <div class="trust-row">
+          <div class="trust-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            <span><strong>Secure checkout</strong>Handled entirely by the partner store.</span>
+          </div>
+          <div class="trust-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="15" height="11" rx="2"/><path d="M16 9h3l3 3v5h-6"/><circle cx="6.5" cy="18.5" r="1.5"/><circle cx="17.5" cy="18.5" r="1.5"/></svg>
+            <span><strong>Shipping &amp; returns</strong>Terms set by the partner at checkout.</span>
+          </div>
+          <div class="trust-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+            <span><strong>Price comparison</strong>No extra cost to you. Ever.</span>
+          </div>
+        </div>
+
+        <div class="card-warn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+          <span><strong>Affiliate disclosure.</strong> E-Ride Deals is an independent product discovery website. We don't sell or stock products — this item is sold by the retailer shown, and your purchase is completed on the retailer's site. As an affiliate, we may earn a commission on qualifying purchases, at no additional cost to you. <a href="about.html#disclosure">Read our full disclosure</a>.</span>
+        </div>
+
+      </aside>
+
+    </div>
+
+    <div id="review-verdict-slot"></div>
+
+    <div class="cta-cupom">
+      <button class="btn-buy-big js-reveal-cupom" type="button">Reveal coupon code</button>
+      <p class="cta-cupom-note">Compare prices at other stores, then apply the code at the retailer checkout.</p>
+    </div>
+
+    <section class="section pg-banner-sec" id="pg-banner-sec" hidden>
+      <div class="container" style="padding-inline:0">
+        <div class="pg-banner-carousel" id="pg-banner-carousel"></div>
+      </div>
+    </section>
+
+    <section class="detail-sec">
+      <h2><span class="bar"></span> Specifications</h2>
+      <div class="key-specs" id="key-specs"></div>
+      <table class="specs" id="specs-tabela"></table>
+    </section>
+
+    <div class="cta-cupom">
+      <button class="btn-buy-big js-reveal-cupom" type="button">Reveal coupon code</button>
+      <p class="cta-cupom-note">Compare prices at other stores, then apply the code at the retailer checkout.</p>
+    </div>
+
+    <section class="detail-sec" id="reviews-sec">
+      <h2><span class="bar"></span> Customer reviews</h2>
+      <div id="reviews-lista"></div>
+    </section>
+
+    <div class="cta-cupom">
+      <button class="btn-buy-big js-reveal-cupom" type="button">Reveal coupon code</button>
+      <p class="cta-cupom-note">Compare prices at other stores, then apply the code at the retailer checkout.</p>
+    </div>
+
+    <section class="detail-sec" id="similares">
+      <h2><span class="bar"></span> Compare similar products</h2>
+      <div class="grid-cards" id="similares-grid"></div>
+      <div class="compare-wrap">
+        <table class="compare" id="compara-tabela"></table>
+      </div>
+    </section>
+
+    <section class="detail-sec">
+      <h2><span class="bar"></span> Frequently asked questions about the coupon and shipping</h2>
+      <div id="faq-lista"></div>
+    </section>
+
+    <section class="section">
+      <div class="container" style="padding-inline:0">
+        <div class="section-head">
+          <h2>You may also like</h2>
+          <a class="link-all" href="catalog.html">View all ›</a>
+        </div>
+        <div class="grid-cards" id="relacionados-grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="app-footer"></div>
+
+  <div class="modal-video" id="modal-video" hidden>
+    <div class="modal-video-overlay" id="modal-video-fechar" data-fechar></div>
+    <div class="modal-video-box" role="dialog" aria-modal="true" aria-label="Product video">
+      <button class="modal-video-close" id="modal-video-close" data-fechar aria-label="Close">×</button>
+      <div class="modal-video-frame" id="modal-video-frame"></div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/review-data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

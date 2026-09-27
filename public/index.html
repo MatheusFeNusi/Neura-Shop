@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Discover e-scooter &amp; e-bike gear, deals &amp; coupons | E-Ride Deals</title>
+  <meta name="description" content="E-Ride Deals is an independent product discovery and curation platform for electric scooters and electric bikes. Explore curated products — e-scooters, e-bikes, batteries, chargers, tires, helmets, lights and more — check prices and deals, then buy directly at the retailer."/>
+  <link rel="icon" type="image/png" href="img/favicon.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <meta name="google-site-verification" content="j-YwcxLAtBZBULhbwrtQfbUlzThBrNd3XqM7oZsGK-E" />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11103748612"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-11103748612');
+  </script>
+</head>
+<body data-page="home">
+
+  <div id="app-header"></div>
+
+  <div class="notice">
+    <div class="container">
+      <p><span class="dot"></span><span>E-Ride Deals is an independent product discovery website. We curate products, deals and coupons from partner retailers — purchases are completed directly with the retailer, never with us. When you buy through our links, we may earn a commission at no additional cost to you. <a href="about.html">Learn more</a>.</span></p>
+    </div>
+  </div>
+
+  <!-- Search ring: discovery-first hero -->
+  <section class="hero hero-search">
+    <div class="container">
+      <div class="hero-inner">
+        <span class="hero-eyebrow">Independent product discovery · e-scooters &amp; e-bikes</span>
+        <h1>Discover gear for your ride. Compare prices.</h1>
+        <p class="lead">Electric scooters, e-bikes, batteries, chargers, tires, helmets and more — explore curated products and deals from partner retailers in one place, check the price, then buy directly at the store you choose.</p>
+        <form class="hero-search-box" id="hbusca-form" role="search">
+          <label class="visually-hidden" for="hbusca-input">What are you looking for?</label>
+          <input id="hbusca-input" type="search" placeholder="Search gear… (e.g. e-scooter, e-bike, battery, charger, tire)" autocomplete="off"/>
+          <button class="hero-search-btn" type="submit" aria-label="Search">Search</button>
+          <div class="sugest" id="hbusca-sugest"></div>
+        </form>
+        <div class="pop-searches" id="pop-searches"></div>
+        <ul class="trust-badges">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+            Independently curated selection
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            Check prices across retailers
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h6a2 2 0 0 1 4 0h8"/><rect x="2" y="8" width="20" height="7" rx="2"/></svg>
+            Buy securely at the retailer
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Deals we're tracking right now</h2>
+          <a class="link-all" href="catalog.html?ofertas=1">Find a deal ›</a>
+        </div>
+        <div class="grid-cards grid-home" id="deals-grid"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Popular with riders</h2>
+          <a class="link-all" href="catalog.html?ordenar=pop">View all ›</a>
+        </div>
+        <div class="grid-cards grid-home" id="populares-grid"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Curated picks for your ride</h2>
+          <a class="link-all" href="catalog.html">View all ›</a>
+        </div>
+        <div class="grid-cards grid-home" id="destaques-grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="app-footer"></div>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Retailers we track for e-scooter &amp; e-bike gear | E-Ride Deals</title>
+  <meta name="description" content="Browse the electric scooter and electric bike gear E-Ride Deals curates from each partner retailer — compare prices, find the best deal and check out directly on the retailer's site."/>
+  <link rel="icon" type="image/png" href="img/favicon.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <meta name="google-site-verification" content="j-YwcxLAtBZBULhbwrtQfbUlzThBrNd3XqM7oZsGK-E" />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11103748612"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-11103748612');
+  </script>
+</head>
+<body data-page="loja">
+
+  <div id="app-header"></div>
+
+  <main class="container">
+    <nav class="crumb"><a href="index.html">Home</a><span class="sep">›</span><span>Stores</span><span class="sep">›</span><span id="loja-nome"></span></nav>
+
+    <div class="page-head loja-head" id="loja-head"></div>
+
+    <div class="toolbar">
+      <span class="count" id="loja-count"></span>
+      <label class="visually-hidden" for="loja-ordenar">Sort by</label>
+      <select id="loja-ordenar">
+        <option value="menor">Price: Low to High</option>
+        <option value="maior">Price: High to Low</option>
+        <option value="desc">Biggest Discount</option>
+        <option value="nota">Top Rated</option>
+        <option value="pop">Most Popular</option>
+      </select>
+    </div>
+    <div class="grid-cards" id="loja-grid"></div>
+    <div class="pager" id="loja-pager"></div>
+  </main>
+
+  <div id="app-footer"></div>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
