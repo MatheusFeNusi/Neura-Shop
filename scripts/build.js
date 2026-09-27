@@ -355,6 +355,7 @@ const HEAD_COMMON = (title, desc, canonical, ogImg) =>
   '<link rel="icon" type="image/png" href="/img/favicon.png"/>\n' +
   '<base href="/"/>\n' +
   '<link rel="stylesheet" href="/css/style.css"/>\n' +
+  TAGS_GOOGLE +
   "</head>\n";
 
 const BODY_OPEN = '<body data-page="produto">\n  <div id="app-header"></div>\n';
