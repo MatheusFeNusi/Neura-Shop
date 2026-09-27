@@ -674,6 +674,14 @@ async function main() {
     n++;
   });
   console.log("[build] páginas de produto geradas:", n);
+  /* Todo produto do admin tem de ter a URL /products/<slug>/. Sem pagina o
+     link do admin cairia em product.html?id= e o visitante veria a versao
+     dinamica, sem o HTML do build. */
+  const semPagina = produtos.filter(p => p && p.nome && !fs.existsSync(path.join(OUT, "products", SLUG_FINAL[p.id] || slugProduto(p), "index.html")));
+  if (semPagina.length) {
+    console.error("[build] ATENÇÃO: " + semPagina.length + " produto(s) sem página estática (remova do admin ou corrija o nome): " +
+      semPagina.map(p => p.id).join(", "));
+  }
   const orfas = podarPaginasProdutos(produtos);
   if (orfas.length) console.log("[build] páginas orfãs removidas (slug mudou no admin):", orfas.join(", "));
 

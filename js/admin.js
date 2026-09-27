@@ -315,7 +315,7 @@ function linhaProduto(p) {
     '<div class="admin-row-preco">' + fmt(p.preco) + "</div>" +
     '<span class="admin-avail ' + esc(p.disponibilidade) + '">' + chipDispTexto(p.disponibilidade) + "</span>" +
     '<div class="admin-acoes">' +
-    '<a class="btn btn-light btn-ver" href="product.html?id=' + encodeURIComponent(p.id) + '" target="_blank" rel="noopener">Ver</a>' +
+    '<a class="btn btn-light btn-ver" href="' + esc(urlProduto(p)) + '" target="_blank" rel="noopener">Ver</a>' +
     '<button class="btn btn-light btn-edit" type="button" data-edit="' + esc(p.id) + '">Editar</button>' +
     '<button class="btn btn-del" type="button" data-del="' + esc(p.id) + '">Excluir</button>' +
     "</div>" +
@@ -584,7 +584,7 @@ function abrirModal(id) {
   montarEditReviews(p.reviews);
   document.getElementById("modal-titulo").textContent = "Editar · " + id;
   var linkVer = document.getElementById("btn-ver-modal");
-  if (linkVer) linkVer.href = "product.html?id=" + encodeURIComponent(id);
+  if (linkVer) linkVer.href = urlProduto(p);
   document.getElementById("modal").hidden = false;
   document.body.classList.add("modal-open");
   ligarPrevia();
