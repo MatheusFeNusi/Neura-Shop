@@ -766,7 +766,7 @@
     if (f.watt && f.watt >= 800) bom.push("You need real hill and acceleration headroom: " + f.watt + "W rated motor.");
     if (alc && alc >= 45) bom.push("You want one charge to last the week — estimated " + alc + " km of real-world range.");
     if (f.carga && f.carga >= 110) bom.push("You or your load are heavy: it is listed for up to " + f.carga + " kg.");
-    if (f.pneu && f.pneu >= 10) bom.push("You ride rough streets — " + f.pneu + "-inch tires take cracks and gravel better.");
+    if (f.pneu && f.pneu >= 10 && !f.isBike) bom.push("You ride rough streets — " + f.pneu + "-inch tires take cracks and gravel better.");
     if (f.temDisc) bom.push("You brake often in the wet — the listing shows a disc brake.");
     if (f.temSusp) bom.push("Your route is uneven — suspension is listed.");
     if (f.preco && f.medianaCategoria && f.preco < f.medianaCategoria) {
@@ -782,7 +782,7 @@
     if (f.preco && f.medianaCategoria && f.preco > f.medianaCategoria * 1.1) {
       outro.push("Your budget is tight: it sits above the " + moeda(f.medianaCategoria) + " category median — check the alternatives below.");
     }
-    if (f.pneu && f.pneu >= 10) outro.push("You want the lightest scooter to carry on a train or up stairs — " + f.pneu + "-inch tires and a " + f.wh + " Wh pack are bulky.");
+    if (f.pneu && f.pneu >= 10 && !f.isBike) outro.push("You want the lightest scooter to carry on a train or up stairs — " + f.pneu + "-inch tires and a " + f.wh + " Wh pack are bulky.");
     if (!f.temDisc) outro.push("You ride in heavy rain and want a disc brake — this listing does not mention one.");
     if (!f.temSusp) outro.push("Your route is badly broken and you want suspension — the listing does not mention it.");
     if (!f.removivel) outro.push("You want to charge indoors with a removable battery — this listing does not mention one.");
