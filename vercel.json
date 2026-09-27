@@ -1,5 +1,6 @@
 {
   "outputDirectory": "public",
+  "buildCommand": "npm run build",
   "redirects": [
     { "source": "/products/freeboy-j30-38ah-60v-3000w", "destination": "/products/freeboy-j30-60v-38ah-6000w", "permanent": true }
   ]

@@ -625,6 +625,27 @@ function fecharModal() {
   idEmEdicao = null;
 }
 
+/* O site e estatico: o HTML publicado so muda quando o build roda (e o build
+   le o admin). Cada gravacao dispara o Deploy Hook da Vercel para o site
+   inteiro passar a refletir o que acabou de ser salvo. */
+function publicaNoSite(motivo) {
+  var hook = (window.WW_DEPLOY_HOOK || "").trim();
+  if (!hook) return Promise.resolve(false);
+  return fetch(hook, { method: "POST" })
+    .then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return true;
+    })
+    .then(function () {
+      toast("Site em publicação (" + motivo + ") — leva ~1 min para ficar no ar.");
+      return true;
+    })
+    .catch(function (e) {
+      console.warn("deploy hook falhou", e);
+      return false;
+    });
+}
+
 function salvarEdicao() {
   if (!idEmEdicao) return;
   var p = PRODUTOS.find(function (x) { return x.id === idEmEdicao; });
@@ -667,7 +688,11 @@ marca: f.marca.value.trim() || p.marca,
     btn.disabled = false;
     fecharModal();
     renderAdmin();
-    toast("Produto " + idEmEdicao + " salvo no banco.");
+    publicaNoSite("produto " + idEmEdicao).then(function (publicado) {
+      toast(publicado
+        ? "Produto " + idEmEdicao + " salvo e site em publicação (~1 min)."
+        : "Produto " + idEmEdicao + " salvo no banco. O site só reflete depois do build (deploy hook não configurado em js/deploy-hook.js).");
+    });
   }).catch(function (e) {
     btn.disabled = false;
     toast("Falha ao salvar: " + e.message);
@@ -685,6 +710,7 @@ function reverterProduto() {
       fecharModal();
       renderAdmin();
       toast("Produto revertido ao estado original do banco.");
+      publicaNoSite("reversão " + idEmEdicao);
     }).catch(function (e) { toast("Falha ao reverter: " + e.message); });
   } else {
     toast("Registro original não encontrado.");
@@ -702,6 +728,7 @@ function excluirProduto(id) {
     listaOriginal = listaOriginal.filter(function (x) { return x.id !== id; });
     renderAdmin();
     toast("Produto " + id + " excluído do banco.");
+    publicaNoSite("exclusão " + id);
   }).catch(function (e) {
     toast("Falha ao excluir: " + e.message);
   });
@@ -715,6 +742,7 @@ function resetTotal() {
     .then(function (n) {
       btn.disabled = false;
       toast(n + " produtos sincronizados no banco.");
+      publicaNoSite("sincronização total");
     })
     .catch(function (e) {
       btn.disabled = false;
