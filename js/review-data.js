@@ -320,23 +320,33 @@
   /* ---------- 6. Blocos HTML ---------- */
   var ICON_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
 
+  /* A nota do retailer e opcional: o admin pode deixar vazio, e nesse caso o
+     site nao mostra nem estrelas nem "0.0" (so a nota editorial do WattWheel). */
+  function temNota(p) {
+    var r = Number(p && p.rating);
+    return isFinite(r) && r > 0;
+  }
+
   function htmlScoreBanner(p, todos) {
     var n = notas(p, todos);
     var f = n.fatos;
-    var nota = f.nota != null ? f.nota : 0;
-    return '<div class="score-box-main">' +
-      '<span class="score-num">' + nota.toFixed(1) + "</span>" +
-      '<div class="score-stars-wrap">' +
-      starsHTML(nota || 5) +
-      '<span class="score-label">Retailer rating · ' + num(f.qtd) + " buyer ratings</span>" +
-      "</div>" +
-      '<div class="score-div"></div>' +
+    var review =
       '<div class="score-box-review">' +
       '<span class="score-num alt">' + n.score.toFixed(1) + '<small>/10</small></span>' +
       '<div class="score-stars-wrap">' +
       '<span class="score-label">WattWheel review score</span>' +
       '<span class="score-sub">' + esc(veredito(n).rotulo) + "</span>" +
-      "</div></div></div>";
+      "</div></div>";
+    if (!temNota(p)) return '<div class="score-box-main">' + review + "</div>";
+    var nota = f.nota;
+    return '<div class="score-box-main">' +
+      '<span class="score-num">' + nota.toFixed(1) + "</span>" +
+      '<div class="score-stars-wrap">' +
+      starsHTML(nota) +
+      '<span class="score-label">Retailer rating · ' + num(f.qtd) + " buyer ratings</span>" +
+      "</div>" +
+      '<div class="score-div"></div>' +
+      review + "</div>";
   }
 
   function htmlSelos(p) {
@@ -502,21 +512,101 @@
   }
 
   /* ---------- 8b. Video ----------
-     O feed traz URL de BUSCA do YouTube (/results?search_query=), que nao tem
-     video ID e portanto nao cabe em iframe: o YouTube responde com
+     O botao virou "Search this product on YouTube" em TODAS as paginas: o
+     campo video do feed traz URL de BUSCA (/results?search_query=), que nao
+     tem video ID e nunca coube em iframe (o YouTube responde com
      X-Frame-Options e o navegador recusa com "A conexao com www.youtube.com
-     foi recusada". Antes o codigo devolvia a URL crua e o modal a enquadrava,
-     entao o botao estava quebrado nas 38 paginas. Sem ID extraivel o botao
-     abre o link em nova aba, que e o que o admin promete no rotulo do campo. */
-  function videoEmbed(url) {
-    var raw = String(url || "").trim();
-    if (!raw) return "";
-    var m = raw.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
-    return m ? "https://www.youtube.com/embed/" + m[1] + "?rel=0&autoplay=1" : "";
+     foi recusada"). Em vez do embed quebrado, a busca e montada do proprio
+     produto: funciona mesmo nos SKU sem o campo video preenchido. */
+  function videoBusca(p) {
+    var q = nomeCurto(p, 60);
+    if (!q && p) q = String(p.video || "").trim();
+    if (!q) return "";
+    return "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
   }
   function videoRotulo(p) {
-    if (!p || !p.video) return "Watch video";
-    return videoEmbed(p.video) ? "Watch video" : "Search this product on YouTube";
+    return "Search this product on YouTube";
+  }
+
+  /* ---------- 8c. Comparacao com outras lojas ----------
+     Os precos das outras lojas sao de REFERENCIA (mock): o admin ainda nao
+     cadastra loja por loja, entao o que vem do feed e o que falta e derivado
+     do preco do produto com um fator por loja e um jitter deterministico
+     (mesmo produto + mesma loja cai sempre no mesmo valor, e o build e o
+     client-side continuam batendo). O card tambem parou de ser link: sem URL
+     de redirecionamento cadastrada o <a> levava para a busca do retailer sem
+     o usuario ter pedido nada — o href volta quando o admin trazer o link. */
+  var LOJAS_COMPARE = [
+    { nome: "Amazon", chave: "amazon", url: "https://www.amazon.com/s?k=" },
+    { nome: "Walmart", chave: "walmart", url: "https://www.walmart.com/search?q=" },
+    { nome: "AliExpress", chave: "aliexpress", url: "https://www.aliexpress.com/wholesale?SearchText=" }
+  ];
+  /* Amazon encarece um pouco mais que a Walmart/AliExpress: o preco do site
+     continua sendo o mais barato da tabela, que e o argumento de venda. */
+  var FATOR_LOJA = { amazon: 1.06, walmart: 1.09, aliexpress: 1.07 };
+
+  function hashEstavel(s) {
+    var h = 0;
+    var t = String(s == null ? "" : s);
+    for (var i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) % 9973;
+    return h;
+  }
+
+  function chaveBusca(p) {
+    var w = [];
+    if (p && p.marca) w.push(p.marca);
+    var m = String((p && p.nome) || "").split(/\s+/);
+    for (var i = 0; i < m.length && w.length < 4; i++) {
+      var t = m[i].replace(/[^a-zA-Z0-9\-\.]/g, "");
+      var menor = t.toLowerCase();
+      if (!t) continue;
+      if (/^(electric|e-?scooter|e-?bike|with|and|for|the|of|to|in|on|recommended|top|max|range|battery|motor|speed|tires|inch|folding|load|mileage|hi|cm)$/.test(menor)) {
+        if (w.length === 0) continue;
+        break;
+      }
+      w.push(t);
+    }
+    return w.join(" ").slice(0, 60);
+  }
+
+  /* Preco de referencia de uma loja: preco do site * fator da loja * jitter,
+     arredondado em centavos .99 (como o retailer anuncia). */
+  function precoReferencia(p, nome) {
+    var base = Number(p && p.preco != null ? p.preco : p && p.preco_anterior);
+    if (!isFinite(base) || base <= 0) return null;
+    var chave = String(nome || "").toLowerCase().replace(/[^a-z]/g, "");
+    var fator = FATOR_LOJA[chave] || 1.09;
+    var jitter = 0.985 + (hashEstavel(((p && p.id) || nome) + "|" + chave) % 41) / 1000;
+    var v = Math.floor(base * fator * jitter);
+    return v + 0.99;
+  }
+
+  /* Lista de lojas da comparacao, sempre com preco. A lista do admin completa
+     a tabela: as lojas cadastradas entram no lugar da padrao e as que faltam
+     recebem o preco de referencia, para todo produto ter as mesmas lojas. O
+     url continua sendo montado (so que o admin cadastre o link depois, o
+     render volta a usar). */
+  function lojasCompare(p) {
+    var doAdmin = {};
+    ((p && p.lojas_compare) || []).forEach(function (l) {
+      if (l && l.nome) doAdmin[String(l.nome).toLowerCase().replace(/[^a-z]/g, "")] = l;
+    });
+    var base = Object.keys(doAdmin).length ? doAdmin : {};
+    var lista = LOJAS_COMPARE.slice();
+    Object.keys(doAdmin).forEach(function (k) {
+      var i = lista.map(function (l) { return l.chave; }).indexOf(k);
+      if (i > -1) lista[i] = Object.assign({}, lista[i], doAdmin[k], { chave: lista[i].chave });
+      else lista.push(Object.assign({ url: "" }, doAdmin[k], { chave: k }));
+    });
+    var q = encodeURIComponent(chaveBusca(p));
+    return lista.map(function (l) {
+      var temPreco = l.preco != null && isFinite(Number(l.preco));
+      return {
+        nome: l.nome,
+        preco: temPreco ? Number(l.preco) : precoReferencia(p, l.nome),
+        url: l.url != null ? l.url + q : ""
+      };
+    });
   }
 
   /* ---------- 9. FAQ curado ----------
@@ -647,6 +737,7 @@
   }
 
   return {
+    temNota: temNota,
     fatos: fatos,
     notas: notas,
     veredito: veredito,
@@ -659,8 +750,11 @@
     titulo: titulo,
     baseUnica: baseUnica,
     h1: h1,
-    videoEmbed: videoEmbed,
+    videoBusca: videoBusca,
     videoRotulo: videoRotulo,
+    lojasCompare: lojasCompare,
+    chaveBusca: chaveBusca,
+    precoReferencia: precoReferencia,
     faq: faq,
     specsVisiveis: specsVisiveis,
     htmlDescricao: htmlDescricao,

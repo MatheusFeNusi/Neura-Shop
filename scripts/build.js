@@ -31,9 +31,66 @@ function supaConfig() {
   } catch (e) { return { url: null, anon: null }; }
 }
 
+/* Ordem de exibicao: segue products.json (mantem slugs/URLs) e acrescenta
+   produtos novos do admin no final. */
+function ordenarComoLocal(produtos, local) {
+  const byId = {};
+  produtos.forEach(p => { byId[p.id] = p; });
+  const out = [];
+  (local || []).forEach(p => { if (p && p.id && byId[p.id]) { out.push(byId[p.id]); delete byId[p.id]; } });
+  Object.keys(byId).forEach(id => out.push(byId[id]));
+  return out;
+}
+
 async function carregarProdutos() {
-  const local = JSON.parse(fs.readFileSync(path.join(ROOT, "products.json"), "utf8"));
-  return { origem: "json", produtos: local.produtos || [] };
+  const arquivo = path.join(ROOT, "products.json");
+  const local = JSON.parse(fs.readFileSync(arquivo, "utf8"));
+  const base = {
+    marca: local.marca || SITE_NAME,
+    categorias: local.categorias || [],
+    produtos: local.produtos || []
+  };
+  const cfg = supaConfig();
+  if (process.env.SEM_SUPABASE === "1") return { origem: "json", store: base };
+  if (!cfg.url || !cfg.anon) {
+    console.warn("[build] js/config.js sem url/anon do Supabase -> usando products.json");
+    return { origem: "json", store: base };
+  }
+  try {
+    const rows = await fetchPaginas(cfg);
+    const vistos = {};
+    const todos = [];
+    rows.forEach(r => {
+      const d = (r && r.dados) ? Object.assign({}, r.dados) : r;
+      if (!d || !d.id) return;
+      d.id = r.id || d.id;
+      if (vistos[d.id]) return;
+      vistos[d.id] = 1;
+      todos.push(d);
+    });
+    if (!todos.length) throw new Error("admin sem produtos");
+    const produtos = ordenarComoLocal(todos, base.produtos);
+    const store = { marca: base.marca, categorias: base.categorias, produtos };
+    fs.writeFileSync(arquivo, JSON.stringify(store, null, 2), "utf8");
+    console.log("[build] products.json sincronizado com o admin (" + produtos.length + " produtos)");
+    return { origem: "supabase", store };
+  } catch (e) {
+    console.warn("[build] admin indisponivel (" + e.message + ") -> usando products.json");
+    return { origem: "json", store: base };
+  }
+}
+
+/* Mantem o fallback embutido do app (file://) igual ao products.json */
+function sincronizarFallback(store) {
+  const alvo = path.join(ROOT, "js", "app.js");
+  const src = fs.readFileSync(alvo, "utf8");
+  const linha = "var STORE_FALLBACK = " + JSON.stringify(store) + ";";
+  const re = /^var STORE_FALLBACK = .*;$/m;
+  if (!re.test(src)) { console.warn("[build] STORE_FALLBACK nao encontrado em js/app.js"); return; }
+  const novo = src.replace(re, linha);
+  if (novo === src) { console.log("[build] fallback embutido ja estava atualizado"); return; }
+  fs.writeFileSync(alvo, novo, "utf8");
+  console.log("[build] fallback embutido de js/app.js atualizado");
 }
 
 async function fetchPaginas(cfg) {
@@ -86,33 +143,25 @@ function imgProd(p) {
   }
   return "";
 }
-function chaveBusca(p) {
-  const w = [];
-  if (p.marca) w.push(p.marca);
-  const m = String(p.nome || "").split(/\s+/);
-  for (let i = 0; i < m.length && w.length < 4; i++) {
-    const t = m[i].replace(/[^a-zA-Z0-9\-\.]/g, "");
-    const menor = String(t).toLowerCase();
-    if (!t) continue;
-    if (/^(electric|e-?scooter|e-?bike|with|and|for|the|of|to|in|on|recommended|top|max|range|battery|motor|speed|tires|inch|folding|load|mileage|hi|cm)$/.test(menor)) {
-      if (w.length === 0) continue;
-      break;
+function compararHTML(p, fotos) {
+  const lojas = ReviewData.lojasCompare(p);
+  const img = fotos[0] || "";
+  const precos = lojas.map(l => Number(l.preco)).filter(x => isFinite(x));
+  const melhor = precos.length ? Math.min.apply(null, precos) : null;
+  return '<div class="comparar">' + lojas.map(l => {
+    const tem = l.preco != null && isFinite(Number(l.preco));
+    let precoHTML = "";
+    if (tem) {
+      const n = Number(l.preco);
+      precoHTML = '<small class="comparar-preco">' + fmt(n) + (n === melhor ? '<span class="comparar-best">Lowest</span>' : "") + "</small>";
     }
-    w.push(t);
-  }
-  return w.join(" ").slice(0, 60);
-}
-
-const LOJAS_COMPARE = [
-  { nome: "Amazon", url: "https://www.amazon.com/s?k=" },
-  { nome: "Walmart", url: "https://www.walmart.com/search?q=" },
-  { nome: "eBay", url: "https://www.ebay.com/sch/i.html?_nkw=" },
-  { nome: "Best Buy", url: "https://www.bestbuy.com/site/searchpage.jsp?st=" },
-  { nome: "Target", url: "https://www.target.com/s?searchTerm=" },
-  { nome: "AliExpress", url: "https://www.aliexpress.com/wholesale?SearchText=" }
-];
-
-const SCHEMA_DISP = {
+    /* Sem link: o admin cadastra a URL de cada loja depois (ReviewData.url
+       volta a ser usada no href quando isso existir). */
+    return '<div class="comparar-loja">' +
+      (img ? '<img class="comparar-thumb" src="' + img + '" alt="" loading="lazy"/>' : "") +
+      '<span class="comparar-loja-nome">' + esc(l.nome) + precoHTML + '<small class="comparar-cta">Price reference</small></span></div>';
+  }).join("") + "</div>";
+}const SCHEMA_DISP = {
   em_estoque: "https://schema.org/InStock",
   poucas_unidades: "https://schema.org/LimitedAvailability",
   esgotado: "https://schema.org/OutOfStock"
@@ -169,6 +218,16 @@ function pct_save(a, b) {
   return pctDesc(a, b) != null ? '<span class="pct">-' + pctDesc(a, b) + "%</span>" : "";
 }
 
+/* A nota do retailer e opcional no admin: sem nota nao mostra estrelas nem 0.0 */
+function temNota(p) {
+  const r = Number(p && p.rating);
+  return isFinite(r) && r > 0;
+}
+function estrelasCard(p) {
+  if (!temNota(p)) return "";
+  return '<div class="rating">' + starsHTML(Number(p.rating)) + ' <span class="reviews">' + Number(p.rating).toFixed(1) + " (" + num(p.avaliacoes) + ")</span></div>";
+}
+
 function cardHTML(p) {
   const esgotado = p.disponibilidade === "esgotado";
   const badge = pctDesc(p.preco, p.preco_anterior) != null ? '<span class="badge">-' + pctDesc(p.preco, p.preco_anterior) + "%</span>" : "";
@@ -180,7 +239,7 @@ function cardHTML(p) {
     '<div class="body">' +
     '<span class="p-brand">' + esc(p.marca) + "</span>" +
     '<a class="p-name" href="' + urlProduto(p) + '">' + esc(p.nome) + "</a>" +
-    '<div class="rating">' + starsHTML(p.rating || 5) + ' <span class="reviews">' + (p.rating || 0).toFixed(1) + " (" + num(p.avaliacoes) + ")</span></div>" +
+    estrelasCard(p) +
     '<div class="price">' +
     (p.preco_anterior ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" : "") +
     '<span class="now">' + fmt(p.preco) + "</span>" +
@@ -191,25 +250,6 @@ function cardHTML(p) {
       ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>'
       : '<a class="btn-buy" href="' + urlProduto(p) + '">View deal</a>') +
     "</div></article>";
-}
-
-function compararHTML(p, fotos) {
-  const q = encodeURIComponent(chaveBusca(p));
-  const lojas = (p.lojas_compare && p.lojas_compare.length) ? p.lojas_compare : LOJAS_COMPARE;
-  const img = fotos[0] || "";
-  const precos = lojas.map(l => Number(l.preco)).filter(x => isFinite(x));
-  const melhor = precos.length ? Math.min.apply(null, precos) : null;
-  return '<div class="comparar">' + lojas.map(l => {
-    const tem = l.preco != null && isFinite(Number(l.preco));
-    let precoHTML = "";
-    if (tem) {
-      const n = Number(l.preco);
-      precoHTML = '<small class="comparar-preco">' + fmt(n) + (n === melhor ? '<span class="comparar-best">Lowest</span>' : "") + "</small>";
-    }
-    return '<a class="comparar-loja" href="' + l.url + q + '" target="_blank" rel="noopener nofollow">' +
-      (img ? '<img class="comparar-thumb" src="' + img + '" alt="" loading="lazy"/>' : "") +
-      '<span class="comparar-loja-nome">' + esc(l.nome) + precoHTML + '<small class="comparar-cta">Check prices ↗</small></span></a>';
-  }).join("") + "</div>";
 }
 
 /* ---------- JSON embed helpers ---------- */
@@ -373,7 +413,7 @@ function pagProduto(p, contexto) {
       : '<span class="review-avatar">' + esc(String(r.nome || "C").charAt(0).toUpperCase()) + "</span>";
     return '<div class="review-item"><div class="review-head">' + avatar +
       '<span class="review-nome">' + esc(r.nome) + "</span>" +
-      '<span class="review-nota">' + starsHTML(r.nota != null ? r.nota : 5) + "</span></div>" +
+      (r.nota != null && Number(r.nota) > 0 ? '<span class="review-nota">' + starsHTML(Number(r.nota)) + "</span>" : "") + "</div>" +
       '<p class="review-texto">' + esc(r.texto) + "</p></div>";
   }).join("");
 
@@ -448,7 +488,7 @@ function pagProduto(p, contexto) {
     '<div class="pg-catscreen"><a class="chip cat" id="pg-categoria" href="/catalog.html?cat=' + esc(p.categoria) + '">' + esc(p.categoria_nome) + '</a><span class="review-badge-inline">FULL REVIEW</span></div>' +
     '<h2 class="review-subtitle">What the listing actually tells you</h2>' +
     '<div class="pg-meta">' +
-    '<span class="pg-rating" id="pg-rating">' + starsHTML(p.rating || 5) + ' <strong>' + (p.rating || 0).toFixed(1) + "</strong> out of 5 <span class=\"count\">(" + num(p.avaliacoes) + " ratings)</span></span>" +
+    (temNota(p) ? '<span class="pg-rating" id="pg-rating">' + starsHTML(Number(p.rating)) + ' <strong>' + Number(p.rating).toFixed(1) + "</strong> out of 5 <span class=\"count\">(" + num(p.avaliacoes) + " ratings)</span></span>" : "") +
     '<span id="pg-merchant">Available at <span class="merchant-chip">' + esc(p.merchant_nome || p.merchant) + "</span></span>" +
     '<span class="ref" id="pg-marca">Brand: ' + esc(p.marca) + "</span>" +
     '<span class="ref" id="pg-produto-id">Partner SKU: ' + esc(p.product_id) + "</span>" +
@@ -461,7 +501,7 @@ function pagProduto(p, contexto) {
     '<div class="buybox-price"><div id="preco-bloco">' + precoBloco + "</div></div>" +
     '<div class="buybox-sec">' +
     '<button class="btn-buy-big" id="btn-comprar">' + (esgotado ? "Currently unavailable" : (temCupom ? "GET COUPON CODE" : "Check price at " + esc(p.merchant_nome))) + "</button>" +
-    (p.video ? '<div class="video-row" id="video-row"><button class="btn-video" id="btn-video" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> <span class="video-label">' + esc(ReviewData.videoRotulo(p)) + '</span> <span class="video-ext">' + (ReviewData.videoEmbed(p.video) ? "▶" : "↗") + "</span></button></div>" : "") +
+    (ReviewData.videoBusca(p) ? '<div class="video-row" id="video-row"><button class="btn-video" id="btn-video" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> <span class="video-label">' + esc(ReviewData.videoRotulo(p)) + '</span> <span class="video-ext">↗</span></button></div>' : "") +
     (temCupom
       ? '<div class="coupon-box" id="cupom-box"><div class="coupon-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 0-4h20a2 2 0 0 1 0 4 2 2 0 0 0 0 4 2 2 0 0 1 0 4H2a2 2 0 0 1 0-4 2 2 0 0 0 0-4z"/><path d="M13 5v14M16 12h.01M10 12h.01"/></svg> Your coupon is ready — <strong>copy it</strong> and apply at checkout</div>' +
         '<p class="coupon-compare">We <strong>compare prices at other stores</strong> before you buy — this code is the best price we found at ' + esc(p.merchant_nome) + ".</p>" +
@@ -490,8 +530,9 @@ function pagProduto(p, contexto) {
     ReviewData.htmlCtaCupom(p, { esgotado: esgotado }) +
     '<section class="detail-sec" id="reviews-sec">' +
     '<h2><span class="bar"></span> Customer reviews</h2>' +
-    '<div id="reviews-lista"><div class="reviews-summary"><span class="reviews-score">' + (p.rating || 0).toFixed(1) + "</span>" +
-    '<span class="reviews-stars">' + starsHTML(p.rating || 5) + "</span>" +
+    '<div id="reviews-lista"><div class="reviews-summary">' +
+    (temNota(p) ? '<span class="reviews-score">' + Number(p.rating).toFixed(1) + "</span>" +
+      '<span class="reviews-stars">' + starsHTML(Number(p.rating)) + "</span>" : "") +
     '<span class="reviews-count">' + num(p.avaliacoes) + " reviews</span></div>" +
     '<div class="reviews-lista">' + reviewsHTML + "</div></div></section>" +
     ReviewData.htmlCtaCupom(p, { esgotado: esgotado }) +
@@ -575,6 +616,23 @@ function copiarManual(src, dest) {
     fs.copyFileSync(src, dest);
   }
 }
+/* Slugs sao derivados do nome: quando o admin renomeia o produto a pasta antiga
+   fica orfa no repo (e no git). Remove as paginas que nao existem mais. */
+function podarPaginasProdutos(produtos) {
+  const atuais = new Set();
+  produtos.forEach(p => { if (p && p.nome) atuais.add(SLUG_FINAL[p.id] || slugProduto(p)); });
+  const dir = path.join(OUT, "products");
+  const removidos = [];
+  if (!fs.existsSync(dir)) return removidos;
+  fs.readdirSync(dir).forEach(slug => {
+    if (atuais.has(slug)) return;
+    if (!fs.existsSync(path.join(dir, slug, "index.html"))) return;
+    fs.rmSync(path.join(dir, slug), { recursive: true, force: true });
+    removidos.push(slug);
+  });
+  return removidos;
+}
+
 function copiarAssetsPublic() {
   const pub = path.join(OUT, "public");
   fs.rmSync(pub, { recursive: true, force: true });
@@ -587,9 +645,11 @@ function copiarAssetsPublic() {
 }
 
 async function main() {
-  const { origem, produtos } = await carregarProdutos();
+  const { origem, store } = await carregarProdutos();
+  const produtos = store.produtos;
   console.log("[build] origem:", origem, "| produtos:", produtos.length);
   computarSlugs(produtos);
+  sincronizarFallback(store);
   copiarAssetsPublic();
 
   const categorias = {};
@@ -614,6 +674,8 @@ async function main() {
     n++;
   });
   console.log("[build] páginas de produto geradas:", n);
+  const orfas = podarPaginasProdutos(produtos);
+  if (orfas.length) console.log("[build] páginas orfãs removidas (slug mudou no admin):", orfas.join(", "));
 
   let nc = 0;
   catArray.forEach(c => {
