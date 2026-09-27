@@ -321,39 +321,25 @@ function renderComparar(p) {
   var alvo = $("#comparar-tabela");
   if (!alvo) return;
   var lojas = window.ReviewData ? ReviewData.lojasCompare(p) : [];
-  /* Sem loja com preco real, a secao inteira sai: o build so a gera nesse caso,
-     e o dado vivo nao pode ressuscitar um bloco que ele nao tem. Some com
-     display:none em vez de remover do DOM - o bloco de alternativas e irmao
-     dela e nao pode ser levar junto. */
-  var secao = alvo.closest ? alvo.closest(".comparar-sec") : null;
-  if (!lojas.length) {
-    if (secao) secao.style.display = "none";
-    else alvo.style.display = "none";
-    return;
-  }
-  if (secao) secao.style.display = "";
-  else alvo.style.display = "";
   var img = imgProd(p, 0);
-  var precos = lojas
-    .map(function (l) { return Number(l.preco); })
-    .filter(function (x) { return isFinite(x); });
-  var melhor = precos.length ? Math.min.apply(null, precos) : null;
-  /* "Lowest" so quando a loja e a unica mais barata: as tres recebem o mesmo
-     preco de referencia, entao ninguem fica "mais barato" que o outro. */
-  var unico = melhor != null && precos.filter(function (x) { return x === melhor; }).length === 1;
-
+  /* A secao nao pode dizer que comparamos preco de loja que nao medimos: o
+     aviso vai junto do numero. Mesma regra do build, para nao divergirem. */
+  var estimadas = lojas.filter(function (l) { return !l.real; });
+  var aviso = estimadas.length
+    ? '<p class="comparar-aviso">' + esc(ReviewData.avisoEstimativa) + "</p>"
+    : "";
   alvo.innerHTML = '<div class="comparar">' + lojas.map(function (l) {
     var temPreco = l.preco != null && isFinite(Number(l.preco));
     var precoN = temPreco ? Number(l.preco) : null;
-    var marcaBest = temPreco && unico && precoN === melhor;
     var precoHTML = temPreco
-      ? '<small class="comparar-preco">' + fmt(precoN) + (marcaBest ? '<span class="comparar-best">Lowest</span>' : "") + "</small>"
+      ? '<small class="comparar-preco">' + fmt(precoN) + (l.real ? "" : '<span class="comparar-est">Estimated</span>') + "</small>"
       : "";
     /* Sem link: o card da loja nao redireciona para o retailer. */
     return '<div class="comparar-loja">' +
       '<img class="comparar-thumb" src="' + img + '" alt="" loading="lazy"/>' +
-      '<span class="comparar-loja-nome">' + esc(l.nome) + precoHTML + '<small class="comparar-cta">Price reference</small></span></div>';
-  }).join("") + "</div>";
+      '<span class="comparar-loja-nome">' + esc(l.nome) + precoHTML +
+      '<small class="comparar-cta">' + (l.real ? "Price checked" : "Price reference") + "</small></span></div>";
+  }).join("") + "</div>" + aviso;
 }
 
 /* ---------- Product card ---------- */

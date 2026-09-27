@@ -175,28 +175,24 @@ function imgProd(p) {
 }
 function compararHTML(p, fotos) {
   const lojas = ReviewData.lojasCompare(p);
-  /* Sem loja com preco real cadastrado, a secao nao e gerada: antes saiam tres
-     numeros derivados do preco do produto, com nome de retailer, como se
-     fossem pesquisa de preco. */
   if (!lojas.length) return "";
   const img = fotos[0] || "";
-  const precos = lojas.map(l => Number(l.preco)).filter(x => isFinite(x));
-  const melhor = precos.length ? Math.min.apply(null, precos) : null;
-  /* "Lowest" so quando a loja e a unica mais barata: com as tres no mesmo
-     preco de referencia, marcar todas deixa a tabela sem sentido. */
-  const unico = melhor != null && precos.filter(x => x === melhor).length === 1;
+  /* A secao nao pode dizer que comparamos preco de loja que nao medimos. O
+     aviso vai junto do numero: sem ele, o leitor toma por cotacao. */
+  const estimadas = lojas.filter(l => !l.real);
+  const aviso = estimadas.length
+    ? '<p class="comparar-aviso">' + esc(ReviewData.avisoEstimativa) + "</p>"
+    : "";
   return '<div class="comparar">' + lojas.map(l => {
-    const tem = l.preco != null && isFinite(Number(l.preco));
-    let precoHTML = "";
-    if (tem) {
-      const n = Number(l.preco);
-      precoHTML = '<small class="comparar-preco">' + fmt(n) + (unico && n === melhor ? '<span class="comparar-best">Lowest</span>' : "") + "</small>";
-    }
+    const n = Number(l.preco);
+    const precoHTML = '<small class="comparar-preco">' + fmt(n) +
+      (l.real ? "" : '<span class="comparar-est">Estimated</span>') + "</small>";
     /* Sem link: o card da loja nao redireciona para o retailer. */
     return '<div class="comparar-loja">' +
       (img ? '<img class="comparar-thumb" src="' + img + '" alt="" loading="lazy"/>' : "") +
-      '<span class="comparar-loja-nome">' + esc(l.nome) + precoHTML + '<small class="comparar-cta">Price reference</small></span></div>';
-  }).join("") + "</div>";
+      '<span class="comparar-loja-nome">' + esc(l.nome) + precoHTML +
+      '<small class="comparar-cta">' + (l.real ? "Price checked" : "Price reference") + "</small></span></div>";
+  }).join("") + "</div>" + aviso;
 }
 
 const SCHEMA_DISP = {
@@ -487,10 +483,10 @@ function pagProduto(p, contexto) {
     '<span class="sep">›</span><span>' + esc(p.marca) + " Review</span></nav>" +
 
         /* ---------- Comparacao de precos: topo da pagina, acima do hero ----------
-           So sai quando o produto tem loja com preco real no admin. O id deixa
-           o renderComparar() do js/app.js reescrever o bloco com o dado vivo. */
-        (comparar ? '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Compare prices at other stores</h2>' +
-        '<div id="comparar-tabela">' + comparar + "</div></section>" : "") +
+           Sai em todos os produtos. O id deixa o renderComparar() do js/app.js
+           reescrever o bloco com o dado vivo. */
+        '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Other stores selling this model</h2>' +
+        '<div id="comparar-tabela">' + comparar + "</div></section>" +
 
 
     /* ---------- Review hero ---------- */

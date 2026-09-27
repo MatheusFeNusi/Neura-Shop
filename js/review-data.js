@@ -538,13 +538,24 @@
   }
 
   /* ---------- 8c. Comparacao com outras lojas ----------
-     So entra loja com preco REAL cadastrado no admin (produto.lojas_compare).
-     Antes, o que faltava era derivado do preco do produto (+80,99) e jogado
-     em Amazon/Walmart/AliExpress, o que colocava tres numeros inventados na
-     mesa como se fossem pesquisa de preco. Nao ha mais lista padrao de lojas
-     nem preco derivado: sem dado, a tabela nao aparece.
-     Tambem nao ha url de redirecionamento - o card da loja nao e link e a
-     saida continua sendo o preco do site, pelo link de afiliado do produto. */
+     A tabela existe em todos os produtos, mas o que ela mostra e uma
+     ESTIMATIVA, nunca o preco que o retailer announce. Lojas: nome e uma
+     margem fixa acima do preco do site, diferente por loja, para os tres
+     valores nao cairem no mesmo numero. Offset fixo (e nao multiplicador)
+     porque o catalogo vai de $200 a $1.200 - um fator gerava $7.115 do lado
+     de um produto de $656.
+
+     Preco real cadastrado no admin (produto.lojas_compare) tem prioridade
+     sobre a estimativa. O aviso de estimativa vai no bloco, porque o titulo
+     da secao nao pode dizer que comparamos preco de loja que nao medimos.
+     Sem url de redirecionamento: o card da loja nao e link. */
+  var LOJAS_COMPARE = [
+    { nome: "Amazon", chave: "amazon", acima: 95 },
+    { nome: "Walmart", chave: "walmart", acima: 80 },
+    { nome: "AliExpress", chave: "aliexpress", acima: 65 }
+  ];
+  var AVISO_ESTIMATIVA = "Prices marked Estimated are reference figures, not retailer quotes - we could not verify a live price at that store.";
+
   function hashEstavel(s) {
     var h = 0;
     var t = String(s == null ? "" : s);
@@ -569,17 +580,30 @@
     return w.join(" ").slice(0, 60);
   }
 
-  /* Lojas da comparacao: somente as cadastradas no admin que trazem preco
-     numerico. Devolve [] quando o produto nao tem dado de loja nenhum, e quem
-     chama usa isso para nao renderizar a secao. */
+  /* Preco estimado de uma loja: preco do site + margem da loja. O preco do
+     site continua sendo o menor da tabela, que e o argumento da pagina. */
+  function precoEstimado(p, acima) {
+    var base = Number(p && p.preco != null ? p.preco : p && p.preco_anterior);
+    if (!isFinite(base) || base <= 0) return null;
+    return Math.round((base + acima) * 100) / 100;
+  }
+
+  /* Lojas da comparacao. Preco real do admin quando existir; senao a estimativa
+     da loja. `real` diz qual dos dois o numero e, para o bloco poder avisar. */
   function lojasCompare(p) {
-    return ((p && p.lojas_compare) || [])
-      .filter(function (l) {
-        return l && l.nome && l.preco != null && isFinite(Number(l.preco)) && Number(l.preco) > 0;
-      })
-      .map(function (l) {
-        return { nome: l.nome, preco: Number(l.preco) };
-      });
+    var doAdmin = {};
+    ((p && p.lojas_compare) || []).forEach(function (l) {
+      if (l && l.nome) doAdmin[String(l.nome).toLowerCase().replace(/[^a-z]/g, "")] = l;
+    });
+    return LOJAS_COMPARE.map(function (l) {
+      var cad = doAdmin[l.chave];
+      var temReal = cad && cad.preco != null && isFinite(Number(cad.preco)) && Number(cad.preco) > 0;
+      return {
+        nome: l.nome,
+        preco: temReal ? Number(cad.preco) : precoEstimado(p, l.acima),
+        real: !!temReal
+      };
+    }).filter(function (l) { return l.preco != null; });
   }
 
   /* ---------- 9. FAQ curado ----------
@@ -1054,6 +1078,7 @@
     videoRotulo: videoRotulo,
     lojasCompare: lojasCompare,
     chaveBusca: chaveBusca,
+    avisoEstimativa: AVISO_ESTIMATIVA,
     faq: faq,
     specsVisiveis: specsVisiveis,
     paraQuem: paraQuem,
