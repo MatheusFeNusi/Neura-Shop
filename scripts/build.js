@@ -12,6 +12,7 @@
 const fs = require("fs");
 const path = require("path");
 const ReviewData = require("../js/review-data.js");
+const Clusters = require("../js/clusters.js");
 
 const ROOT = path.join(__dirname, "..");
 const OUT = ROOT;
@@ -19,6 +20,7 @@ const OUT = ROOT;
 const SITE_URL = process.env.SITE_URL || "https://neura-shop66.vercel.app";
 const SITE_NAME = "WattWheel";
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
+const BUILD_YEAR = new Date().getUTCFullYear();
 const BUILD_MONTH = new Date().toLocaleString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 
 /* ---------- Supabase config (read from js/config.js) ---------- */
@@ -544,6 +546,7 @@ function pagProduto(p, contexto) {
     '<div class="reviews-lista">' + reviewsHTML + "</div></div></section>" +
     ReviewData.htmlCtaCupom(p, { esgotado: esgotado }) +
     '<div id="alt-slot">' + ReviewData.htmlAlternativas(p, contexto.produtos, { urlOf: urlProduto }) + "</div>" +
+    clustersDoProdutoHTML(p, contexto.produtos) +
     '<section class="detail-sec"><h2><span class="bar"></span> Compare similar products</h2>' + simCards + "</section>" +
     '<section class="detail-sec"><h2><span class="bar"></span> Frequently asked questions about the coupon and shipping</h2><div id="faq-lista">' + faqHTML + "</div></section>" +
     (relCards ? '<section class="section"><div class="container" style="padding-inline:0"><div class="section-head"><h2>You may also like</h2><a class="link-all" href="/catalog.html">View all ›</a></div>' + relCards + "</div></section>" : "") +
@@ -554,21 +557,192 @@ function pagProduto(p, contexto) {
   return html;
 }
 
+/* ---------- Paginas de cluster (keyword -> pagina -> produtos -> review) ----------
+   O texto (titulo, meta, abertura) sai dos numeros do catalogo: se o
+   inventario mudar, o texto muda junto. */
+
+/* A review volta para as listas: e o caminho que faz a pagina de cluster
+   existir para o Google sem depender so do sitemap. */
+function clustersDoProdutoHTML(p, todos) {
+  const meus = Clusters.clustersDoProduto(p, todos).filter(x => x.n >= Clusters.MIN_PRODUTOS);
+  if (!meus.length) return "";
+  return '<section class="detail-sec" id="pg-clusters"><h2><span class="bar"></span> Compare it against</h2>' +
+    '<p class="pq-nota" style="margin-top:0">This model is on ' + meus.length +
+    (meus.length === 1 ? " list" : " lists") + " of ours, next to the alternatives in each one.</p>" +
+    '<ul class="link-list">' + meus.map(x =>
+      '<li><a href="' + Clusters.url(x.c) + '">' + esc(x.c.curto) + "</a><span>" + x.n + " products</span></li>"
+    ).join("") + "</ul></section>";
+}
+function schemaCluster(c, ps, todos, canonicalPage) {
+  return jsonLd({
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: c.h1,
+    description: Clusters.meta(c, todos),
+    url: SITE_URL + canonicalPage,
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: ps.length,
+      itemListElement: ps.map((p, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: SITE_URL + urlProduto(p),
+        name: p.nome
+      }))
+    }
+  }) + jsonLd({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL + "/" },
+      { "@type": "ListItem", position: 2, name: "Best lists", item: SITE_URL + "/" },
+      { "@type": "ListItem", position: 3, name: c.curto, item: SITE_URL + canonicalPage }
+    ]
+  });
+}
+
+/* Os tres destaques viram cartoes: e a resposta curta para "qual eu pego". */
+function destaquesHTML(c, todos) {
+  const ds = Clusters.destaques(c, todos);
+  if (!ds.length) return "";
+  return '<section class="detail-sec" id="destaques"><h2><span class="bar"></span> Where to start</h2>' +
+    '<div class="pq-cols">' + ds.map(d =>
+      '<div class="pq-col pq-bom"><h3>' + esc(d.rotulo) + "</h3>" +
+      '<a class="pq-pick" href="' + urlProduto(d.p) + '">' + esc(ReviewData.nomeCurto(d.p)) + "</a>" +
+      '<p class="pq-pick-val">' + esc(d.txt) + "</p></div>"
+    ).join("") + "</div></section>";
+}
+
+/* O que esta lista NAO cobre: honesto e derivado dos dados, e o unico jeito de
+   uma pagina de cluster nao virar propaganda. */
+function ressalvasHTML(c, ps, todos) {
+  const r = Clusters.resumo(c, todos);
+  const linhas = [];
+  const semAltura = ps.filter(p => !ReviewData.fatos(p).carga).length;
+  const semAutonomia = ps.filter(p => !ReviewData.fatos(p).alcance).length;
+  if (c.familia === "deals") {
+    linhas.push("A markdown is not a guarantee: these are the prices our catalog shows today, and retailers change them without notice. Check the price on the store page before you buy.");
+  }
+  if (c.familia === "preco") {
+    linhas.push("Prices move. This page was built from prices published on " + BUILD_DATE + "; a model that crosses the line will move to the other list on the next update.");
+  }
+  if (c.familia === "uso") {
+    linhas.push("We list what the listing states. Your own weight, terrain and riding style decide whether that number works for you.");
+  }
+  linhas.push("Estimated range is calculated from battery size, not copied from a manufacturer claim. Real range depends on weight, speed, terrain and temperature.");
+  if (semAltura) linhas.push(semAltura + " of the " + ps.length + " listings do not publish a load limit at all.");
+  if (semAutonomia) linhas.push(semAutonomia + " of the " + ps.length + " listings do not publish enough battery data to estimate range.");
+  linhas.push("We have not test-ridden these models. Every figure here comes from the published specification and the current price.");
+  return '<section class="detail-sec" id="ressalvas"><h2><span class="bar"></span> What this list does not tell you</h2>' +
+    '<ul class="pq-list">' + linhas.map(l => "<li>" + esc(l) + "</li>").join("") + "</ul></section>";
+}
+
+function pagCluster(c, todos) {
+  const ps = Clusters.lista(c, todos);
+  const r = Clusters.resumo(c, todos);
+  const canonical = Clusters.url(c);
+  const titulo = c.h1 + " (" + BUILD_YEAR + ") | " + SITE_NAME;
+  const metaDesc = Clusters.meta(c, todos);
+  const table = ps.slice(0, Clusters.LIMITE_TABELA);
+  const resto = ps.length - table.length;
+  const cards = ps.map(cardHTML).join("");
+  const html =
+    HEAD_COMMON(titulo, metaDesc, canonical, "") +
+    '<body data-page="cluster">\n  <div id="app-header"></div>\n' +
+    '<main class="container review-page">' +
+    '<nav class="crumb"><a href="/">Home</a><span class="sep">›</span>' +
+    '<a href="/catalog.html">Best lists</a><span class="sep">›</span>' +
+    "<span>" + esc(c.curto) + "</span></nav>" +
+
+    '<header class="review-hero-head">' +
+    '  <div class="review-badge-tag">CURATED FROM OUR CATALOG</div>' +
+    '  <h1 class="review-page-title">' + esc(c.h1) + "</h1>" +
+    '  <p class="lead">' + esc(aberturaCluster(c, r)) + "</p>" +
+    '  <p class="review-author-meta"><span class="author-item"><strong>' + ps.length + " products</strong></span>" +
+    '<span class="sep">&bull;</span><span class="author-item"><strong>Prices checked</strong> ' + esc(BUILD_MONTH) + "</span>" +
+    (r.marcos > 1 ? '<span class="sep">&bull;</span><span class="author-item"><strong>' + r.marcos + " below list price</strong></span>" : "") +
+    "</p></header>" +
+
+    destaquesHTML(c, todos) +
+
+    '<section class="detail-sec" id="comparacao"><h2><span class="bar"></span> Detailed comparison</h2>' +
+    ReviewData.htmlComparativo(table, { urlOf: urlProduto }) +
+    (resto > 0 ? '<p class="pq-nota">Showing ' + table.length + " of " + ps.length + " products in the table. Every one of them is in the list below.</p>" : "") +
+    '<p class="pq-nota">Bold marks the best value in each column. Price: lowest wins. Everything else: highest wins.</p>' +
+    "</section>" +
+
+    '<section class="detail-sec" id="selecao"><h2><span class="bar"></span> The full list</h2>' +
+    '<div class="grid-cards">' + cards + "</div></section>" +
+
+    '<section class="detail-sec" id="como-escolhemos"><h2><span class="bar"></span> How this list was built</h2>' +
+    "<p>" + esc(c.criterio) + "</p>" +
+    "<p>Every product links to its own review, with the verdict, the specification table and the coupon step at the retailer. " +
+    "Scores and verdicts come from the published specification and the current price &mdash; we have not test-ridden these models.</p>" +
+    ReviewData.htmlMetodologia() +
+    "</section>" +
+
+    ressalvasHTML(c, ps, todos) +
+
+    '<section class="detail-sec" id="outras-listas"><h2><span class="bar"></span> Other lists</h2>' +
+    '<ul class="link-list">' + Clusters.DEFINICOES
+      .filter(o => o.slug !== c.slug && Clusters.lista(o, todos).length >= Clusters.MIN_PRODUTOS)
+      .map(o => '<li><a href="' + Clusters.url(o) + '">' + esc(o.curto) + "</a></li>").join("") +
+    "</ul></section>" +
+
+    schemaCluster(c, ps, todos, canonical) +
+    "</main>\n" +
+    FOOT;
+  return html;
+}
+
+/* Abertura com os numeros do catalogo: e o que o leitor ve antes da tabela. */
+function aberturaCluster(c, r) {
+  const faixa = r.min === r.max ? "currently priced at " + r.de : "currently priced from " + r.de + " to " + r.para;
+  const quem = c.slug.indexOf("scooter") >= 0 ? "e-scooters" : "e-bikes";
+  if (c.familia === "deals") {
+    return r.n + " " + quem + " " + faixa + ", biggest markdown first. Each one links to its own review, with the full specification and how to get the price at the retailer.";
+  }
+  if (c.familia === "preco") {
+    return r.n + " " + quem + " " + faixa + ", ordered by our review score. Side-by-side battery, motor, estimated range and load limit below, then the reasoning behind each verdict.";
+  }
+  return r.n + " " + quem + " " + faixa + " that meet one condition: " + c.criterioCurto + ". Side-by-side comparison below, plus what each listing does not tell you.";
+}
+
 function pagCategoria(slug, cat, produtos) {
   const publ = catPubl(slug);
   const canonical = "/" + publ + "/";
-  const title = "Best " + cat.nome + " — Prices, Ratings & Coupons | WattWheel";
+  const ehBike = /bike|biciclet/i.test(cat.nome || slug);
+  const quem = ehBike ? "e-bikes" : "e-scooters";
+  const comPreco = produtos.filter(p => Number(p.preco) > 0);
+  const vs = comPreco.map(p => Number(p.preco)).sort((a, b) => a - b);
+  const min = vs[0], max = vs[vs.length - 1], med = vs[Math.floor(vs.length / 2)];
+  const comWas = produtos.filter(p => pctDesc(p.preco, p.preco_anterior) != null).length;
+  const titulo = "Best " + cat.nome + " — Prices, Ratings & Coupons | WattWheel";
   const metadata = cat.descricao || "Electric " + (cat.nome || "") + " compared across partner stores — check prices, ratings and coupons, then buy directly at the retailer.";
   const cards = produtos.map(cardHTML).join("");
+  const tabela = ReviewData.htmlComparativo(comPreco.slice(0, Clusters.LIMITE_TABELA), { urlOf: urlProduto });
+  const listas = Clusters.DEFINICOES
+    .filter(o => Clusters.lista(o, produtos).length >= Clusters.MIN_PRODUTOS && o.slug.indexOf(ehBike ? "bike" : "scooter") >= 0);
   const html =
-    HEAD_COMMON(title, metadata, canonical, "") +
+    HEAD_COMMON(titulo, metadata, canonical, "") +
     '<body data-page="cat-static">\n  <div id="app-header"></div>\n' +
     '<main class="container">' +
     '<nav class="crumb"><a href="/">Home</a><span class="sep">›</span><span>' + esc(cat.nome) + "</span></nav>" +
     '<div class="page-head"><p class="kicker">' + esc(cat.nome) + "</p>" +
     '<h1>' + esc(cat.nome) + "</h1>" +
-    '<p>' + esc(metadata) + "</p>" +
-    '<p class="count" style="margin-top:10px">' + produtos.length + " product" + (produtos.length === 1 ? "" : "s") + "</p></div>" +
+    "<p>" + esc(metadata) + "</p>" +
+    '<p class="count" style="margin-top:10px">' + produtos.length + " products · " +
+    "from " + fmt(min) + " to " + fmt(max) + " (median " + fmt(med) + ")" +
+    (comWas ? " · " + comWas + " below list price" : "") + " · prices checked " + esc(BUILD_MONTH) + "</p></div>" +
+
+    (listas.length ? '<section class="detail-sec" id="sub-listas"><h2><span class="bar"></span> Narrow it down</h2>' +
+      '<ul class="link-list">' + listas.map(o =>
+        '<li><a href="' + Clusters.url(o) + '">' + esc(o.curto) + "</a><span>" + Clusters.lista(o, produtos).length + " products</span></li>"
+      ).join("") + "</ul></section>" : "") +
+
+    (tabela ? '<section class="detail-sec" id="comparacao"><h2><span class="bar"></span> Side by side</h2>' + tabela +
+      '<p class="pq-nota">Bold marks the best value in each column. Price: lowest wins. Everything else: highest wins.</p></section>' : "") +
+
     '<div class="grid-cards">' + cards + "</div>" +
     "</main>" +
     '<div id="app-footer"></div>' +
@@ -579,7 +753,7 @@ function pagCategoria(slug, cat, produtos) {
   return html;
 }
 
-function sitemapXML(produtos, categorias) {
+function sitemapXML(produtos, categorias, clusters) {
   const urls = [];
   urls.push({ loc: SITE_URL + "/", prio: 1.0, freq: "weekly" });
   urls.push({ loc: SITE_URL + "/catalog.html", prio: 0.8, freq: "daily" });
@@ -587,6 +761,9 @@ function sitemapXML(produtos, categorias) {
   categorias.forEach(c => {
     if (c.produtos.length) urls.push({ loc: SITE_URL + "/" + catPubl(c.slug) + "/", prio: 0.7, freq: "daily" });
   });
+  /* Os clusters ficam acima das categorias: sao a entrada das buscas de
+     intencao ("best ...", "deals") e cada um leva a varias reviews. */
+  (clusters || []).forEach(c => urls.push({ loc: SITE_URL + "/" + c.slug + "/", prio: 0.8, freq: "daily" }));
   produtos.forEach(p => urls.push({ loc: SITE_URL + urlProduto(p), prio: 0.6, freq: "weekly" }));
   const hoje = new Date().toISOString().slice(0, 10);
   const body = urls.map(u =>
@@ -603,7 +780,10 @@ function robotsTxt() {
 const ROOT_COPY_EXCL = new Set([
   ".git", "node_modules", "public", "scripts", "tools", "produtos csv",
   "products", "electric-scooters", "electric-bikes", ".gitignore",
-  "sitemap.xml", "robots.txt"
+  "sitemap.xml", "robots.txt",
+  /* As pastas de cluster sao geradas aqui: nao podem ser copiadas para
+     public/ pelo espelho de assets (o public e reescrito do zero). */
+  ...Clusters.DEFINICOES.map(c => c.slug)
 ]);
 function escreverArquivo(rel, conteudo) {
   [OUT, path.join(OUT, "public")].forEach(function (base) {
@@ -637,6 +817,22 @@ function podarPaginasProdutos(produtos) {
     if (!fs.existsSync(path.join(dir, slug, "index.html"))) return;
     fs.rmSync(path.join(dir, slug), { recursive: true, force: true });
     removidos.push(slug);
+  });
+  return removidos;
+}
+
+/* Mesmo cuidado das paginas de produto: se um cluster cai abaixo do minimo (ou
+   a regra muda), a pasta antiga fica orfa no repo e no deploy. */
+function podarPaginasCluster(slugsAtuais) {
+  const atuais = new Set(slugsAtuais);
+  const removidos = [];
+  Clusters.DEFINICOES.forEach(c => {
+    if (atuais.has(c.slug)) return;
+    const dir = path.join(OUT, c.slug);
+    if (fs.existsSync(path.join(dir, "index.html"))) {
+      fs.rmSync(dir, { recursive: true, force: true });
+      removidos.push(c.slug);
+    }
   });
   return removidos;
 }
@@ -701,7 +897,19 @@ async function main() {
   });
   console.log("[build] páginas de categoria geradas:", nc);
 
-  escreverArquivo("sitemap.xml", sitemapXML(produtos, catArray));
+  /* Clusters: so entra o que passa do minimo de produtos. O que fica de fora
+     aparece no log com o numero -- assim da para ver a regra apertando sem
+     precisar abrir o codigo. */
+  const cl = Clusters.publicaveis(produtos);
+  cl.fora.forEach(x => console.log("[build] cluster ignorado (" + x.n + " < " + Clusters.MIN_PRODUTOS + " produtos): /" + x.cluster.slug + "/"));
+  cl.ok.forEach(x => {
+    escreverArquivo(x.cluster.slug + "/index.html", pagCluster(x.cluster, produtos));
+  });
+  console.log("[build] páginas de cluster geradas:", cl.ok.length, "->", cl.ok.map(x => "/" + x.cluster.slug + "/").join(" "));
+  const podsProntos = podarPaginasCluster(cl.ok.map(x => x.cluster.slug));
+  if (podsProntos.length) console.log("[build] clusters orfãos removidos:", podsProntos.join(", "));
+
+  escreverArquivo("sitemap.xml", sitemapXML(produtos, catArray, cl.ok.map(x => x.cluster)));
   escreverArquivo("robots.txt", robotsTxt());
   console.log("[build] sitemap.xml + robots.txt atualizados");
   console.log("[build] saída: raiz (preview local) + public/ (deploy Vercel)");

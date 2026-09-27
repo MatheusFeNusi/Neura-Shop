@@ -1281,3 +1281,28 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
 /* ---------- Hero: linha de specs ---------- */
 .review-specline { font-size: 13.5px; color: var(--muted); margin: 10px 0 0; font-weight: 600; letter-spacing: 0.2px; }
 .review-specline span { color: var(--ink); }
+
+/* ---------- Tabela com os produtos nas linhas (paginas de cluster/categoria) ---------- */
+.cmp-table { font-size: 13px; }
+.cmp-table thead th { position: sticky; top: 0; z-index: 1; }
+.cmp-table th.cmp-prod { width: auto; min-width: 190px; font-weight: 700; color: var(--ink); }
+.cmp-table th.cmp-prod a { color: var(--navy); text-decoration: none; }
+.cmp-table th.cmp-prod a:hover { text-decoration: underline; }
+.cmp-marca { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+.cmp-table td { white-space: nowrap; }
+.cmp-table td.cmp-best { font-weight: 800; color: var(--buy-dark); background: #ecfdf5; }
+
+/* ---------- Listas de links (clusters relacionados, "narrow it down") ---------- */
+.link-list { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.link-list li { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius-s); padding: 11px 14px; }
+.link-list a { font-size: 13.5px; font-weight: 700; color: var(--navy); text-decoration: none; }
+.link-list a:hover { text-decoration: underline; }
+.link-list span { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+/* ---------- Destaques da pagina de cluster ---------- */
+.pq-pick { display: block; font-size: 14px; font-weight: 800; color: var(--navy); text-decoration: none; line-height: 1.35; }
+.pq-pick:hover { text-decoration: underline; }
+.pq-pick-val { font-size: 13px; color: var(--ink); margin: 6px 0 0; font-weight: 600; }
+
+/* ---------- Abertura da pagina de cluster ---------- */
+.lead { font-size: 15px; line-height: 1.6; color: var(--ink); margin: 12px 0 0; max-width: 74ch; }

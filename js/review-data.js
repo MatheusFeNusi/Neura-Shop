@@ -77,6 +77,11 @@
 
     var watt = toNum(primeiro(/【[^】]*?(\d{2,4})\s*W[^】]*?[Mm]otor/, desc)) ||
       toNum(primeiro(/(\d{3,4})\s*W(?!\s*(?:H|Hz))/, full));
+    /* O anuncio costuma citar a potencia nominal e, entre parenteses, a de
+       pico ("250W(Peak 1500W)"). Comparar so o nominal faz um 250W ganhar
+       "mais potente" que um 1000W de verdade. */
+    var pico = toNum(primeiro(/peak[^)]{0,12}?(\d{3,4})\s*W/i, full)) ||
+      toNum(primeiro(/(\d{3,4})\s*W[^)]{0,10}?peak/i, full));
 
     var isBike = p.categoria === "bicicletas-eletricas" || /bike|bicycle|ebike/i.test(nome);
 
@@ -115,7 +120,7 @@
     return {
       produto: p,
       volt: volt, ah: ah, wh: wh,
-      watt: watt, vel: vel, pneu: pneu, carga: carga, alcance: alcance,
+      watt: watt, pico: pico, vel: vel, pneu: pneu, carga: carga, alcance: alcance,
       temDisc: temDisc, temSusp: temSusp, removivel: removivel, isBike: isBike,
       nota: nota, qtd: qtd == null ? 0 : qtd,
       preco: toNum(p.preco), lista: toNum(p.preco_anterior), desconto: desconto,
@@ -916,6 +921,62 @@
       "</section>";
   }
 
+  /* Tabela com os PRODUTOS nas linhas (o formato que aguenta uma lista de 20):
+     uma coluna por spec, e o melhor valor de cada coluna marcado. "Preco" e o
+     unico onde menor vence. */
+  function htmlComparativo(lista, ctx) {
+    ctx = ctx || {};
+    var urlOf = typeof ctx.urlOf === "function" ? ctx.urlOf : function () { return "#"; };
+    var ps = (lista || []).filter(function (p) { return p && p.nome; });
+    if (ps.length < 2) return "";
+    var cols = [
+      { rot: "Price", val: function (f) { return f.preco > 0 ? fmt(f.preco) : "—"; }, num: function (f) { return f.preco; }, menor: true },
+      { rot: "Was", val: function (f) { return f.desconto != null ? fmt(f.lista) : "—"; }, num: function () { return null; } },
+      { rot: "Discount", val: function (f) { return f.desconto != null ? "-" + f.desconto + "%" : "—"; }, num: function (f) { return f.desconto == null ? null : f.desconto; } },
+      { rot: "Battery", val: function (f) { return f.wh ? f.volt + "V " + f.ah + "Ah (" + f.wh + " Wh)" : "—"; }, num: function (f) { return f.wh; } },
+      { rot: "Motor", val: motorTxt, num: function (f) { return Math.max(f.watt || 0, f.pico || 0); } },
+      { rot: "Est. range", val: function (f) { return f.alcance ? "~" + f.alcance + " km" : "—"; }, num: function (f) { return f.alcance; } },
+      { rot: "Max load", val: function (f) { return f.carga ? f.carga + " kg" : "—"; }, num: function (f) { return f.carga; } }
+    ];
+    var facts = ps.map(fatos);
+    /* Melhor de cada coluna: menor quando menor e melhor (preco), maior nos
+       demais. Empate nao marca ninguem -- dois "iguais" nao tem um vencedor. */
+    var melhor = cols.map(function (c) {
+      var vals = facts.map(c.num).filter(function (v) { return v != null && isFinite(v) && v > 0; });
+      if (vals.length < 2) return null;
+      var alvo = c.menor ? Math.min.apply(null, vals) : Math.max.apply(null, vals);
+      return vals.filter(function (v) { return v === alvo; }).length === 1 ? alvo : null;
+    });
+
+    var thead = "<thead><tr><th scope=\"col\">Product</th>" + cols.map(function (c) {
+      return '<th scope="col">' + esc(c.rot) + "</th>";
+    }).join("") + "</tr></thead>";
+
+    var tbody = ps.map(function (p, i) {
+      var f = facts[i];
+      return "<tr>" +
+        '<th scope="row" class="cmp-prod"><a href="' + esc(urlOf(p)) + '">' + esc(nomeCurto(p)) + "</a>" +
+        '<span class="cmp-marca">' + esc(p.marca || "") + "</span></th>" +
+        cols.map(function (c, j) {
+          var v = c.num(f);
+          var lead = melhor[j] != null && v === melhor[j];
+          return '<td class="' + (lead ? "cmp-best" : "") + '">' + esc(c.val(f)) + "</td>";
+        }).join("") +
+        "</tr>";
+    }).join("");
+
+    return '<div class="alt-scroll"><table class="alt-table cmp-table">' + thead + "<tbody>" + tbody + "</tbody></table></div>";
+  }
+
+  /* Potencia com o pico quando o anuncio declara os dois: esconder o pico faz
+     um 250W(Peak 1500W) parecer fraco ao lado de um 1000W de verdade. */
+  function motorTxt(f) {
+    if (f.pico && f.watt && f.pico > f.watt) return f.watt + "W (" + f.pico + "W peak)";
+    if (f.watt) return f.watt + "W";
+    if (f.pico) return f.pico + "W peak";
+    return "—";
+  }
+
   /* Linha de specs do hero: o que o leitor procura antes de rolar a pagina. */
   function specline(p) {
     var f = fatos(p);
@@ -990,6 +1051,8 @@
     alternativas: alternativas,
     htmlAlternativas: htmlAlternativas,
     rotuloAlt: rotuloAlt,
+    motorTxt: motorTxt,
+    htmlComparativo: htmlComparativo,
     specline: specline,
     htmlDescricao: htmlDescricao,
     htmlCtaCupom: htmlCtaCupom,
