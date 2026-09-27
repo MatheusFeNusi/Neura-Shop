@@ -1,5 +1,5 @@
 /* ============================================================
-   WATTWHEEL — SSG build (prerender all product/category pages)
+   E-RIDE DEALS — SSG build (prerender all product/category pages)
    - Fetches products from Supabase (fallback: products.json)
    - Emits products/<slug>/index.html for every product
    - Emits <category>/index.html pages
@@ -18,7 +18,7 @@ const ROOT = path.join(__dirname, "..");
 const OUT = ROOT;
 
 const SITE_URL = process.env.SITE_URL || "https://neura-shop66.vercel.app";
-const SITE_NAME = "WattWheel";
+const SITE_NAME = "E-Ride Deals";
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
 const BUILD_YEAR = new Date().getUTCFullYear();
 const BUILD_MONTH = new Date().toLocaleString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
@@ -31,6 +31,23 @@ function supaConfig() {
     const a = (src.match(/anon:\s*"([^"]+)"/) || [])[1];
     return { url: u, anon: a };
   } catch (e) { return { url: null, anon: null }; }
+}
+
+/* O dado do produto vem do admin (coluna dados, JSONB) e alguns textos -
+   principalmente o FAQ - ficaram gravados com o nome antigo do site. O build
+   so consegue ler o Supabase com a anon key, entao em vez de reescrever 38
+   linhas no banco ele troca o nome na copia gerada. Tocar no texto do produto
+   no admin nao desfaz isso. */
+const MARCA_LEGADA = "WattWheel";
+function renomearMarcaLegada(valor) {
+  if (typeof valor === "string") return valor.split(MARCA_LEGADA).join(SITE_NAME);
+  if (Array.isArray(valor)) return valor.map(renomearMarcaLegada);
+  if (valor && typeof valor === "object") {
+    const out = {};
+    for (const k of Object.keys(valor)) out[k] = renomearMarcaLegada(valor[k]);
+    return out;
+  }
+  return valor;
 }
 
 /* Ordem de exibicao: segue products.json (mantem slugs/URLs) e acrescenta
@@ -53,10 +70,10 @@ async function carregarProdutos() {
     produtos: local.produtos || []
   };
   const cfg = supaConfig();
-  if (process.env.SEM_SUPABASE === "1") return { origem: "json", store: base };
+  if (process.env.SEM_SUPABASE === "1") return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: renomearMarcaLegada(base.produtos) } };
   if (!cfg.url || !cfg.anon) {
     console.warn("[build] js/config.js sem url/anon do Supabase -> usando products.json");
-    return { origem: "json", store: base };
+    return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: renomearMarcaLegada(base.produtos) } };
   }
   try {
     const rows = await fetchPaginas(cfg);
@@ -71,7 +88,7 @@ async function carregarProdutos() {
       todos.push(d);
     });
     if (!todos.length) throw new Error("admin sem produtos");
-    const produtos = ordenarComoLocal(todos, base.produtos);
+    const produtos = ordenarComoLocal(renomearMarcaLegada(todos), base.produtos);
     const store = { marca: base.marca, categorias: base.categorias, produtos };
     fs.writeFileSync(arquivo, JSON.stringify(store, null, 2), "utf8");
     console.log("[build] products.json sincronizado com o admin (" + produtos.length + " produtos)");
@@ -523,7 +540,7 @@ function pagProduto(p, contexto) {
     '<div class="trust-row"><div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span><strong>Secure checkout</strong>Handled entirely by the partner store.</span></div>' +
     '<div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="15" height="11" rx="2"/><path d="M16 9h3l3 3v5h-6"/><circle cx="6.5" cy="18.5" r="1.5"/><circle cx="17.5" cy="18.5" r="1.5"/></svg><span><strong>Shipping &amp; returns</strong>Terms set by the partner at checkout.</span></div>' +
     '<div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6z"/><path d="m9 12 2 2 4-4"/></svg><span><strong>Price comparison</strong>No extra cost to you. Ever.</span></div></div>' +
-    '<div class="card-warn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><strong>Affiliate disclosure.</strong> WattWheel is an independent product discovery website. We don\u2019t sell or stock products — this item is sold by the retailer shown, and your purchase is completed on the retailer\u2019s site. As an affiliate, we may earn a commission on qualifying purchases, at no additional cost to you. <a href="/about.html#disclosure">Read our full disclosure</a>.</span></div>' +
+    '<div class="card-warn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><strong>Affiliate disclosure.</strong> E-Ride Deals is an independent product discovery website. We don\u2019t sell or stock products — this item is sold by the retailer shown, and your purchase is completed on the retailer\u2019s site. As an affiliate, we may earn a commission on qualifying purchases, at no additional cost to you. <a href="/about.html#disclosure">Read our full disclosure</a>.</span></div>' +
     "</aside>" +
     "</div>" +
 
@@ -719,7 +736,7 @@ function pagCategoria(slug, cat, produtos) {
   const vs = comPreco.map(p => Number(p.preco)).sort((a, b) => a - b);
   const min = vs[0], max = vs[vs.length - 1], med = vs[Math.floor(vs.length / 2)];
   const comWas = produtos.filter(p => pctDesc(p.preco, p.preco_anterior) != null).length;
-  const titulo = "Best " + cat.nome + " — Prices, Ratings & Coupons | WattWheel";
+  const titulo = "Best " + cat.nome + " — Prices, Ratings & Coupons | E-Ride Deals";
   const metadata = cat.descricao || "Electric " + (cat.nome || "") + " compared across partner stores — check prices, ratings and coupons, then buy directly at the retailer.";
   const cards = produtos.map(cardHTML).join("");
   const tabela = ReviewData.htmlComparativo(comPreco.slice(0, Clusters.LIMITE_TABELA), { urlOf: urlProduto });

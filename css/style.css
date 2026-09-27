@@ -1,5 +1,5 @@
 /* ============================================================
-   WATTWHEEL — editorial e-commerce / premium utility
+   E-RIDE DEALS — editorial e-commerce / premium utility
    Off-white canvas, single accent, thin borders, dense grids,
    compact type, strong prices, minimal decoration.
    ============================================================ */
@@ -78,10 +78,7 @@ button { font-family: inherit; }
 .hdr-top { display: flex; align-items: center; gap: 22px; padding: 10px 0; }
 
 .brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.brand-logo { height: 52px; width: auto; display: block; object-fit: contain; }
-.brand-name { font-size: 23px; font-weight: 700; letter-spacing: -0.4px; color: #fff; }
-.brand-name em { font-style: normal; }
-.brand-tag { display: block; font-size: 11px; font-weight: 500; color: rgba(255, 255, 255, 0.6); margin-top: 0; }
+.brand-logo { height: 60px; width: auto; display: block; object-fit: contain; }
 
 .search-box { position: relative; flex: 1; max-width: 640px; }
 .search-box input {
@@ -639,9 +636,7 @@ table.compare td.spec-k { color: var(--muted); font-weight: 600; white-space: no
 
 @media (max-width: 880px) {
   .hdr-top { flex-wrap: wrap; gap: 12px; padding: 10px 0; }
-  .brand-logo { height: 34px; }
-  .brand-name { font-size: 19px; }
-  .brand-tag { font-size: 10px; }
+  .brand-logo { height: 42px; }
   .search-box { order: 3; flex-basis: 100%; max-width: none; }
   .search-box input { padding: 9px 40px 9px 13px; }
   .pg-layout { grid-template-columns: 1fr; gap: 20px; }

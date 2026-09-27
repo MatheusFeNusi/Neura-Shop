@@ -141,7 +141,7 @@ function generateLojasCompare(p) {
   ];
 }
 
-const COUPON_LIST = ["BG742ae7", "NEURA10", "WATTWHEEL15", "SAVE50", "OFFER20"];
+const COUPON_LIST = ["BG742ae7", "NEURA10", "E-RIDE DEALS15", "SAVE50", "OFFER20"];
 
 function enrichSingleProduct(p, idx) {
   p.descricao = generateRichDescription(p);

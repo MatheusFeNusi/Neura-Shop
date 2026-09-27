@@ -303,7 +303,7 @@
     if (f.vel != null && f.vel < 30) {
       out.push("Every " + f.tipo + " in this round-up is capped at " + f.vel + " km/h — fine in town, slow on open roads.");
     }
-    out.push("Range figures are WattWheel estimates from the battery capacity, not a measured ride test.");
+    out.push("Range figures are E-Ride Deals estimates from the battery capacity, not a measured ride test.");
     out.push("Weight isn't published by the retailer, so check it fits your storage or stairwell before buying.");
     return out;
   }
@@ -330,7 +330,7 @@
   var ICON_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
 
   /* A nota do retailer e opcional: o admin pode deixar vazio, e nesse caso o
-     site nao mostra nem estrelas nem "0.0" (so a nota editorial do WattWheel). */
+     site nao mostra nem estrelas nem "0.0" (so a nota editorial do E-Ride Deals). */
   function temNota(p) {
     var r = Number(p && p.rating);
     return isFinite(r) && r > 0;
@@ -343,7 +343,7 @@
       '<div class="score-box-review">' +
       '<span class="score-num alt">' + n.score.toFixed(1) + '<small>/10</small></span>' +
       '<div class="score-stars-wrap">' +
-      '<span class="score-label">WattWheel review score</span>' +
+      '<span class="score-label">E-Ride Deals review score</span>' +
       '<span class="score-sub">' + esc(veredito(n).rotulo) + "</span>" +
       "</div></div>";
     if (!temNota(p)) return '<div class="score-box-main">' + review + "</div>";
@@ -428,7 +428,7 @@
     var pr = premio(p, todos);
     if (!pr) return "";
     return '<div class="review-award award-' + pr.classe + '">' +
-      '<span class="award-kicker">WattWheel</span>' +
+      '<span class="award-kicker">E-Ride Deals</span>' +
       '<span class="award-label">' + esc(pr.rotulo) + "</span></div>";
   }
 
@@ -619,7 +619,7 @@
 
   /* ---------- 9. FAQ curado ----------
      O aviso de afiliado canonico vive no card-warn e no rodape. O FAQ nao
-     repete "WattWheel nao vende" nem "ganhamos comissao" — sao as mesmas
+     repete "E-Ride Deals nao vende" nem "ganhamos comissao" — sao as mesmas
      frases de novo. Aqui ficam so as 3 perguntas que o leitor ainda nao tem. */
   var FAQ = [
     { p: "Where do the price and rating come from?",
