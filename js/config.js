@@ -11,5 +11,5 @@ window.SUPA_CONFIG = {
    pelo Google Ads (Misrepresentation). O build FALHA enquanto este valor
    for o placeholder ou terminar em ".example". */
 window.SITE_CONTACT = {
-  CONTACT_EMAIL: "TROCAR_PELO_EMAIL_REAL"
+  CONTACT_EMAIL: "matheusferreiragu2@gmail.com"
 };
