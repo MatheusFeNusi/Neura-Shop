@@ -17,8 +17,36 @@ const Clusters = require("../js/clusters.js");
 const ROOT = path.join(__dirname, "..");
 const OUT = ROOT;
 
-const SITE_URL = process.env.SITE_URL || "https://neura-shop66.vercel.app";
-const SITE_NAME = "E-Ride Deals";
+/* ---------- Config central do site ----------
+   Para migrar de dominio/marca: defina SITE_URL e BRAND_NAME como variaveis de
+   ambiente no build (Vercel -> Project Settings -> Environment Variables) ou
+   edite os defaults abaixo. Nenhum outro arquivo precisa mudar. */
+const SITE_URL = (process.env.SITE_URL || "https://neura-shop66.vercel.app").replace(/\/+$/, "");
+const BRAND_NAME = process.env.BRAND_NAME || "E-Ride Deals";
+const SITE_NAME = BRAND_NAME;
+
+/* E-mail de contato real, exigido pelas politicas do Google Ads
+   (Misrepresentation: o site precisa de um canal de contato valido).
+   Configure em js/config.js (CONTACT_EMAIL) ou na env CONTACT_EMAIL.
+   O build FALHA enquanto o valor for o placeholder ou um dominio .example. */
+function contactEmail() {
+  if (process.env.CONTACT_EMAIL) return process.env.CONTACT_EMAIL;
+  try {
+    const src = fs.readFileSync(path.join(ROOT, "js", "config.js"), "utf8");
+    const m = src.match(/CONTACT_EMAIL:\s*"([^"]+)"/);
+    if (m) return m[1];
+  } catch (e) { /* cai no erro abaixo */ }
+  return "";
+}
+function validarContato() {
+  const email = contactEmail();
+  if (!email || email === "TROCAR_PELO_EMAIL_REAL" || /\.example$/i.test(email)) {
+    console.error('[build] ERRO: CONTACT_EMAIL nao configurado. Defina um e-mail real em js/config.js (CONTACT_EMAIL) ou na variavel de ambiente CONTACT_EMAIL. Valor atual: "' + (email || "(vazio)") + '"');
+    process.exit(1);
+  }
+  return email;
+}
+const CONTACT_EMAIL = validarContato();
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
 const BUILD_YEAR = new Date().getUTCFullYear();
 const BUILD_MONTH = new Date().toLocaleString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
@@ -203,25 +231,20 @@ function imgProd(p) {
   return "";
 }
 function compararHTML(p, fotos) {
-  const lojas = ReviewData.lojasCompare(p);
+  /* Apenas lojas com preco real/verificado cadastrado no admin
+     (ReviewData.lojasCompare ja descarta qualquer estimativa). Sem nenhuma,
+     a secao nao e emitida. */
+  const lojas = ReviewData.lojasCompare(p).filter(l => l.real);
   if (!lojas.length) return "";
   const img = fotos[0] || "";
-  /* A secao nao pode dizer que comparamos preco de loja que nao medimos. O
-     aviso vai junto do numero: sem ele, o leitor toma por cotacao. */
-  const estimadas = lojas.filter(l => !l.real);
-  const aviso = estimadas.length
-    ? '<p class="comparar-aviso">' + esc(ReviewData.avisoEstimativa) + "</p>"
-    : "";
   return '<div class="comparar">' + lojas.map(l => {
-    const n = Number(l.preco);
-    const precoHTML = '<small class="comparar-preco">' + fmt(n) +
-      (l.real ? "" : '<span class="comparar-est">Estimated</span>') + "</small>";
+    const precoHTML = '<small class="comparar-preco">' + fmt(Number(l.preco)) + "</small>";
     /* Sem link: o card da loja nao redireciona para o retailer. */
     return '<div class="comparar-loja">' +
       (img ? '<img class="comparar-thumb" src="' + img + '" alt="" loading="lazy"/>' : "") +
       '<span class="comparar-loja-nome">' + esc(l.nome) + precoHTML +
-      '<small class="comparar-cta">' + (l.real ? "Price checked" : "Price reference") + "</small></span></div>";
-  }).join("") + "</div>" + aviso;
+      '<small class="comparar-cta">Verified price</small></span></div>';
+  }).join("") + "</div>";
 }
 
 const SCHEMA_DISP = {
@@ -330,16 +353,101 @@ function jsonLd(obj) {
    site que representa a acao que vale como conversao. Sem isso o Google Ads
    registra clique de saida mas nunca converte. */
 const GOOGLE_AW = "AW-11103748612";
+/* Consent Mode v2: tudo negado por padrao (ad/analytics storage, ad user data,
+   ad personalization). O banner (CONSENT_SNIPPET) atualiza para "granted" so
+   com aceite explicito; a escolha fica gravada em localStorage. */
 const TAGS_GOOGLE =
   '<!-- Google tag (gtag.js) -->\n' +
-  '<script async src="https://www.googletagmanager.com/gtag/js?id=' + GOOGLE_AW + '"></script>\n' +
   '<script>\n' +
   "  window.dataLayer = window.dataLayer || [];\n" +
   "  function gtag(){dataLayer.push(arguments);}\n" +
+  "  gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});\n" +
+  "  try{if(localStorage.getItem('ns-consent')==='all'){gtag('consent','update',{ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',analytics_storage:'granted'});}}catch(e){}\n" +
   "  gtag('js', new Date());\n" +
   "  gtag('config', '" + GOOGLE_AW + "');\n" +
   "  window.NS_GOOGLE_AW = '" + GOOGLE_AW + "';\n" +
-  "</script>\n";
+  "</script>\n" +
+  '<script async src="https://www.googletagmanager.com/gtag/js?id=' + GOOGLE_AW + '"></script>\n';
+
+/* Banner de consentimento (Consent Mode v2). Sem ele, trafego da UE/UK fica
+   fora de conformidade com a GDPR/ePrivacy para medicao do Google Ads. */
+const CONSENT_SNIPPET =
+  '<div id="consent-banner" hidden style="position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;background:#fff;border:1px solid #e2e5ea;border-radius:12px;box-shadow:0 8px 30px rgba(15,23,42,.18);padding:14px 16px;font-size:14px;line-height:1.45;max-width:640px;margin:0 auto">' +
+  '<p style="margin:0 0 10px">We use cookies for Google Ads conversion measurement and analytics. See our <a href="/privacy/">Privacy &amp; cookie policy</a>.</p>' +
+  '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+  '<button type="button" id="consent-accept" style="padding:8px 16px;border-radius:8px;border:0;background:#111827;color:#fff;font-weight:600;cursor:pointer">Accept</button>' +
+  '<button type="button" id="consent-reject" style="padding:8px 16px;border-radius:8px;border:1px solid #cbd2da;background:#fff;cursor:pointer">Reject</button>' +
+  '</div></div>\n' +
+  '<script>(function(){var b=document.getElementById("consent-banner");if(!b)return;' +
+  'try{if(localStorage.getItem("ns-consent"))return;}catch(e){}b.hidden=false;' +
+  'function done(v){try{localStorage.setItem("ns-consent",v);}catch(e){}b.hidden=true;}' +
+  'document.getElementById("consent-accept").onclick=function(){if(window.gtag){gtag("consent","update",{ad_storage:"granted",ad_user_data:"granted",ad_personalization:"granted",analytics_storage:"granted"});}done("all");};' +
+  'document.getElementById("consent-reject").onclick=function(){done("denied");};' +
+  '})();</script>\n';
+
+/* ---------- Header / footer estaticos (sem depender de JS) ----------
+   Mesmo HTML que renderHeader()/renderFooter() em js/app.js: o app so
+   re-renderiza por cima quando os dados chegam (melhoria progressiva). */
+function headerHTML() {
+  return '<header class="site-header">' +
+    '<div class="container">' +
+    '<div class="hdr-top">' +
+    '<a class="brand" href="index.html">' +
+    '<img class="brand-logo" src="img/logo.png" alt="' + esc(BRAND_NAME) + ' logo"/>' +
+    '</a>' +
+    '<form class="search-box" id="busca-form" role="search">' +
+    '<label class="visually-hidden" for="busca-input">Search products</label>' +
+    '<input id="busca-input" type="search" placeholder="Search gear… (e.g. e-scooter, e-bike, battery, charger, motor, tire)" autocomplete="off"/>' +
+    '<button class="search-btn" type="submit" aria-label="Search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>' +
+    '<div class="sugest" id="busca-sugest"></div>' +
+    "</form>" +
+    '<nav class="hdr-links" id="hdr-links">' +
+    '<a class="ofertas" href="catalog.html?ofertas=1">Deals</a>' +
+    '<a href="about.html">About</a>' +
+    '<a href="contact/">Contact</a>' +
+    "</nav>" +
+    '<button class="menu-btn" id="menu-btn" aria-label="Menu">☰</button>' +
+    "</div>" +
+    '<nav class="cats">' +
+    '<a href="index.html">Home</a>' +
+    '<a href="catalog.html?cat=scooters-eletricos">Electric Scooters</a>' +
+    '<a href="catalog.html?cat=bicicletas-eletricas">Electric Bikes</a>' +
+    '<a href="catalog.html">All gear</a>' +
+    "</nav>" +
+    "</div></header>";
+}
+
+function footerHTML() {
+  return '<footer class="site-footer">' +
+    '<div class="container">' +
+    '<div class="foot-top">' +
+    '<div class="foot-brand">' +
+    '<span class="brand"><img class="brand-logo" src="img/logo.png" alt="' + esc(BRAND_NAME) + ' logo"/></span>' +
+    "<p>Independent product discovery and curation for electric scooters and electric bikes. We research and organize products, deals and coupons from partner retailers — purchases are completed directly with the retailer, never with us.</p>" +
+    "</div>" +
+    '<div class="foot-col"><h4>Explore</h4><ul>' +
+    '<li><a href="catalog.html?cat=scooters-eletricos">Electric Scooters</a></li>' +
+    '<li><a href="catalog.html?cat=bicicletas-eletricas">Electric Bikes</a></li>' +
+    '<li><a href="catalog.html">All gear</a></li>' +
+    '<li><a href="store.html">Retailers we track</a></li>' +
+    "</ul></div>" +
+    '<div class="foot-col"><h4>Company</h4><ul>' +
+    '<li><a href="about.html">About ' + esc(BRAND_NAME) + "</a></li>" +
+    '<li><a href="about.html#how-it-works">How it works</a></li>' +
+    '<li><a href="contact/">Contact</a></li>' +
+    "</ul></div>" +
+    '<div class="foot-col"><h4>Transparency</h4>' +
+    '<div class="foot-disclose">Some links on this site are affiliate links, meaning we may earn a commission from qualifying purchases, at no additional cost to you.</div>' +
+    '<ul class="foot-legal">' +
+    '<li><a href="affiliate-disclosure/">Affiliate disclosure</a></li>' +
+    '<li><a href="privacy/">Privacy &amp; cookies</a></li>' +
+    '<li><a href="terms/">Terms of use</a></li>' +
+    '<li><a href="contact/">Contact</a></li>' +
+    "</ul></div>" +
+    "</div>" +
+    '<div class="foot-bottom"><span>© ' + BUILD_YEAR + " " + esc(BRAND_NAME) + " — independent product discovery for electric scooters &amp; electric bikes. We do not sell or ship products; purchases are completed at the retailer.</span></div>" +
+    "</div></footer>";
+}
 
 const HEAD_COMMON = (title, desc, canonical, ogImg) =>
   '<!DOCTYPE html>\n<html lang="en-US">\n<head>\n' +
@@ -359,10 +467,10 @@ const HEAD_COMMON = (title, desc, canonical, ogImg) =>
   TAGS_GOOGLE +
   "</head>\n";
 
-const BODY_OPEN = '<body data-page="produto">\n  <div id="app-header"></div>\n';
+const BODY_OPEN = '<body data-page="produto">\n' + headerHTML() + '\n';
 
 const FOOT = [
-  '<div id="app-footer"></div>',
+  footerHTML(),
   '<div class="modal-video" id="modal-video" hidden>',
   '  <div class="modal-video-overlay" id="modal-video-fechar" data-fechar></div>',
   '  <div class="modal-video-box" role="dialog" aria-modal="true" aria-label="Product video">',
@@ -370,6 +478,7 @@ const FOOT = [
   '    <div class="modal-video-frame" id="modal-video-frame"></div>',
   "  </div>",
   "</div>",
+  CONSENT_SNIPPET.trim(),
   '<script src="/js/config.js"></script>',
   '<script src="/js/review-data.js"></script>',
   '<script src="/js/app.js"></script>',
@@ -433,7 +542,7 @@ function schemaProduto(p, canonicalPage, contexto) {
       {
         "@type": "Article",
         "@id": SITE_URL + canonicalPage + "#review",
-        headline: p.nome + " review: our verdict",
+        headline: p.nome + ": specs, price & spec-based score",
         description: (p.descricao || "").replace(/\s+/g, " ").slice(0, 200),
         url: SITE_URL + canonicalPage,
         image: img || undefined,
@@ -460,9 +569,9 @@ function pagProduto(p, contexto) {
   const verdict = ReviewData.veredito(rev);
   const title = ReviewData.titulo(p, contexto.produtos) + " | " + SITE_NAME;
   const metadata = esc(
-    "We scored the " + (p.nome || "").split(/\s+(?=[A-Z])/)[0] + " " + (rf.isBike ? "e-bike" : "e-scooter") +
-    ": " + rev.score.toFixed(1) + "/10. " + ReviewData.pros(p, contexto.produtos)[0] +
-    " Check the specs, the buyer ratings and the best price we found."
+    (p.nome || "").split(/\s+(?=[A-Z])/)[0] + " " + (rf.isBike ? "e-bike" : "e-scooter") +
+    ": specs, current price and a spec-based score of " + rev.score.toFixed(1) + "/10. " + ReviewData.pros(p, contexto.produtos)[0] +
+    " Score calculated from listing specs and price — we have not physically tested this product."
   );
   const disp = { em_estoque: ["In stock", "stock"], poucas_unidades: ["Only a few left", "soon"], esgotado: ["Currently unavailable", "out"] }[p.disponibilidade] || ["In stock", "stock"];
   const pct = pctDesc(p.preco, p.preco_anterior);
@@ -476,12 +585,12 @@ function pagProduto(p, contexto) {
         '<span class="pct">-' + pct + "%</span>" +
         '<span class="save">You save ' + fmt(p.preco_anterior - p.preco) + "</span></div>"
       : '<div class="row"><span class="now">' + fmt(p.preco) + "</span></div>") +
-    '<div class="cash">Reference price from the retailer\'s listing — the final price is confirmed at checkout.</div>';
+    '<div class="cash">Price at ' + esc(p.merchant_nome || p.merchant) + " as of " + esc(BUILD_DATE) + ". Prices may change — the final price is confirmed at checkout.</div>";
 
   const keySpecItems = [
     rf.watt != null ? [rf.isBike ? "Motor" : "Peak motor", rf.watt + "W"] : null,
     rf.wh != null ? ["Battery", rf.volt + "V " + rf.ah + "Ah · " + num(rf.wh) + "Wh"] : null,
-    rf.alcance != null ? ["Est. range", "~" + rf.alcance + " km"] : null,
+    rf.alcance != null ? ["Estimated range (calculated)", "~" + rf.alcance + " km"] : null,
     rf.vel != null ? ["Top speed", rf.vel + " km/h"] : null,
     rf.pneu != null ? [rf.isBike ? "Wheel size" : "Tire size", rf.pneu + "″"] : null,
     rf.carga != null ? ["Max load", rf.carga + " kg"] : null
@@ -534,25 +643,28 @@ function pagProduto(p, contexto) {
     '<main class="container review-page">' +
     '<nav class="crumb"><a href="/">Home</a><span class="sep">›</span>' +
     '<a href="/catalog.html?cat=' + esc(p.categoria) + '">' + esc(p.categoria_nome || p.categoria) + "</a>" +
-    '<span class="sep">›</span><span>' + esc(p.marca) + " Review</span></nav>" +
+    '<span class="sep">›</span><span>' + esc(p.marca) + "</span></nav>" +
 
         /* ---------- Comparacao de precos: topo da pagina, acima do hero ----------
-           Sai em todos os produtos. O id deixa o renderComparar() do js/app.js
-           reescrever o bloco com o dado vivo. */
-        '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Other stores selling this model</h2>' +
-        '<div id="comparar-tabela">' + comparar + "</div></section>" +
+           So sai quando ha loja com preco REAL cadastrado; sem dado verificado
+           a secao inteira some (nada de preco estimado). O id deixa o
+           renderComparar() do js/app.js reescrever o bloco com o dado vivo. */
+        (comparar
+          ? '<section class="detail-sec comparar-sec"><h2><span class="bar"></span> Other stores selling this model</h2>' +
+            '<div id="comparar-tabela">' + comparar + "</div></section>"
+          : '<section class="detail-sec comparar-sec" hidden><h2><span class="bar"></span> Other stores selling this model</h2><div id="comparar-tabela"></div></section>') +
 
 
     /* ---------- Review hero ---------- */
     '<header class="review-hero-head">' +
     '  <div class="review-badge-tag">' +
     '    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>' +
-    '    REVIEWED &amp; SCORED' +
+    '    SPECS &amp; PRICE ANALYSIS' +
     '  </div>' +
     '  <h1 class="review-page-title" id="review-title">' + esc(ReviewData.h1(p, contexto.produtos)) + "</h1>" +
     ReviewData.specline(p) +
     '  <div class="review-author-meta">' +
-    '    <span class="author-item"><strong>Reviewed by</strong> ' + SITE_NAME + " editorial</span>" +
+    '    <span class="author-item"><strong>Compiled by</strong> ' + SITE_NAME + " from the retailer listing</span>" +
     '    <span class="sep">&bull;</span>' +
     '    <span class="author-item"><strong>Updated</strong> ' + esc(BUILD_MONTH) + "</span>" +
     '    <span class="sep">&bull;</span>' +
@@ -577,7 +689,7 @@ function pagProduto(p, contexto) {
     "</div>" +
     "</div>" +
     '<div class="pg-info">' +
-    '<div class="pg-catscreen"><a class="chip cat" id="pg-categoria" href="/catalog.html?cat=' + esc(p.categoria) + '">' + esc(p.categoria_nome) + '</a><span class="review-badge-inline">FULL REVIEW</span></div>' +
+    '<div class="pg-catscreen"><a class="chip cat" id="pg-categoria" href="/catalog.html?cat=' + esc(p.categoria) + '">' + esc(p.categoria_nome) + '</a><span class="review-badge-inline">SPECS &amp; PRICE</span></div>' +
     '<h2 class="review-subtitle">What the listing actually tells you</h2>' +
     '<div class="pg-meta">' +
     (temNota(p) ? '<span class="pg-rating" id="pg-rating">' + starsHTML(Number(p.rating)) + ' <strong>' + Number(p.rating).toFixed(1) + "</strong> out of 5 <span class=\"count\">(" + num(p.avaliacoes) + " ratings)</span></span>" : "") +
@@ -592,22 +704,23 @@ function pagProduto(p, contexto) {
     '<div class="buybox-stock"><span class="chip ' + disp[1] + '" id="pg-disponibilidade"><span data-dot></span>' + disp[0] + "</span></div>" +
     '<div class="buybox-price"><div id="preco-bloco">' + precoBloco + "</div></div>" +
     '<div class="buybox-sec">' +
-    '<button class="btn-buy-big" id="btn-comprar">' + (esgotado ? "Currently unavailable" : (temCupom ? "GET COUPON CODE" : "Check price at " + esc(p.merchant_nome))) + "</button>" +
+    '<button class="btn-buy-big" id="btn-comprar" data-outbound>' + (esgotado ? "Currently unavailable" : (temCupom ? "GET COUPON CODE" : "Check price at " + esc(p.merchant_nome))) + "</button>" +
+    '<p class="aff-note" style="font-size:12px;color:#6b7280;margin:6px 0 0">Affiliate link — we may earn a commission at no extra cost to you.</p>' +
     (ReviewData.videoBusca(p) ? '<div class="video-row" id="video-row"><button class="btn-video" id="btn-video" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> <span class="video-label">' + esc(ReviewData.videoRotulo(p)) + '</span> <span class="video-ext">↗</span></button></div>' : "") +
     (temCupom
       ? '<div class="coupon-box" id="cupom-box"><div class="coupon-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 0-4h20a2 2 0 0 1 0 4 2 2 0 0 0 0 4 2 2 0 0 1 0 4H2a2 2 0 0 1 0-4 2 2 0 0 0 0-4z"/><path d="M13 5v14M16 12h.01M10 12h.01"/></svg> Your coupon is ready — <strong>copy it</strong> and apply at checkout</div>' +
-        '<p class="coupon-compare">We <strong>compare prices at other stores</strong> before you buy — this code is the best price we found at ' + esc(p.merchant_nome) + ".</p>" +
+        '<p class="coupon-compare">This code comes from the ' + esc(p.merchant_nome) + " listing — apply it at checkout there.</p>" +
         '<div class="coupon-row"><button class="coupon-code" id="cupom-codigo" type="button" data-codigo="' + esc(p.cupom) + '">' + esc(p.cupom) + "</button></div>" +
         '<p class="coupon-note" id="cupom-nota">Apply code at checkout on ' + esc(p.merchant_nome) + ".</p>" +
-        '<button class="btn-buy-big" id="btn-comprar-cupom">Go to retailer with coupon ↗</button></div>'
+        '<button class="btn-buy-big" id="btn-comprar-cupom" data-outbound>Go to retailer with coupon ↗</button></div>'
       : "") +
     '<p class="redirect-note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>You\u2019ll be redirected to <strong id="parceiro-nome">' + esc(p.merchant_nome) + "</strong>, where this product is listed, sold and shipped.</span></p>" +
-    (temCupom ? "" : '<button class="btn-partner" id="btn-parceiro">See product at retailer \u2197</button>') +
+    (temCupom ? "" : '<a class="btn-partner" id="btn-parceiro" href="' + esc(p.url_afiliado) + '" target="_blank" rel="sponsored nofollow noopener" data-outbound>See product at retailer \u2197</a>') +
     "</div>" +
     '<div class="trust-row"><div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span><strong>Secure checkout</strong>Handled entirely by the partner store.</span></div>' +
     '<div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="15" height="11" rx="2"/><path d="M16 9h3l3 3v5h-6"/><circle cx="6.5" cy="18.5" r="1.5"/><circle cx="17.5" cy="18.5" r="1.5"/></svg><span><strong>Shipping &amp; returns</strong>Terms set by the partner at checkout.</span></div>' +
     '<div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6z"/><path d="m9 12 2 2 4-4"/></svg><span><strong>Price comparison</strong>No extra cost to you. Ever.</span></div></div>' +
-    '<div class="card-warn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><strong>Affiliate disclosure.</strong> E-Ride Deals is an independent product discovery website. We don\u2019t sell or stock products — this item is sold by the retailer shown, and your purchase is completed on the retailer\u2019s site. As an affiliate, we may earn a commission on qualifying purchases, at no additional cost to you. <a href="/about.html#disclosure">Read our full disclosure</a>.</span></div>' +
+    '<div class="card-warn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><strong>Affiliate disclosure.</strong> E-Ride Deals is an independent product discovery website. We don\u2019t sell or stock products — this item is sold by the retailer shown, and your purchase is completed on the retailer\u2019s site. As an affiliate, we may earn a commission on qualifying purchases, at no additional cost to you. <a href="/affiliate-disclosure/">Read our full disclosure</a>.</span></div>' +
     "</aside>" +
     "</div>" +
 
@@ -739,7 +852,7 @@ function pagCluster(c, todos) {
   const cards = ps.map(cardHTML).join("");
   const html =
     HEAD_COMMON(titulo, metaDesc, canonical, "") +
-    '<body data-page="cluster">\n  <div id="app-header"></div>\n' +
+    '<body data-page="cluster">\n' + headerHTML() + '\n' +
     '<main class="container review-page">' +
     '<nav class="crumb"><a href="/">Home</a><span class="sep">›</span>' +
     '<a href="/catalog.html">Best lists</a><span class="sep">›</span>' +
@@ -767,8 +880,8 @@ function pagCluster(c, todos) {
 
     '<section class="detail-sec" id="como-escolhemos"><h2><span class="bar"></span> How this list was built</h2>' +
     "<p>" + esc(c.criterio) + "</p>" +
-    "<p>Every product links to its own review, with the verdict, the specification table and the coupon step at the retailer. " +
-    "Scores and verdicts come from the published specification and the current price &mdash; we have not test-ridden these models.</p>" +
+    "<p>Every product links to its own page, with the spec-based score, the specification table and the price step at the retailer. " +
+    "Scores are calculated automatically from the published specification and the current price &mdash; we have not physically tested these products.</p>" +
     ReviewData.htmlMetodologia() +
     "</section>" +
 
@@ -791,10 +904,10 @@ function aberturaCluster(c, r) {
   const faixa = r.min === r.max ? "currently priced at " + r.de : "currently priced from " + r.de + " to " + r.para;
   const quem = c.slug.indexOf("scooter") >= 0 ? "e-scooters" : "e-bikes";
   if (c.familia === "deals") {
-    return r.n + " " + quem + " " + faixa + ", biggest markdown first. Each one links to its own review, with the full specification and how to get the price at the retailer.";
+    return r.n + " " + quem + " " + faixa + ", biggest markdown first. Each one links to its own page, with the full specification and how to get the price at the retailer.";
   }
   if (c.familia === "preco") {
-    return r.n + " " + quem + " " + faixa + ", ordered by our review score. Side-by-side battery, motor, estimated range and load limit below, then the reasoning behind each verdict.";
+    return r.n + " " + quem + " " + faixa + ", ordered by our spec-based score. Side-by-side battery, motor, estimated range and load limit below, then the reasoning behind each score.";
   }
   return r.n + " " + quem + " " + faixa + " that meet one condition: " + c.criterioCurto + ". Side-by-side comparison below, plus what each listing does not tell you.";
 }
@@ -816,7 +929,7 @@ function pagCategoria(slug, cat, produtos) {
     .filter(o => Clusters.lista(o, produtos).length >= Clusters.MIN_PRODUTOS && o.slug.indexOf(ehBike ? "bike" : "scooter") >= 0);
   const html =
     HEAD_COMMON(titulo, metadata, canonical, "") +
-    '<body data-page="cat-static">\n  <div id="app-header"></div>\n' +
+    '<body data-page="cat-static">\n' + headerHTML() + '\n' +
     '<main class="container">' +
     '<nav class="crumb"><a href="/">Home</a><span class="sep">›</span><span>' + esc(cat.nome) + "</span></nav>" +
     '<div class="page-head"><p class="kicker">' + esc(cat.nome) + "</p>" +
@@ -837,11 +950,7 @@ function pagCategoria(slug, cat, produtos) {
 
     '<div class="grid-cards">' + cards + "</div>" +
     "</main>" +
-    '<div id="app-footer"></div>' +
-    '<script src="/js/config.js"></script>' +
-    '<script src="/js/review-data.js"></script>' +
-    '<script src="/js/app.js"></script>' +
-    "</body>\n</html>";
+    FOOT;
   return html;
 }
 
@@ -849,7 +958,11 @@ function sitemapXML(produtos, categorias, clusters) {
   const urls = [];
   urls.push({ loc: SITE_URL + "/", prio: 1.0, freq: "weekly" });
   urls.push({ loc: SITE_URL + "/catalog.html", prio: 0.8, freq: "daily" });
+  urls.push({ loc: SITE_URL + "/store.html", prio: 0.5, freq: "weekly" });
   urls.push({ loc: SITE_URL + "/about.html", prio: 0.3, freq: "monthly" });
+  ["/privacy/", "/terms/", "/affiliate-disclosure/", "/contact/"].forEach(function (s) {
+    urls.push({ loc: SITE_URL + s, prio: 0.2, freq: "monthly" });
+  });
   categorias.forEach(c => {
     if (c.produtos.length) urls.push({ loc: SITE_URL + "/" + catPubl(c.slug) + "/", prio: 0.7, freq: "daily" });
   });
@@ -865,12 +978,125 @@ function sitemapXML(produtos, categorias, clusters) {
 }
 
 function robotsTxt() {
-  return "User-agent: *\nAllow: /\nDisallow: /admin.html\nSitemap: " + SITE_URL + "/sitemap.xml\n";
+  return "User-agent: *\nAllow: /\nDisallow: /admin.html\nDisallow: /produtos/\nDisallow: /scratch/\nSitemap: " + SITE_URL + "/sitemap.xml\n";
+}
+
+/* ---------- Paginas legais estaticas ----------
+   Exigidas pelas politicas do Google Ads (Misrepresentation): privacidade,
+   termos, divulgacao de afiliado e contato com URL propria, linkadas no
+   rodape de todas as paginas. */
+function pagLegal(slug, titulo, desc, corpo) {
+  return HEAD_COMMON(titulo + " | " + BRAND_NAME, desc, "/" + slug + "/", "") +
+    '<body data-page="' + slug + '">\n' + headerHTML() + "\n" +
+    '<main class="container prose">' +
+    '<nav class="crumb"><a href="/">Home</a><span class="sep">›</span><span>' + esc(titulo) + "</span></nav>" +
+    '<div class="page-head"><h1>' + esc(titulo) + "</h1></div>" +
+    corpo +
+    "</main>\n" +
+    FOOT;
+}
+
+function paginasLegais() {
+  const aff = esc(BRAND_NAME);
+  const paginas = {
+    "privacy": {
+      titulo: "Privacy & cookie policy",
+      desc: "How " + BRAND_NAME + " handles data, cookies and advertising measurement (Google Ads / Google tag), including how to opt out.",
+      corpo:
+        '<div class="card-about"><h2>What we collect</h2><ul>' +
+        "<li><strong>Personal data.</strong> We do not require accounts and do not collect names, emails, or payment information on this site.</li>" +
+        "<li><strong>Usage data.</strong> Like most websites, we may receive standard technical information (browser type, pages visited) from our hosting provider (Vercel) to keep the site working and secure.</li>" +
+        "<li><strong>Retailer sites.</strong> When you click through to a retailer, that retailer's own privacy policy applies from that point on.</li>" +
+        "<li><strong>Contact.</strong> If you email us at <a href=\"mailto:" + esc(CONTACT_EMAIL) + "\">" + esc(CONTACT_EMAIL) + "</a>, we only use your address to reply to your message and do not add it to marketing lists.</li>" +
+        "</ul></div>" +
+        '<div class="card-about" id="cookies"><h2>Cookies &amp; advertising measurement</h2>' +
+        "<p>We use <strong>Google Ads / the Google tag</strong> on this site to measure ad conversions (for example, when you click an outbound link to a retailer after arriving from one of our ads) and, where applicable, for remarketing. The Google tag may set cookies or read existing ones for these purposes. You can read how Google uses this information in <a href=\"https://policies.google.com/technologies/partner-sites\" target=\"_blank\" rel=\"noopener\">Google's Privacy &amp; Terms</a>.</p>" +
+        "<p style=\"margin-top:10px\">We use Google Consent Mode: advertising and analytics cookies stay off until you accept them in the consent banner. You can opt out of personalized advertising at any time in <a href=\"https://adssettings.google.com/\" target=\"_blank\" rel=\"noopener\">Google Ads Settings</a> or via <a href=\"https://www.aboutads.info/choices/\" target=\"_blank\" rel=\"noopener\">aboutads.info/choices</a>.</p>" +
+        "<p style=\"margin-top:10px\">The retailers we link to may set their own cookies once you leave " + aff + ". See each retailer's cookie policy for details.</p></div>"
+    },
+    "terms": {
+      titulo: "Terms of use",
+      desc: "Terms of use for " + BRAND_NAME + ", an independent product discovery website for electric scooters and e-bikes.",
+      corpo:
+        '<div class="card-about"><p>By using ' + aff + " you agree that:</p><ul>" +
+        "<li>" + aff + " is an independent product discovery and curation website. We are not an online store: we do not sell, stock, ship, or process payments for any product.</li>" +
+        "<li>Product names, prices, ratings, availability, and other details reflect what retailers publish and may be inaccurate or out of date. Prices are shown with the date they were collected and can change at any time; the final price is always confirmed on the retailer's checkout page.</li>" +
+        "<li>Scores shown as \"spec-based score\" are calculated automatically from the published specification, the current price and published buyer ratings. We do not physically test the products.</li>" +
+        "<li>We are not liable for transactions, pricing, shipping, returns, warranty, or customer service issues that occur on retailer websites.</li>" +
+        "<li>You use the site for lawful, personal purposes and will not scrape, misuse, or resell the content.</li>" +
+        "<li>We may update these terms, the catalog, or the site at any time. Questions: <a href=\"mailto:" + esc(CONTACT_EMAIL) + "\">" + esc(CONTACT_EMAIL) + "</a>.</li>" +
+        "</ul></div>"
+    },
+    "affiliate-disclosure": {
+      titulo: "Affiliate disclosure",
+      desc: BRAND_NAME + " earns commissions from qualifying purchases made through affiliate links, at no additional cost to you. Full FTC disclosure.",
+      corpo:
+        '<div class="card-about"><h2>FTC affiliate disclosure</h2>' +
+        "<p>" + aff + " is an independent product discovery website. Some links on this site are affiliate links, which means we may earn a commission when you make a qualifying purchase through them, <strong>at no additional cost to you</strong>.</p>" +
+        "<p style=\"margin-top:10px\">When you click <strong>Check price</strong> or <strong>View deal</strong>, you leave " + aff + " and land on the product's page at the retailer, where payment, checkout, shipping, returns, warranty, and customer service are handled entirely by that retailer. We only curate and present products and prices published by retailers.</p>" +
+        "<p style=\"margin-top:10px\">Affiliate links on this site are marked with <code>rel=\"sponsored\"</code> and carry the note \"Affiliate link — we may earn a commission at no extra cost to you\" next to the purchase buttons.</p>" +
+        "<p style=\"margin-top:10px\">Our selection is independent of our affiliate relationship, and affiliate status never changes the price you pay. We do not physically test products, and scores on this site are calculated from published specifications and prices, not from hands-on testing.</p>" +
+        "<p style=\"margin-top:10px\">Questions: <a href=\"mailto:" + esc(CONTACT_EMAIL) + "\">" + esc(CONTACT_EMAIL) + "</a>.</p></div>"
+    },
+    "contact": {
+      titulo: "Contact",
+      desc: "How to contact " + BRAND_NAME + ".",
+      corpo:
+        '<div class="card-about"><h2>Questions?</h2>' +
+        "<p>Start with the <em>Frequently asked questions</em> section on each product page. For anything else — corrections, partnership requests, or privacy questions — write to us at:</p>" +
+        '<p style="margin-top:10px"><a href="mailto:' + esc(CONTACT_EMAIL) + '" style="color:var(--brand);font-weight:700">' + esc(CONTACT_EMAIL) + "</a></p>" +
+        "<p style=\"margin-top:10px\">We only use your email address to reply to your message. See our <a href=\"/privacy/\">Privacy &amp; cookie policy</a>.</p></div>"
+    }
+  };
+  Object.keys(paginas).forEach(function (slug) {
+    const cfg = paginas[slug];
+    escreverArquivo(slug + "/index.html", pagLegal(slug, cfg.titulo, cfg.desc, cfg.corpo));
+  });
+  return Object.keys(paginas);
+}
+
+/* ---------- Paginas estaticas da raiz (index/catalog/about/store/product) ----------
+   Sao fonte HTML versionada: aqui o build injeta header/footer estaticos,
+   o gtag + consent, o e-mail de contato e os primeiros cards de produto,
+   para que a pagina funcione completa mesmo sem JavaScript. */
+const RE_GTAG = /<!-- Google tag \(gtag\.js\) -->[\s\S]*?gtag\('(?:config|js)'[^;]*;\n\s*<\/script>\n?/;
+
+function patchPaginaEstatica(nome, opts) {
+  opts = opts || {};
+  const alvo = path.join(OUT, nome);
+  if (!fs.existsSync(alvo)) return;
+  let html = fs.readFileSync(alvo, "utf8");
+  /* gtag + consent: bloco unico, igual ao das paginas geradas */
+  if (RE_GTAG.test(html)) html = html.replace(RE_GTAG, TAGS_GOOGLE);
+  else if (html.indexOf("googletagmanager.com/gtag") === -1) html = html.replace("</head>", TAGS_GOOGLE + "</head>");
+  /* header/footer estaticos */
+  html = html.replace('<div id="app-header"></div>', headerHTML());
+  html = html.replace('<div id="app-footer"></div>', footerHTML());
+  /* e-mail de contato real */
+  html = html.split("__CONTACT_EMAIL__").join(CONTACT_EMAIL);
+  /* banner de consentimento antes dos scripts finais */
+  if (html.indexOf("consent-banner") === -1) html = html.replace("</body>", CONSENT_SNIPPET + "</body>");
+  /* SSR: primeiros cards de produto no HTML estatico (home + catalogo). O app
+     re-renderiza as grades quando os dados chegam — melhoria progressiva. */
+  if (opts.cards) {
+    const produtos = opts.produtos || [];
+    const grids = opts.cards;
+    Object.keys(grids).forEach(function (id) {
+      const lista = grids[id](produtos);
+      if (!lista.length) return;
+      const re = new RegExp('<div class="grid-cards[^"]*" id="' + id + '">\\s*</div>');
+      if (re.test(html)) html = html.replace(re, function (m) { return m.replace("></div>", ">" + lista.map(cardHTML).join("") + "</div>"); });
+    });
+  }
+  escreverArquivo(nome, html);
 }
 
 /* ---------- Build ---------- */
 const ROOT_COPY_EXCL = new Set([
   ".git", "node_modules", "public", "scripts", "tools", "produtos csv",
+  /* produtos/: planilhas .xlsx de trabalho; scratch/: scripts de auditoria.
+     Nenhum dos dois pode ir para o deploy. */
+  "produtos", "scratch",
   "products", "electric-scooters", "electric-bikes", ".gitignore",
   "sitemap.xml", "robots.txt",
   /* As pastas de cluster sao geradas aqui: nao podem ser copiadas para
@@ -1000,6 +1226,26 @@ async function main() {
   console.log("[build] páginas de cluster geradas:", cl.ok.length, "->", cl.ok.map(x => "/" + x.cluster.slug + "/").join(" "));
   const podsProntos = podarPaginasCluster(cl.ok.map(x => x.cluster.slug));
   if (podsProntos.length) console.log("[build] clusters orfãos removidos:", podsProntos.join(", "));
+
+  /* Paginas legais estaticas (/privacy/, /terms/, /affiliate-disclosure/, /contact/) */
+  paginasLegais();
+  console.log("[build] páginas legais geradas: /privacy/ /terms/ /affiliate-disclosure/ /contact/ (contato: " + CONTACT_EMAIL + ")");
+
+  /* Paginas estaticas da raiz: header/footer, gtag+consent, email e cards SSR */
+  const comDesconto = produtos.filter(p => pctDesc(p.preco, p.preco_anterior) != null)
+    .sort((a, b) => pctDesc(b.preco, b.preco_anterior) - pctDesc(a.preco, a.preco_anterior));
+  const porRating = produtos.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+  patchPaginaEstatica("index.html", {
+    produtos,
+    cards: {
+      "deals-grid": () => comDesconto.slice(0, 6),
+      "populares-grid": () => porRating.slice(0, 6),
+      "destaques-grid": () => produtos.slice(0, 6)
+    }
+  });
+  patchPaginaEstatica("catalog.html", { produtos, cards: { "cat-grid": () => produtos.slice(0, 24) } });
+  ["about.html", "store.html", "product.html"].forEach(nome => patchPaginaEstatica(nome, { produtos }));
+  console.log("[build] páginas estáticas da raiz atualizadas (header/footer/gtag/cards)");
 
   escreverArquivo("sitemap.xml", sitemapXML(produtos, catArray, cl.ok.map(x => x.cluster)));
   escreverArquivo("robots.txt", robotsTxt());

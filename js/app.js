@@ -320,26 +320,22 @@ function syncPrecosEstaticos(pProduto) {
 function renderComparar(p) {
   var alvo = $("#comparar-tabela");
   if (!alvo) return;
+  /* So loja com preco real e verificado (ReviewData.lojasCompare ja filtra).
+     Sem nenhuma: a secao inteira some, para nao prometer comparacao que nao
+     existe. */
   var lojas = window.ReviewData ? ReviewData.lojasCompare(p) : [];
+  var sec = alvo.closest(".comparar-sec") || document.querySelector(".comparar-sec");
+  if (!lojas.length) { if (sec) sec.style.display = "none"; alvo.innerHTML = ""; return; }
+  if (sec) sec.style.display = "";
   var img = imgProd(p, 0);
-  /* A secao nao pode dizer que comparamos preco de loja que nao medimos: o
-     aviso vai junto do numero. Mesma regra do build, para nao divergirem. */
-  var estimadas = lojas.filter(function (l) { return !l.real; });
-  var aviso = estimadas.length
-    ? '<p class="comparar-aviso">' + esc(ReviewData.avisoEstimativa) + "</p>"
-    : "";
   alvo.innerHTML = '<div class="comparar">' + lojas.map(function (l) {
-    var temPreco = l.preco != null && isFinite(Number(l.preco));
-    var precoN = temPreco ? Number(l.preco) : null;
-    var precoHTML = temPreco
-      ? '<small class="comparar-preco">' + fmt(precoN) + (l.real ? "" : '<span class="comparar-est">Estimated</span>') + "</small>"
-      : "";
+    var precoHTML = '<small class="comparar-preco">' + fmt(Number(l.preco)) + "</small>";
     /* Sem link: o card da loja nao redireciona para o retailer. */
     return '<div class="comparar-loja">' +
       '<img class="comparar-thumb" src="' + img + '" alt="" loading="lazy"/>' +
       '<span class="comparar-loja-nome">' + esc(l.nome) + precoHTML +
-      '<small class="comparar-cta">' + (l.real ? "Price checked" : "Price reference") + "</small></span></div>";
-  }).join("") + "</div>" + aviso;
+      '<small class="comparar-cta">Verified price</small></span></div>';
+  }).join("") + "</div>";
 }
 
 /* ---------- Product card ---------- */
@@ -385,9 +381,9 @@ function setMetaDescricao(p, rev) {
     return;
   }
   var marca = (p.nome || "").split(/\s+(?=[A-Z])/)[0];
-  metaDesc.content = "We scored the " + marca + " " + (ReviewData.fatos(p).isBike ? "e-bike" : "e-scooter") +
-    ": " + rev.score.toFixed(1) + "/10. " + ReviewData.pros(p, PRODUTOS)[0] +
-    " Check the specs, the buyer ratings and the best price we found.";
+  metaDesc.content = marca + " " + (ReviewData.fatos(p).isBike ? "e-bike" : "e-scooter") +
+    ": specs, price and a spec-based score of " + rev.score.toFixed(1) + "/10. " + ReviewData.pros(p, PRODUTOS)[0] +
+    " Score calculated from listing specs and price — we have not physically tested this product.";
 }
 
 function injetarSchema(p) {
@@ -439,12 +435,12 @@ function renderReview(p) {
     hero.innerHTML =
       '<div class="review-badge-tag">' +
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>' +
-        "REVIEWED &amp; SCORED" +
+        "SPECS &amp; PRICE ANALYSIS" +
       "</div>" +
       '<h1 class="review-page-title" id="review-title">' + esc(ReviewData.h1(p, PRODUTOS)) + "</h1>" +
       ReviewData.specline(p) +
       '<div class="review-author-meta">' +
-        '<span class="author-item"><strong>Reviewed by</strong> E-Ride Deals editorial</span>' +
+        '<span class="author-item"><strong>Compiled by</strong> E-Ride Deals from the retailer listing</span>' +
         '<span class="sep">&bull;</span>' +
         '<span class="author-item"><strong>Updated</strong> ' + esc(mes) + "</span>" +
         '<span class="sep">&bull;</span>' +
@@ -488,7 +484,7 @@ function renderReview(p) {
     var items = [
       f.watt != null ? [f.isBike ? "Motor" : "Peak motor", f.watt + "W"] : null,
       f.wh != null ? ["Battery", f.volt + "V " + f.ah + "Ah · " + fmt(f.wh) + "Wh"] : null,
-      f.alcance != null ? ["Est. range", "~" + f.alcance + " km"] : null,
+      f.alcance != null ? ["Estimated range (calculated)", "~" + f.alcance + " km"] : null,
       f.vel != null ? ["Top speed", f.vel + " km/h"] : null,
       f.pneu != null ? [f.isBike ? "Wheel size" : "Tire size", f.pneu + "″"] : null,
       f.carga != null ? ["Max load", f.carga + " kg"] : null
@@ -546,10 +542,50 @@ function _copiarFallback(texto) {
   ta.remove();
 }
 
+/* Clique de saida para o retailer (afiliado). Registra o evento
+   outbound_click no Google tag antes de navegar.
+
+   GOOGLE ADS CONVERSAO: para contar esse clique como conversao, crie a acao
+   de conversao no Google Ads, pegue o LABEL e adicione ao payload abaixo:
+     gtag('event', 'conversion', { send_to: 'AW-11103748612/SEU_LABEL' });
+   (descomente a linha indicada em registrarSaidaAfiliado). */
+var _ultimaSaida = { id: null, ts: 0 };
+function registrarSaidaAfiliado(p) {
+  if (typeof window.gtag !== "function" || !p) return;
+  /* Dedupe: o listener delegado (capture) e o handler do botao disparam para o
+     mesmo clique; deduplica por produto numa janela curta. */
+  var agora = Date.now();
+  if (_ultimaSaida.id === p.id && agora - _ultimaSaida.ts < 600) return;
+  _ultimaSaida = { id: p.id, ts: agora };
+  try {
+    window.gtag("event", "outbound_click", {
+      product_id: p.id,
+      product_name: p.nome,
+      retailer: p.merchant_nome || p.merchant,
+      price: p.preco,
+      page_type: (document.body && document.body.dataset.page) || "",
+      transport_type: "beacon"
+    });
+    /* GOOGLE ADS: cole o conversion label aqui para marcar o clique como conversao:
+       window.gtag("event", "conversion", { send_to: "AW-11103748612/LABEL" }); */
+  } catch (e) {}
+}
+
 function irAoParceiro(p) {
   if (p.disponibilidade === "esgotado") { toast("This item is currently unavailable at the retailer."); return; }
+  registrarSaidaAfiliado(p);
   toast("Opening " + p.merchant_nome + " — the current price and deal are confirmed at checkout.");
   setTimeout(function () { window.open(p.url_afiliado, "_blank", "noopener"); }, 500);
+}
+
+/* Listener delegado: qualquer link/botao com data-outbound que leve ao
+   retailer dispara o mesmo evento antes de navegar, sem alterar o link. */
+if (typeof document !== "undefined") {
+  document.addEventListener("click", function (e) {
+    var el = e.target && e.target.closest ? e.target.closest("[data-outbound]") : null;
+    if (!el) return;
+    registrarSaidaAfiliado(window.NS_CURRENT_PRODUCT);
+  }, true);
 }
 
 function abrirOferta(id) {
@@ -682,18 +718,18 @@ function renderFooter() {
     '<li><a href="about.html">About E-Ride Deals</a></li>' +
     '<li><a href="about.html#how-it-works">How it works</a></li>' +
     '<li><a href="store.html">Retailers we track</a></li>' +
-    '<li><a href="about.html#contact">Contact</a></li>' +
+    '<li><a href="contact/">Contact</a></li>' +
     "</ul></div>" +
     '<div class="foot-col"><h4>Transparency</h4>' +
-    '<div class="foot-disclose">E-Ride Deals is an independent product discovery website. Some links may be affiliate links, meaning we may earn a commission from qualifying purchases, at no additional cost to you.</div>' +
+    '<div class="foot-disclose">Some links on this site are affiliate links, meaning we may earn a commission from qualifying purchases, at no additional cost to you.</div>' +
     '<ul class="foot-legal">' +
-    '<li><a href="about.html#disclosure">Affiliate disclosure</a></li>' +
-    '<li><a href="about.html#privacy">Privacy policy</a></li>' +
-    '<li><a href="about.html#terms">Terms of use</a></li>' +
-    '<li><a href="about.html#cookies">Cookie policy</a></li>' +
+    '<li><a href="affiliate-disclosure/">Affiliate disclosure</a></li>' +
+    '<li><a href="privacy/">Privacy &amp; cookies</a></li>' +
+    '<li><a href="terms/">Terms of use</a></li>' +
+    '<li><a href="contact/">Contact</a></li>' +
     "</ul></div>" +
     "</div>" +
-    '<div class="foot-bottom"><span>© 2026 ' + esc(nomeMarca()) + ' — independent product discovery for electric scooters &amp; electric bikes. All products and retailers shown in this demo are fictional.</span><span>Built to validate the independent product curation model for e-mobility gear.</span></div>' +
+    '<div class="foot-bottom"><span>© 2026 ' + esc(nomeMarca()) + ' — independent product discovery for electric scooters &amp; electric bikes. We do not sell or ship products; purchases are completed at the retailer.</span></div>' +
     "</div></footer>";
   var slot = $("#app-footer") || $(".site-footer");
   if (!slot) return;
@@ -1268,6 +1304,7 @@ function initProduto() {
     return;
   }
 
+  window.NS_CURRENT_PRODUCT = p;
   var pct = pctDesc(p.preco, p.preco_anterior);
   var disp = ROTULOS_DISP[p.disponibilidade] || ROTULOS_DISP.em_estoque;
   var esgotado = p.disponibilidade === "esgotado";
@@ -1277,7 +1314,7 @@ function initProduto() {
     crumb.innerHTML =
       '<a href="index.html">Home</a><span class="sep">›</span>' +
       '<a href="catalog.html?cat=' + p.categoria + '">' + esc(p.categoria_nome) + "</a>" +
-      '<span class="sep">›</span><span>' + esc(p.marca) + " review</span>";
+      '<span class="sep">›</span><span>' + esc(p.marca) + "</span>";
   }
 
   renderReview(p);
@@ -1340,7 +1377,9 @@ if (pct != null) {
 } else {
   precoHTML = '<div class="row"><span class="now">' + fmt(p.preco) + "</span></div>";
 }
-  $("#preco-bloco").innerHTML = precoHTML + '<div class="cash">Reference price from the retailer\'s listing — the final price is confirmed at checkout.</div>';
+  var dataPreco = new Date().toISOString().slice(0, 10);
+  $("#preco-bloco").innerHTML = precoHTML +
+    '<div class="cash">Price at ' + esc(p.merchant_nome) + " as of " + dataPreco + ". Prices may change — the final price is confirmed at checkout.</div>";
 
   /* O aviso de afiliado canonico esta no card-warn e no rodape; nao repetimos aqui. */
 
@@ -1375,7 +1414,8 @@ if (pct != null) {
     btnPar.parentNode.replaceChild(btnParClone, btnPar);
     btnPar = btnParClone;
     btnPar.textContent = "See product at " + esc(p.merchant_nome) + " \u2197";
-    btnPar.addEventListener("click", function () { irAoParceiro(p); });
+    if (p.url_afiliado) btnPar.href = p.url_afiliado;
+    btnPar.addEventListener("click", function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); irAoParceiro(p); });
     if (temCupom) btnPar.classList.add("hide");
     else btnPar.classList.remove("hide");
   }
@@ -1493,7 +1533,7 @@ if (pct != null) {
   /* O HTML do build tem o preco antigo; sincroniza com o dado do admin. */
   syncPrecosEstaticos(p);
 
-  document.title = p.nome + " · E-Ride Deals";
+  document.title = window.ReviewData ? ReviewData.titulo(p, PRODUTOS) + " | E-Ride Deals" : p.nome + " · E-Ride Deals";
 }
 
 /* ---------- Article + Review JSON-LD para a página de review ---------- */
@@ -1522,22 +1562,10 @@ function injetarSchemaReview(p) {
       "name": "E-Ride Deals",
       "logo": { "@type": "ImageObject", "url": location.origin + "/img/logo.png" }
     },
-    "about": { "@type": "Product", "name": p.nome, "sku": p.product_id },
-    "review": {
-      "@type": "Review",
-      "name": ReviewData.titulo(p, todos),
-      "url": url,
-      "datePublished": (document.querySelector('meta[property="article:published_time"]') || {}).content || undefined,
-      "author": { "@type": "Organization", "name": "E-Ride Deals" },
-      "publisher": { "@type": "Organization", "name": "E-Ride Deals" },
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": n.score.toFixed(1),
-        "bestRating": "10",
-        "worstRating": "0"
-      },
-      "reviewBody": ReviewData.pros(p, todos).join(" ") + " " + ReviewData.cons(p, todos).join(" ") + " " + r.join(" ")
-    }
+    "about": { "@type": "Product", "name": p.nome, "sku": p.product_id }
+    /* Sem no Review/reviewRating: a pontuacao e calculada de specs, nao e uma
+       avaliacao de uso. Emitir schema de Review para nota calculada viola as
+       diretrizes de review snippet do Google. */
   };
 
   var s = document.createElement("script");

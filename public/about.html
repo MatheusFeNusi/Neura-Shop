@@ -12,17 +12,20 @@
   <link rel="stylesheet" href="css/style.css"/>
   <meta name="google-site-verification" content="j-YwcxLAtBZBULhbwrtQfbUlzThBrNd3XqM7oZsGK-E" />
   <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11103748612"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'AW-11103748612');
-  </script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});
+  try{if(localStorage.getItem('ns-consent')==='all'){gtag('consent','update',{ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',analytics_storage:'granted'});}}catch(e){}
+  gtag('js', new Date());
+  gtag('config', 'AW-11103748612');
+  window.NS_GOOGLE_AW = 'AW-11103748612';
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-11103748612"></script>
 </head>
 <body data-page="sobre">
 
-  <div id="app-header"></div>
+  <header class="site-header"><div class="container"><div class="hdr-top"><a class="brand" href="index.html"><img class="brand-logo" src="img/logo.png" alt="E-Ride Deals logo"/></a><form class="search-box" id="busca-form" role="search"><label class="visually-hidden" for="busca-input">Search products</label><input id="busca-input" type="search" placeholder="Search gear… (e.g. e-scooter, e-bike, battery, charger, motor, tire)" autocomplete="off"/><button class="search-btn" type="submit" aria-label="Search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button><div class="sugest" id="busca-sugest"></div></form><nav class="hdr-links" id="hdr-links"><a class="ofertas" href="catalog.html?ofertas=1">Deals</a><a href="about.html">About</a><a href="contact/">Contact</a></nav><button class="menu-btn" id="menu-btn" aria-label="Menu">☰</button></div><nav class="cats"><a href="index.html">Home</a><a href="catalog.html?cat=scooters-eletricos">Electric Scooters</a><a href="catalog.html?cat=bicicletas-eletricas">Electric Bikes</a><a href="catalog.html">All gear</a></nav></div></header>
 
   <main class="container prose">
     <nav class="crumb"><a href="index.html">Home</a><span class="sep">›</span><span>About</span></nav>
@@ -52,8 +55,9 @@
 
     <div class="card-about">
       <h2>How we curate</h2>
-      <p>We research and organize products, deals, and coupons from partner retailers into a single catalog so you can discover gear in one place. We do not personally test every product, and we don't create ratings, reviews, or prices — product information comes from the retailer's listing and can change at any time.</p>
-      <p style="margin-top:10px">When a retailer makes a coupon or promotional offer available, we may feature it here. We only show coupons and discounts shared by retailers or their programs, and we never invent coupon codes, savings, or expiration dates.</p>
+      <p>We research and organize products, deals, and coupons from partner retailers into a single catalog so you can discover gear in one place. <strong>We do not physically test products, and we don't create hands-on reviews.</strong> Product information comes from the retailer's listing and can change at any time.</p>
+      <p style="margin-top:10px">To help you compare models, each product page shows a <strong>spec-based score</strong> (0–10): an automatic score calculated from the published specifications (motor, battery, tires, load), the current price against the category median, and the buyer ratings published on the retailer's listing. It is not an expert or hands-on rating — every product page states this next to the score.</p>
+      <p style="margin-top:10px">When a retailer makes a coupon or promotional offer available, we may feature it here. We only show coupons and discounts shared by retailers or their programs, and we never invent coupon codes, prices, savings, or expiration dates.</p>
     </div>
 
     <div class="card-about">
@@ -67,20 +71,10 @@
     </div>
 
     <div class="card-about" id="privacy">
-      <h2>Privacy policy</h2>
-      <p>E-Ride Deals is designed to help you discover products, and we keep data collection minimal.</p>
-      <ul>
-        <li><strong>Personal data.</strong> We do not require accounts and do not collect names, emails, or payment information on this site.</li>
-        <li><strong>Usage data.</strong> Like most websites, we may receive standard technical information (such as browser type and pages visited) from our hosting provider to keep the site working and secure.</li>
-        <li><strong>Retailer sites.</strong> When you click through to a retailer, that retailer's own privacy policy applies from that point on.</li>
-        <li><strong>Contact.</strong> If you email us, we only use your address to reply to your message and don't add it to marketing lists.</li>
-      </ul>
-    </div>
-
-    <div class="card-about" id="cookies">
-      <h2>Cookie policy</h2>
-      <p>We use only the cookies and local storage needed to make the site work — for example, to remember the catalog between visits so pages load faster. We do not use advertising or cross-site tracking cookies of our own.</p>
-      <p style="margin-top:10px">The retailers we link to may set their own cookies once you leave E-Ride Deals. See each retailer's cookie policy for details.</p>
+      <h2>Privacy &amp; cookies (summary)</h2>
+      <p>E-Ride Deals is designed to help you discover products, and we keep data collection minimal. We do not require accounts and do not collect names, emails, or payment information on this site.</p>
+      <p style="margin-top:10px"><strong>Advertising measurement.</strong> We use Google Ads / the Google tag to measure conversions (for example, when you click a link to a retailer after arriving from one of our ads) and, where applicable, for remarketing. Advertising and analytics cookies stay off until you accept them in the consent banner. See <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">how Google uses this data</a> and opt out anytime in <a href="https://adssettings.google.com/" target="_blank" rel="noopener">Google Ads Settings</a>.</p>
+      <p style="margin-top:10px">Full policy: <a href="privacy/">Privacy &amp; cookie policy</a>. Terms: <a href="terms/">Terms of use</a>. Disclosure: <a href="affiliate-disclosure/">Affiliate disclosure</a>.</p>
     </div>
 
     <div class="card-about" id="terms">
@@ -96,12 +90,14 @@
 
     <div class="card-about" id="contact">
       <h2>Questions?</h2>
-      <p>Start with the <em>Frequently asked questions</em> section on each product page. You can also write to us at <a href="mailto:hello@eridedeals.example" style="color:var(--brand);font-weight:700">hello@eridedeals.example</a>.</p>
+      <p>Start with the <em>Frequently asked questions</em> section on each product page. You can also write to us at <a href="mailto:teste-contato@seudominio.com" style="color:var(--brand);font-weight:700">teste-contato@seudominio.com</a>.</p>
     </div>
   </main>
 
-  <div id="app-footer"></div>
+  <footer class="site-footer"><div class="container"><div class="foot-top"><div class="foot-brand"><span class="brand"><img class="brand-logo" src="img/logo.png" alt="E-Ride Deals logo"/></span><p>Independent product discovery and curation for electric scooters and electric bikes. We research and organize products, deals and coupons from partner retailers — purchases are completed directly with the retailer, never with us.</p></div><div class="foot-col"><h4>Explore</h4><ul><li><a href="catalog.html?cat=scooters-eletricos">Electric Scooters</a></li><li><a href="catalog.html?cat=bicicletas-eletricas">Electric Bikes</a></li><li><a href="catalog.html">All gear</a></li><li><a href="store.html">Retailers we track</a></li></ul></div><div class="foot-col"><h4>Company</h4><ul><li><a href="about.html">About E-Ride Deals</a></li><li><a href="about.html#how-it-works">How it works</a></li><li><a href="contact/">Contact</a></li></ul></div><div class="foot-col"><h4>Transparency</h4><div class="foot-disclose">Some links on this site are affiliate links, meaning we may earn a commission from qualifying purchases, at no additional cost to you.</div><ul class="foot-legal"><li><a href="affiliate-disclosure/">Affiliate disclosure</a></li><li><a href="privacy/">Privacy &amp; cookies</a></li><li><a href="terms/">Terms of use</a></li><li><a href="contact/">Contact</a></li></ul></div></div><div class="foot-bottom"><span>© 2026 E-Ride Deals — independent product discovery for electric scooters &amp; electric bikes. We do not sell or ship products; purchases are completed at the retailer.</span></div></div></footer>
   <script src="js/config.js"></script>
   <script src="js/app.js"></script>
+<div id="consent-banner" hidden style="position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;background:#fff;border:1px solid #e2e5ea;border-radius:12px;box-shadow:0 8px 30px rgba(15,23,42,.18);padding:14px 16px;font-size:14px;line-height:1.45;max-width:640px;margin:0 auto"><p style="margin:0 0 10px">We use cookies for Google Ads conversion measurement and analytics. See our <a href="/privacy/">Privacy &amp; cookie policy</a>.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="consent-accept" style="padding:8px 16px;border-radius:8px;border:0;background:#111827;color:#fff;font-weight:600;cursor:pointer">Accept</button><button type="button" id="consent-reject" style="padding:8px 16px;border-radius:8px;border:1px solid #cbd2da;background:#fff;cursor:pointer">Reject</button></div></div>
+<script>(function(){var b=document.getElementById("consent-banner");if(!b)return;try{if(localStorage.getItem("ns-consent"))return;}catch(e){}b.hidden=false;function done(v){try{localStorage.setItem("ns-consent",v);}catch(e){}b.hidden=true;}document.getElementById("consent-accept").onclick=function(){if(window.gtag){gtag("consent","update",{ad_storage:"granted",ad_user_data:"granted",ad_personalization:"granted",analytics_storage:"granted"});}done("all");};document.getElementById("consent-reject").onclick=function(){done("denied");};})();</script>
 </body>
 </html>

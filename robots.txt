@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /admin.html
+Disallow: /produtos/
+Disallow: /scratch/
 Sitemap: https://neura-shop66.vercel.app/sitemap.xml

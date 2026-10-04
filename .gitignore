@@ -1,5 +1,7 @@
 node_modules/
 produtos csv/
+produtos/
+scratch/
 tools/*
 !tools/fix-rls-produtos.sql
 *.bak*

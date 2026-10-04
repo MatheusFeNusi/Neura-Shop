@@ -343,8 +343,9 @@
       '<div class="score-box-review">' +
       '<span class="score-num alt">' + n.score.toFixed(1) + '<small>/10</small></span>' +
       '<div class="score-stars-wrap">' +
-      '<span class="score-label">E-Ride Deals review score</span>' +
+      '<span class="score-label">Spec-based score</span>' +
       '<span class="score-sub">' + esc(veredito(n).rotulo) + "</span>" +
+      '<span class="score-sub">Calculated from listing specs and price. We have not physically tested this product.</span>' +
       "</div></div>";
     if (!temNota(p)) return '<div class="score-box-main">' + review + "</div>";
     var nota = f.nota;
@@ -419,7 +420,7 @@
     if (med > 0 && Number(f.preco) / med <= 0.5) {
       return { rotulo: "Best Value", classe: "valor" };
     }
-    if (n.score >= 8.8) return { rotulo: "Editor's Choice", classe: "ouro" };
+    if (n.score >= 8.8) return { rotulo: "Top spec score", classe: "ouro" };
     if (n.score >= 8.0) return { rotulo: "Recommended", classe: "prata" };
     return null;
   }
@@ -434,8 +435,8 @@
 
   function htmlMetodologia() {
     return '<p class="review-how-score"><strong>How we score:</strong> ' +
-      "weighted from the listing specs, the current price against the category median and the published buyer ratings. " +
-      '<a href="/about.html#how-it-works">How our reviews work</a>.</p>';
+      "it is calculated automatically from the listing specs, the current price against the category median and the published buyer ratings. We do not physically test products. " +
+      '<a href="/about.html#how-it-works">How our scores work</a>.</p>';
   }
 
   function htmlBottomLine(p, todos) {
@@ -508,8 +509,7 @@
     return base + " @" + fmtMoeda(notas(p, todos).fatos.preco);
   }
   function titulo(p, todos) {
-    var n = notas(p, todos);
-    return baseUnica(p, todos) + " review: " + n.score.toFixed(1) + "/10";
+    return baseUnica(p, todos) + ": specs, price & spec-based score";
   }
   /* O nome do parceiro e um titulo de SEO inflado ("48V 23AH Battery 750W*2
      Dual Motors Recommended Top Speed...") e chega a 153 chars. No h1 ele
@@ -517,7 +517,7 @@
      nomeCurto; as specs que sobraram continuam nos key-specs, na tabela e
      na meta description. */
   function h1(p, todos) {
-    return baseUnica(p, todos) + " review: our score, the specs and the best price";
+    return baseUnica(p, todos) + ": specs, price and our spec-based score";
   }
 
   /* ---------- 8b. Video ----------
@@ -538,23 +538,16 @@
   }
 
   /* ---------- 8c. Comparacao com outras lojas ----------
-     A tabela existe em todos os produtos, mas o que ela mostra e uma
-     ESTIMATIVA, nunca o preco que o retailer announce. Lojas: nome e uma
-     margem fixa acima do preco do site, diferente por loja, para os tres
-     valores nao cairem no mesmo numero. Offset fixo (e nao multiplicador)
-     porque o catalogo vai de $200 a $1.200 - um fator gerava $7.115 do lado
-     de um produto de $656.
-
-     Preco real cadastrado no admin (produto.lojas_compare) tem prioridade
-     sobre a estimativa. O aviso de estimativa vai no bloco, porque o titulo
-     da secao nao pode dizer que comparamos preco de loja que nao medimos.
-     Sem url de redirecionamento: o card da loja nao e link. */
+   So entra loja com preco REAL cadastrado e verificado no admin
+      (produto.lojas_compare). Preco estimado por margem nao e exibido: o Google
+      Ads (Misrepresentation) e a FTC tratam cotacao inventada como engano.
+      Sem dado real cadastrado, a lista volta vazia e o build/app escondem a
+      secao inteira. Sem url de redirecionamento: o card da loja nao e link. */
   var LOJAS_COMPARE = [
     { nome: "Amazon", chave: "amazon", acima: 95 },
     { nome: "Walmart", chave: "walmart", acima: 80 },
     { nome: "AliExpress", chave: "aliexpress", acima: 65 }
   ];
-  var AVISO_ESTIMATIVA = "Prices marked Estimated are reference figures, not retailer quotes - we could not verify a live price at that store.";
 
   function hashEstavel(s) {
     var h = 0;
@@ -580,16 +573,8 @@
     return w.join(" ").slice(0, 60);
   }
 
-  /* Preco estimado de uma loja: preco do site + margem da loja. O preco do
-     site continua sendo o menor da tabela, que e o argumento da pagina. */
-  function precoEstimado(p, acima) {
-    var base = Number(p && p.preco != null ? p.preco : p && p.preco_anterior);
-    if (!isFinite(base) || base <= 0) return null;
-    return Math.round((base + acima) * 100) / 100;
-  }
-
-  /* Lojas da comparacao. Preco real do admin quando existir; senao a estimativa
-     da loja. `real` diz qual dos dois o numero e, para o bloco poder avisar. */
+  /* Lojas da comparacao: apenas preco real cadastrado no admin. Nada de
+     estimativa derivada do preco do site. */
   function lojasCompare(p) {
     var doAdmin = {};
     ((p && p.lojas_compare) || []).forEach(function (l) {
@@ -598,12 +583,9 @@
     return LOJAS_COMPARE.map(function (l) {
       var cad = doAdmin[l.chave];
       var temReal = cad && cad.preco != null && isFinite(Number(cad.preco)) && Number(cad.preco) > 0;
-      return {
-        nome: l.nome,
-        preco: temReal ? Number(cad.preco) : precoEstimado(p, l.acima),
-        real: !!temReal
-      };
-    }).filter(function (l) { return l.preco != null; });
+      if (!temReal) return null;
+      return { nome: l.nome, preco: Number(cad.preco), real: true };
+    }).filter(Boolean);
   }
 
   /* ---------- 9. FAQ curado ----------
@@ -725,11 +707,11 @@
     var btn = esq
       ? '<button class="btn-buy-big" type="button" disabled>Currently unavailable</button>'
       : (temCupom
-        ? '<button class="btn-buy-big js-reveal-cupom" type="button">Reveal coupon code</button>'
-        : '<button class="btn-buy-big js-ir-parceiro" type="button">Check price at ' + nome + "</button>");
+        ? '<button class="btn-buy-big js-reveal-cupom" type="button" data-outbound>Reveal coupon code</button>'
+        : '<button class="btn-buy-big js-ir-parceiro" type="button" data-outbound>Check price at ' + nome + "</button>");
     var nota = esq
-      ? '<p class="cta-cupom-note">Check back later or compare prices at other stores.</p>'
-      : '<p class="cta-cupom-note">Compare prices at other stores, then apply the code at ' + nome + " checkout.</p>";
+      ? '<p class="cta-cupom-note">Check back later or browse the alternatives below.</p>'
+      : '<p class="cta-cupom-note">Affiliate link — we may earn a commission at no extra cost to you.</p>';
     return '<div class="cta-cupom">' + btn + nota + "</div>";
   }
 
@@ -859,7 +841,7 @@
     var linhas = [
       { label: "Battery", valor: function (c) { return celulaSpec(c.f); }, melhor: function (c) { return c.f.wh; } },
       { label: "Motor", valor: function (c) { return c.f.watt ? c.f.watt + "W" : "—"; }, melhor: function (c) { return c.f.watt; } },
-      { label: "Est. range", valor: function (c) { return c.f.alcance ? "~" + c.f.alcance + " km" : "—"; }, melhor: function (c) { return c.f.alcance; } },
+      { label: "Estimated range (calculated)", valor: function (c) { return c.f.alcance ? "~" + c.f.alcance + " km" : "—"; }, melhor: function (c) { return c.f.alcance; } },
       { label: "Max load", valor: function (c) { return c.f.carga ? c.f.carga + " kg" : "—"; }, melhor: function (c) { return c.f.carga; } },
       { label: "Price", valor: function (c) { return c.f.preco ? fmt(c.f.preco) : "—"; }, melhor: function (c) { return -c.f.preco; } }
     ];
@@ -924,7 +906,7 @@
       { rot: "Discount", val: function (f) { return f.desconto != null ? "-" + f.desconto + "%" : "—"; }, num: function (f) { return f.desconto == null ? null : f.desconto; } },
       { rot: "Battery", val: function (f) { return f.wh ? f.volt + "V " + f.ah + "Ah (" + f.wh + " Wh)" : "—"; }, num: function (f) { return f.wh; } },
       { rot: "Motor", val: motorTxt, num: function (f) { return Math.max(f.watt || 0, f.pico || 0); } },
-      { rot: "Est. range", val: function (f) { return f.alcance ? "~" + f.alcance + " km" : "—"; }, num: function (f) { return f.alcance; } },
+      { rot: "Estimated range (calculated)", val: function (f) { return f.alcance ? "~" + f.alcance + " km" : "—"; }, num: function (f) { return f.alcance; } },
       { rot: "Max load", val: function (f) { return f.carga ? f.carga + " kg" : "—"; }, num: function (f) { return f.carga; } }
     ];
     var facts = ps.map(fatos);
@@ -1019,7 +1001,7 @@
     if (f.volt && f.ah) partes.push(f.volt + "V " + f.ah + "Ah");
     else if (f.volt) partes.push(f.volt + "V");
     if (f.watt) partes.push(f.watt + "W");
-    if (f.alcance) partes.push("~" + f.alcance + " km");
+    if (f.alcance) partes.push("est. range ~" + f.alcance + " km (calculated)");
     if (f.carga) partes.push(f.carga + " kg");
     if (f.vel) partes.push("top " + f.vel + " km/h");
     if (!partes.length) return "";
@@ -1078,7 +1060,6 @@
     videoRotulo: videoRotulo,
     lojasCompare: lojasCompare,
     chaveBusca: chaveBusca,
-    avisoEstimativa: AVISO_ESTIMATIVA,
     faq: faq,
     specsVisiveis: specsVisiveis,
     paraQuem: paraQuem,
