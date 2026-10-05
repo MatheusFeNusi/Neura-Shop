@@ -21,7 +21,7 @@ const OUT = ROOT;
    Para migrar de dominio/marca: defina SITE_URL e BRAND_NAME como variaveis de
    ambiente no build (Vercel -> Project Settings -> Environment Variables) ou
    edite os defaults abaixo. Nenhum outro arquivo precisa mudar. */
-const SITE_URL = (process.env.SITE_URL || "https://neura-shop66.vercel.app").replace(/\/+$/, "");
+const SITE_URL = (process.env.SITE_URL || "https://eletricdeals.shop").replace(/\/+$/, "");
 const BRAND_NAME = process.env.BRAND_NAME || "E-Ride Deals";
 const SITE_NAME = BRAND_NAME;
 
@@ -180,6 +180,27 @@ function sincronizarFallback(store) {
   console.log("[build] fallback embutido de js/app.js atualizado");
 }
 
+/* SKUs duplicados do mesmo modelo (duas listagens do feed com o mesmo slug
+   base) canibalizam o ranqueamento: fica a listagem mais barata e as demais
+   saem (o redirect 301 esta no vercel.json). */
+function semDuplicados(produtos) {
+  const base = {};
+  produtos.forEach(p => { const b = slugProduto(p); (base[b] = base[b] || []).push(p); });
+  const removidos = [];
+  const finais = [];
+  Object.keys(base).forEach(b => {
+    const g = base[b];
+    if (g.length === 1) { finais.push(g[0]); return; }
+    g.sort((a, c) => (Number(a.preco) || Infinity) - (Number(c.preco) || Infinity));
+    finais.push(g[0]);
+    g.slice(1).forEach(p => removidos.push(p));
+  });
+  if (removidos.length) {
+    console.log("[build] SKUs duplicados removidos (" + removidos.length + "): " + removidos.map(p => p.id).join(", ") + " (adicionar redirect 301 no vercel.json)");
+  }
+  return finais;
+}
+
 async function fetchPaginas(cfg) {
   const base = cfg.url + "/rest/v1/produtos?select=id,dados";
   const h = { "apikey": cfg.anon, "Authorization": "Bearer " + cfg.anon };
@@ -212,6 +233,41 @@ function pctDesc(a, b) {
   if (!a || !b || a >= b) return null;
   return Math.round((1 - a / b) * 100);
 }
+/* Descontos acima do teto partem de "preco de lista" inflado do feed — o
+   Google Ads trata como preco enganoso (Misrepresentation). Acima de 40% a
+   pagina mostra so o preco atual: sem %, sem "was", sem "save". */
+var DESCONTO_MAX = 40;
+function pctVisivel(a, b) {
+  var d = pctDesc(a, b);
+  return (d != null && d <= DESCONTO_MAX) ? d : null;
+}
+/* Unidades do publico dos EUA: imperial primeiro, metrico do anuncio entre
+   parenteses. */
+function miTxt(km) { return Math.round(Number(km) * 0.621371) + " mi (" + Number(km).toLocaleString("en-US") + " km)"; }
+function mphTxt(v) { return Math.round(Number(v) * 0.621371) + " mph (" + Number(v).toLocaleString("en-US") + " km/h)"; }
+function lbsTxt(k) { return Math.round(Number(k) * 2.20462) + " lbs (" + Number(k).toLocaleString("en-US") + " kg)"; }
+function rangeFabTxtB(af) {
+  if (!af) return "";
+  if (af.ate && af.ate !== af.de) return Math.round(af.de * 0.621371) + "-" + Math.round(af.ate * 0.621371) + " mi (" + af.de + "-" + af.ate + " km)";
+  return miTxt(af.de);
+}
+/* Foto vinda do feed com o nome de OUTRA marca no arquivo (ex.: a foto do
+   WQ-W4 sao arquivos "JANSNO X60...") derruba a confianca e a aprovacao do
+   anuncio: melhor sem foto do que com foto de outro modelo. */
+function filtrarFotosDaMarca(p, lista, todos) {
+  var marcas = {};
+  (todos || []).forEach(function (x) {
+    if (x && x.marca && x.marca !== p.marca) marcas[String(x.marca).toLowerCase()] = 1;
+  });
+  return (lista || []).filter(function (u) {
+    var d;
+    try { d = decodeURIComponent(String(u)).toLowerCase(); } catch (e) { d = String(u).toLowerCase(); }
+    for (var m in marcas) {
+      if (m.length >= 4 && d.indexOf(m) !== -1) return false;
+    }
+    return true;
+  });
+}
 function starsHTML(rating) {
   const full = Math.floor(rating);
   const frac = rating - full;
@@ -222,11 +278,16 @@ function starsHTML(rating) {
   for (let j = full + (half ? 1 : 0); j < 5; j++) out += '<span class="half">\u2605</span>';
   return '<span class="stars">' + out + "</span>";
 }
-function imgProd(p) {
-  if (p.img && /^https?:\/\//i.test(String(p.img))) return p.img;
+function imgProd(p, todos) {
+  var ok = function (u) {
+    if (!u || !/^https?:\/\//i.test(String(u))) return false;
+    if (!todos) return true;
+    return filtrarFotosDaMarca(p, [u], todos).length === 1;
+  };
+  if (p.img && ok(p.img)) return p.img;
   const fotos = (p.fotos && p.fotos.length) ? p.fotos : null;
   if (fotos) {
-    for (let i = 0; i < fotos.length; i++) if (fotos[i] && /^https?:\/\//i.test(String(fotos[i]))) return fotos[i];
+    for (let i = 0; i < fotos.length; i++) if (ok(fotos[i])) return fotos[i];
   }
   return "";
 }
@@ -314,10 +375,11 @@ function estrelasCard(p) {
   return '<div class="rating">' + starsHTML(Number(p.rating)) + ' <span class="reviews">' + Number(p.rating).toFixed(1) + " (" + num(p.avaliacoes) + ")</span></div>";
 }
 
-function cardHTML(p) {
+function cardHTML(p, todos) {
   const esgotado = p.disponibilidade === "esgotado";
-  const badge = pctDesc(p.preco, p.preco_anterior) != null ? '<span class="badge">-' + pctDesc(p.preco, p.preco_anterior) + "%</span>" : "";
-  const img = imgProd(p);
+  const desc = pctVisivel(p.preco, p.preco_anterior);
+  const badge = desc != null ? '<span class="badge">-' + desc + "%</span>" : "";
+  const img = imgProd(p, todos);
   return '<article class="pcard" data-pid="' + esc(p.id) + '">' +
     '<a class="media" href="' + urlProduto(p) + '">' + badge +
     (img ? '<img src="' + img + '" alt="' + esc(p.nome) + '" loading="lazy"/>' : "") +
@@ -327,9 +389,9 @@ function cardHTML(p) {
     '<a class="p-name" href="' + urlProduto(p) + '">' + esc(p.nome) + "</a>" +
     estrelasCard(p) +
     '<div class="price">' +
-    (pctDesc(p.preco, p.preco_anterior) != null ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" : "") +
+    (desc != null ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" : "") +
     '<span class="now">' + fmt(p.preco) + "</span>" +
-    (pctDesc(p.preco, p.preco_anterior) != null ? '<span class="save">Save ' + fmt(p.preco_anterior - p.preco) + "</span>" : "") +
+    (desc != null ? '<span class="save">Save ' + fmt(p.preco_anterior - p.preco) + "</span>" : "") +
     "</div>" +
     '<a class="merchant" href="/store.html?loja=' + encodeURIComponent(p.merchant || "x") + '">' + esc(p.merchant_nome || p.merchant) + "</a>" +
     (esgotado
@@ -469,6 +531,65 @@ const HEAD_COMMON = (title, desc, canonical, ogImg) =>
 
 const BODY_OPEN = '<body data-page="produto">\n' + headerHTML() + '\n';
 
+/* ---------- Captura de e-mail ----------
+   Formulario inline no rodape de toda pagina + popup de saida (exit-intent
+   no desktop, 50% de rolagem apos 25s no mobile). O envio grava na tabela
+   "leads" do Supabase (INSERT anon — criar a tabela e a policy no projeto).
+   Nunca bloqueia a navegacao: falha silenciosa quando a tabela nao existe. */
+const EMAIL_STYLE =
+  '<style>' +
+  '.email-cta{max-width:640px;margin:28px auto 0;background:#fff;border:1px solid #e2e5ea;border-radius:12px;padding:18px 20px;font-size:14px}' +
+  '.email-cta h3{margin:0 0 6px;font-size:17px}' +
+  '.email-cta p{margin:0 0 10px;color:#556070}' +
+  '.email-cta form{display:flex;gap:8px;flex-wrap:wrap}' +
+  '.email-cta input[type=email]{flex:1;min-width:220px;padding:10px 12px;border:1px solid #cbd2da;border-radius:8px;font-size:14px}' +
+  '.email-cta button{padding:10px 16px;border:0;border-radius:8px;background:#111827;color:#fff;font-weight:600;cursor:pointer}' +
+  '.email-cta .email-cta-fine{margin:8px 0 0;font-size:12px;color:#6b7280}' +
+  '.email-pop{position:fixed;inset:0;z-index:9998;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;padding:16px}' +
+  '.email-pop[hidden]{display:none}' +
+  '.email-pop .email-pop-box{background:#fff;border-radius:14px;max-width:420px;width:100%;padding:22px;position:relative;font-size:14px}' +
+  '.email-pop .email-pop-close{position:absolute;top:8px;right:12px;border:0;background:none;font-size:22px;cursor:pointer;color:#6b7280}' +
+  '</style>\n';
+
+function emailFormHTML(idSuffix) {
+  return '<div class="email-cta" id="email-cta-' + idSuffix + '">' +
+    '<h3>Get price-drop alerts</h3>' +
+    '<p>Leave your email and we\u2019ll flag the best e-scooter and e-bike deals of the week. No spam, unsubscribe anytime.</p>' +
+    '<form class="js-email-form" novalidate>' +
+    '<input type="email" name="email" required placeholder="you@example.com" aria-label="Email address"/>' +
+    '<button type="submit">Notify me</button>' +
+    '</form>' +
+    '<p class="email-cta-fine">Affiliate disclosure: we may earn a commission on purchases made through our links. See the <a href="/privacy/">privacy policy</a>.</p>' +
+    '</div>';
+}
+
+const EMAIL_SNIPPET = EMAIL_STYLE +
+  emailFormHTML("rodape") +
+  '<div class="email-pop" id="email-pop" hidden>' +
+  '  <div class="email-pop-box" role="dialog" aria-modal="true" aria-label="Price drop alerts">' +
+  '    <button class="email-pop-close" id="email-pop-close" aria-label="Close">×</button>' +
+  emailFormHTML("pop") +
+  '  </div>' +
+  '</div>\n' +
+  '<script>(function(){' +
+  'function save(email,form){' +
+  'try{localStorage.setItem("ns-email-capture",email);}catch(e){}' +
+  'try{var cfg=window.SUPA_CONFIG||{};if(!cfg.url||!cfg.anon)return;' +
+  'fetch(cfg.url+"/rest/v1/leads",{method:"POST",headers:{"apikey":cfg.anon,"Authorization":"Bearer "+cfg.anon,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({email:email,origem:location.pathname})}).catch(function(){});' +
+  '}catch(e){}}' +
+  'function ok(form){var h=form.parentNode.querySelector("h3");var p=form.parentNode.querySelector("p");if(h)h.textContent="You\\u2019re on the list";if(p)p.textContent="Thanks! We\\u2019ll email you the best deals.";form.remove();}' +
+  'document.addEventListener("submit",function(ev){var f=ev.target;if(!f.classList||!f.classList.contains("js-email-form"))return;ev.preventDefault();var inp=f.querySelector("input[type=email]");var v=inp&&inp.value.trim();if(!v||v.indexOf("@")<1)return;save(v,f);ok(f);},true);' +
+  'var pop=document.getElementById("email-pop");if(!pop)return;' +
+  'function seen(){try{return localStorage.getItem("ns-email-capture")||localStorage.getItem("ns-email-pop-seen");}catch(e){return 1;}}' +
+  'function open(){if(seen()||!pop.hidden===false&&!pop.hidden)return;if(!pop.hidden)return;try{localStorage.setItem("ns-email-pop-seen",String(Date.now()));}catch(e){}pop.hidden=false;}' +
+  'function close(){pop.hidden=true;}' +
+  'document.getElementById("email-pop-close").onclick=close;' +
+  'pop.addEventListener("click",function(ev){if(ev.target===pop)close();});' +
+  'document.addEventListener("mouseout",function(ev){if(ev.clientY<=0&&!ev.relatedTarget)open();});' +
+  'var scrollArmed=false;setTimeout(function(){scrollArmed=true;},25000);' +
+  'window.addEventListener("scroll",function(){if(!scrollArmed)return;var d=document.documentElement;var r=(window.scrollY+window.innerHeight)/d.scrollHeight;if(r>0.5)open();},{passive:true});' +
+  '})();</script>\n';
+
 const FOOT = [
   footerHTML(),
   '<div class="modal-video" id="modal-video" hidden>',
@@ -479,6 +600,7 @@ const FOOT = [
   "  </div>",
   "</div>",
   CONSENT_SNIPPET.trim(),
+  EMAIL_SNIPPET.trim(),
   '<script src="/js/config.js"></script>',
   '<script src="/js/review-data.js"></script>',
   '<script src="/js/app.js"></script>',
@@ -490,7 +612,7 @@ function seedScript(p) {
 }
 
 function schemaProduto(p, canonicalPage, contexto) {
-  const img = imgProd(p);
+  const img = imgProd(p, (contexto || {}).produtos);
   const rn = ReviewData.notas(p, (contexto || {}).produtos);
   const reviews = (p.reviews && p.reviews.length) ? p.reviews : [];
   const schema = {
@@ -560,9 +682,12 @@ function schemaProduto(p, canonicalPage, contexto) {
 
 function pagProduto(p, contexto) {
   const total = contexto.produtos.length;
-  const fotos = [];
-  if (p.img && /^https?:\/\//i.test(String(p.img))) fotos.push(p.img);
-  if (p.fotos && p.fotos.length) p.fotos.forEach(u => { if (u && /^https?:\/\//i.test(u) && fotos.indexOf(u) === -1) fotos.push(u); });
+  const fotos = filtrarFotosDaMarca(p, (function () {
+    const l = [];
+    if (p.img && /^https?:\/\//i.test(String(p.img))) l.push(p.img);
+    if (p.fotos && p.fotos.length) p.fotos.forEach(u => { if (u && /^https?:\/\//i.test(u) && l.indexOf(u) === -1) l.push(u); });
+    return l;
+  })(), contexto.produtos);
   const canonical = urlProduto(p);
   const rev = ReviewData.notas(p, contexto.produtos);
   const rf = rev.fatos;
@@ -578,11 +703,12 @@ function pagProduto(p, contexto) {
   const esgotado = p.disponibilidade === "esgotado";
   const temCupom = p.cupom && !esgotado;
 
+  const pricesBlocoPct = pctVisivel(p.preco, p.preco_anterior);
   const precoBloco =
-    (pct != null
+    (pricesBlocoPct != null
       ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" +
         '<div class="row"><span class="now">' + fmt(p.preco) + "</span>" +
-        '<span class="pct">-' + pct + "%</span>" +
+        '<span class="pct">-' + pricesBlocoPct + "%</span>" +
         '<span class="save">You save ' + fmt(p.preco_anterior - p.preco) + "</span></div>"
       : '<div class="row"><span class="now">' + fmt(p.preco) + "</span></div>") +
     '<div class="cash">Price at ' + esc(p.merchant_nome || p.merchant) + " as of " + esc(BUILD_DATE) + ". Prices may change — the final price is confirmed at checkout.</div>";
@@ -590,10 +716,11 @@ function pagProduto(p, contexto) {
   const keySpecItems = [
     rf.watt != null ? [rf.isBike ? "Motor" : "Peak motor", rf.watt + "W"] : null,
     rf.wh != null ? ["Battery", rf.volt + "V " + rf.ah + "Ah · " + num(rf.wh) + "Wh"] : null,
-    rf.alcance != null ? ["Estimated range (calculated)", "~" + rf.alcance + " km"] : null,
-    rf.vel != null ? ["Top speed", rf.vel + " km/h"] : null,
+    rf.alcance != null ? ["Estimated range (calculated)", "~" + miTxt(rf.alcance)] : null,
+    rf.alcanceFab ? ["Manufacturer range (as listed)", rangeFabTxtB(rf.alcanceFab)] : null,
+    rf.vel != null ? ["Top speed", mphTxt(rf.vel)] : null,
     rf.pneu != null ? [rf.isBike ? "Wheel size" : "Tire size", rf.pneu + "″"] : null,
-    rf.carga != null ? ["Max load", rf.carga + " kg"] : null
+    rf.carga != null ? ["Max load", lbsTxt(rf.carga)] : null
   ].filter(Boolean);
 
   /* Tabela sem repetir o que os key-specs ja mostram */
@@ -628,11 +755,11 @@ function pagProduto(p, contexto) {
     .slice(0, 4);
 
   const simCards = similares.length
-    ? '<div class="grid-cards">' + similares.map(cardHTML).join("") + "</div>"
+    ? '<div class="grid-cards">' + similares.map(x => cardHTML(x, contexto.produtos)).join("") + "</div>"
     : '<p class="visually-hidden">No similar products available.</p>';
 
   const relCards = relacionados.length
-    ? '<div class="grid-cards" id="relacionados-grid">' + relacionados.map(cardHTML).join("") + "</div>"
+    ? '<div class="grid-cards" id="relacionados-grid">' + relacionados.map(x => cardHTML(x, contexto.produtos)).join("") + "</div>"
     : "";
 
   const comparar = compararHTML(p, fotos);
@@ -833,7 +960,8 @@ function ressalvasHTML(c, ps, todos) {
   if (c.familia === "uso") {
     linhas.push("We list what the listing states. Your own weight, terrain and riding style decide whether that number works for you.");
   }
-  linhas.push("Estimated range is calculated from battery size, not copied from a manufacturer claim. Real range depends on weight, speed, terrain and temperature.");
+  linhas.push("Estimated range is calculated from battery size, not copied from a manufacturer claim. Real range depends on weight, speed, terrain and temperature; when a listing publishes a manufacturer range, we show it on the product page next to our estimate.");
+  linhas.push("Speed and power limits for e-scooters and e-bikes vary by state and city in the US — high-power models may be limited to private property or off-road use. Check your local laws before riding on public roads.");
   if (semAltura) linhas.push(semAltura + " of the " + ps.length + " listings do not publish a load limit at all.");
   if (semAutonomia) linhas.push(semAutonomia + " of the " + ps.length + " listings do not publish enough battery data to estimate range.");
   linhas.push("We have not test-ridden these models. Every figure here comes from the published specification and the current price.");
@@ -849,7 +977,7 @@ function pagCluster(c, todos) {
   const metaDesc = Clusters.meta(c, todos);
   const table = ps.slice(0, Clusters.LIMITE_TABELA);
   const resto = ps.length - table.length;
-  const cards = ps.map(cardHTML).join("");
+  const cards = ps.map(x => cardHTML(x, todos)).join("");
   const html =
     HEAD_COMMON(titulo, metaDesc, canonical, "") +
     '<body data-page="cluster">\n' + headerHTML() + '\n' +
@@ -920,10 +1048,10 @@ function pagCategoria(slug, cat, produtos) {
   const comPreco = produtos.filter(p => Number(p.preco) > 0);
   const vs = comPreco.map(p => Number(p.preco)).sort((a, b) => a - b);
   const min = vs[0], max = vs[vs.length - 1], med = vs[Math.floor(vs.length / 2)];
-  const comWas = produtos.filter(p => pctDesc(p.preco, p.preco_anterior) != null).length;
+  const comWas = produtos.filter(p => pctVisivel(p.preco, p.preco_anterior) != null).length;
   const titulo = "Best " + cat.nome + " — Prices, Ratings & Coupons | E-Ride Deals";
   const metadata = cat.descricao || "Electric " + (cat.nome || "") + " compared across partner stores — check prices, ratings and coupons, then buy directly at the retailer.";
-  const cards = produtos.map(cardHTML).join("");
+  const cards = produtos.map(x => cardHTML(x, produtos)).join("");
   const tabela = ReviewData.htmlComparativo(comPreco.slice(0, Clusters.LIMITE_TABELA), { urlOf: urlProduto });
   const listas = Clusters.DEFINICOES
     .filter(o => Clusters.lista(o, produtos).length >= Clusters.MIN_PRODUTOS && o.slug.indexOf(ehBike ? "bike" : "scooter") >= 0);
@@ -1076,6 +1204,8 @@ function patchPaginaEstatica(nome, opts) {
   html = html.split("__CONTACT_EMAIL__").join(CONTACT_EMAIL);
   /* banner de consentimento antes dos scripts finais */
   if (html.indexOf("consent-banner") === -1) html = html.replace("</body>", CONSENT_SNIPPET + "</body>");
+  /* captura de e-mail: formulario inline + popup de saida */
+  if (html.indexOf("js-email-form") === -1) html = html.replace("</body>", EMAIL_SNIPPET + "</body>");
   /* SSR: primeiros cards de produto no HTML estatico (home + catalogo). O app
      re-renderiza as grades quando os dados chegam — melhoria progressiva. */
   if (opts.cards) {
@@ -1085,7 +1215,7 @@ function patchPaginaEstatica(nome, opts) {
       const lista = grids[id](produtos);
       if (!lista.length) return;
       const re = new RegExp('<div class="grid-cards[^"]*" id="' + id + '">\\s*</div>');
-      if (re.test(html)) html = html.replace(re, function (m) { return m.replace("></div>", ">" + lista.map(cardHTML).join("") + "</div>"); });
+      if (re.test(html)) html = html.replace(re, function (m) { return m.replace("></div>", ">" + lista.map(x => cardHTML(x, produtos)).join("") + "</div>"); });
     });
   }
   escreverArquivo(nome, html);
@@ -1168,7 +1298,7 @@ function copiarAssetsPublic() {
 
 async function main() {
   const { origem, store } = await carregarProdutos();
-  const produtos = store.produtos;
+  const produtos = semDuplicados(store.produtos);
   console.log("[build] origem:", origem, "| produtos:", produtos.length);
   computarSlugs(produtos);
   sincronizarFallback(store);
@@ -1232,8 +1362,8 @@ async function main() {
   console.log("[build] páginas legais geradas: /privacy/ /terms/ /affiliate-disclosure/ /contact/ (contato: " + CONTACT_EMAIL + ")");
 
   /* Paginas estaticas da raiz: header/footer, gtag+consent, email e cards SSR */
-  const comDesconto = produtos.filter(p => pctDesc(p.preco, p.preco_anterior) != null)
-    .sort((a, b) => pctDesc(b.preco, b.preco_anterior) - pctDesc(a.preco, a.preco_anterior));
+  const comDesconto = produtos.filter(p => pctVisivel(p.preco, p.preco_anterior) != null)
+    .sort((a, b) => pctVisivel(b.preco, b.preco_anterior) - pctVisivel(a.preco, a.preco_anterior));
   const porRating = produtos.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
   patchPaginaEstatica("index.html", {
     produtos,

@@ -27,6 +27,22 @@ function pctDesc(a, b) {
   if (!a || !b || a >= b) return null;
   return Math.round((1 - a / b) * 100);
 }
+/* Acima de 40% o "preco de lista" do feed e quase sempre inflado — o site
+   mostra so o preco atual (Google Ads: preco enganoso). Espelha build.js. */
+var DESCONTO_MAX = 40;
+function pctVisivel(a, b) {
+  var d = pctDesc(a, b);
+  return (d != null && d <= DESCONTO_MAX) ? d : null;
+}
+/* Unidades do publico dos EUA: imperial primeiro, metrico em parenteses. */
+function miTxt(km) { return Math.round(Number(km) * 0.621371) + " mi (" + num(km) + " km)"; }
+function mphTxt(v) { return Math.round(Number(v) * 0.621371) + " mph (" + num(v) + " km/h)"; }
+function lbsTxt(k) { return Math.round(Number(k) * 2.20462) + " lbs (" + num(k) + " kg)"; }
+function rangeFabTxt(af) {
+  if (!af) return "";
+  if (af.ate && af.ate !== af.de) return Math.round(af.de * 0.621371) + "-" + Math.round(af.ate * 0.621371) + " mi (" + af.de + "-" + af.ate + " km)";
+  return miTxt(af.de);
+}
 function esc(s) {
   return String(s || "").replace(/[&<>"']/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -271,7 +287,7 @@ function syncPrecosEstaticos(pProduto) {
     var card = cards[c];
     var p = porId[card.getAttribute("data-pid")];
     if (!p) continue;
-    var pct = pctDesc(p.preco, p.preco_anterior);
+    var pct = pctVisivel(p.preco, p.preco_anterior);
     var box = card.querySelector(".price");
     if (box) {
       box.innerHTML =
@@ -340,7 +356,7 @@ function renderComparar(p) {
 
 /* ---------- Product card ---------- */
 function cardHTML(p) {
-  var pct = pctDesc(p.preco, p.preco_anterior);
+  var pct = pctVisivel(p.preco, p.preco_anterior);
   var esgotado = p.disponibilidade === "esgotado";
   var badge = pct != null ? '<span class="badge">-' + pct + "%</span>" : "";
   var btn = esgotado
@@ -484,10 +500,11 @@ function renderReview(p) {
     var items = [
       f.watt != null ? [f.isBike ? "Motor" : "Peak motor", f.watt + "W"] : null,
       f.wh != null ? ["Battery", f.volt + "V " + f.ah + "Ah · " + fmt(f.wh) + "Wh"] : null,
-      f.alcance != null ? ["Estimated range (calculated)", "~" + f.alcance + " km"] : null,
-      f.vel != null ? ["Top speed", f.vel + " km/h"] : null,
+      f.alcance != null ? ["Estimated range (calculated)", "~" + miTxt(f.alcance)] : null,
+      f.alcanceFab ? ["Manufacturer range (as listed)", rangeFabTxt(f.alcanceFab)] : null,
+      f.vel != null ? ["Top speed", mphTxt(f.vel)] : null,
       f.pneu != null ? [f.isBike ? "Wheel size" : "Tire size", f.pneu + "″"] : null,
-      f.carga != null ? ["Max load", f.carga + " kg"] : null
+      f.carga != null ? ["Max load", lbsTxt(f.carga)] : null
     ].filter(Boolean);
     key.innerHTML = items.map(function (it) {
       return '<div class="key-spec"><span class="key-spec-label">' + esc(it[0]) + '</span><span class="key-spec-value">' + esc(it[1]) + "</span></div>";
@@ -1305,7 +1322,7 @@ function initProduto() {
   }
 
   window.NS_CURRENT_PRODUCT = p;
-  var pct = pctDesc(p.preco, p.preco_anterior);
+  var pct = pctVisivel(p.preco, p.preco_anterior);
   var disp = ROTULOS_DISP[p.disponibilidade] || ROTULOS_DISP.em_estoque;
   var esgotado = p.disponibilidade === "esgotado";
 
@@ -1704,18 +1721,19 @@ function renderReviews(p) {
 
 function osCardHTML(p) {
   var esgotado = p.disponibilidade === "esgotado";
+  var pct = pctVisivel(p.preco, p.preco_anterior);
   return '<article class="pcard">' +
     '<a class="media" href="' + urlProduto(p) + '">' +
-    (pctDesc(p.preco, p.preco_anterior) != null ? '<span class="badge">-' + pctDesc(p.preco, p.preco_anterior) + "%</span>" : "") +
+    (pct != null ? '<span class="badge">-' + pct + "%</span>" : "") +
     '<img src="' + imgProd(p, 1) + '" alt="' + esc(p.nome) + '" loading="lazy"/></a>' +
     '<div class="body">' +
     '<span class="p-brand">' + esc(p.marca) + "</span>" +
     '<a class="p-name" href="' + urlProduto(p) + '">' + esc(p.nome) + "</a>" +
     estrelasCard(p) +
     '<div class="price">' +
-    (pctDesc(p.preco, p.preco_anterior) != null ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" : "") +
+    (pct != null ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" : "") +
     '<span class="now">' + fmt(p.preco) + "</span>" +
-    (pctDesc(p.preco, p.preco_anterior) != null ? '<span class="save">Save ' + fmt(p.preco_anterior - p.preco) + "</span>" : "") +
+    (pct != null ? '<span class="save">Save ' + fmt(p.preco_anterior - p.preco) + "</span>" : "") +
     "</div>" +
     '<div class="merchant"><a href="store.html?loja=' + encodeURIComponent(p.merchant) + '">' + esc(p.merchant_nome) + "</a></div>" +
     (esgotado ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>' : '<button class="btn-buy" onclick="abrirOferta(\'' + p.id + '\')">View deal</button>') +

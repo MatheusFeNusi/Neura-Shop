@@ -83,8 +83,8 @@ const DEFINICOES = [
     familia: "uso",
     curto: "Long-range e-scooters",
     h1: "Best Long-Range Electric Scooters",
-    criterio: "E-scooters whose estimated real-world range reaches 70 km. The estimate comes from battery size, not from a manufacturer claim.",
-    criterioCurto: "estimated range of 70 km or more",
+    criterio: "E-scooters whose estimated real-world range reaches 45 mi (70 km). The estimate comes from battery size, not from a manufacturer claim.",
+    criterioCurto: "estimated range of 45 mi (70 km) or more",
     filtro: p => p.categoria === SCOOT && comPreco(p) && alcance(p) >= 70,
     ordem: (a, b) => alcance(b) - alcance(a) || preco(a) - preco(b),
     destaques: ["autonomia", "bateria-por-dolar", "potencia"]
@@ -174,9 +174,9 @@ function meta(c, todos) {
 const METRICAS = {
   "menor-preco": { rotulo: "Lowest price", medir: p => preco(p), menor: true, txt: p => usd(preco(p)) },
   "bateria-por-dolar": { rotulo: "Most battery per dollar", medir: p => (f(p).wh || 0) / preco(p), txt: p => (f(p).wh || 0) + " Wh for " + usd(preco(p)) },
-  "autonomia": { rotulo: "Longest estimated range", medir: p => alcance(p), txt: p => "~" + alcance(p) + " km estimated" },
+   "autonomia": { rotulo: "Longest estimated range", medir: p => alcance(p), txt: p => "~" + Math.round(alcance(p) * 0.621371) + " mi (" + alcance(p) + " km) estimated" },
   "potencia": { rotulo: "Most powerful motor", medir: p => Math.max(watt(p), f(p).pico || 0), txt: p => RD.motorTxt(f(p)) },
-  "carga": { rotulo: "Highest load limit", medir: p => carga(p), txt: p => carga(p) + " kg listed" }
+   "carga": { rotulo: "Highest load limit", medir: p => carga(p), txt: p => Math.round(carga(p) * 2.20462) + " lbs (" + carga(p) + " kg) listed" }
 };
 
 function destaques(c, todos) {

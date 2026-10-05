@@ -2,6 +2,20 @@
   "outputDirectory": "public",
   "buildCommand": "npm run build",
   "redirects": [
+    /* Dominio antigo -> dominio novo (301 permanente). evita que o Google
+       indexe a copia .vercel.app em vez do eletricdeals.shop. */
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "neura-shop66.vercel.app" }],
+      "destination": "https://eletricdeals.shop/:path*",
+      "permanent": true
+    },
+    /* SKUs duplicados do mesmo modelo (segunda listagem do feed -> redirect
+       para a listagem principal, que ficou com o menor preco). */
+    { "source": "/products/gokeep-f5-20ah-52v-1000w-5760", "destination": "/products/gokeep-f5-20ah-52v-1000w", "permanent": true },
+    { "source": "/products/gokeep-f5-20ah-52v-1000w-5347", "destination": "/products/gokeep-f5-20ah-52v-1000w", "permanent": true },
+    { "source": "/products/sinohon-em200-48v-12-5ah-1055", "destination": "/products/sinohon-em200-48v-12-5ah", "permanent": true },
+    { "source": "/products/sinohon-em200-48v-12-5ah-1060", "destination": "/products/sinohon-em200-48v-12-5ah", "permanent": true },
     { "source": "/products/freeboy-j30-38ah-60v-3000w", "destination": "/products/freeboy-j30-60v-38ah-6000w", "permanent": true }
   ]
 }

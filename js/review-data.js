@@ -107,6 +107,27 @@
       alcance = Math.round(wh * kwh * (wh > 1500 ? 0.85 : 1));
     }
 
+    /* Autonomia que o ANUNCIO declara ("50km Mileage", "Range: 40-60 KM").
+       Fica ao lado da nossa estimativa para o leitor comparar: quando ela
+       existe, a pagina mostra as duas e nao so o numero calculado. */
+    var alcanceFab = null;
+    var mFab = full.match(/(\d{2,3})(?:\s*[-–]\s*(\d{2,3}))?\s*km\s*(?:max\s*)?(?:mileage|range)/i) ||
+      full.match(/(?:mileage|range|max range)[^\d]{0,15}(\d{2,3})(?:\s*[-–]\s*(\d{2,3}))?\s*km/i) ||
+      (function () {
+        for (var i = 0; i < (p.specs || []).length; i++) {
+          var s = p.specs[i];
+          if (s && /range|mileage|autonomia/i.test(String(s.rotulo || ""))) {
+            var m2 = String(s.valor || "").match(/(\d{2,3})(?:\s*[-–]\s*(\d{2,3}))?/);
+            if (m2) return m2;
+          }
+        }
+        return null;
+      })();
+    if (mFab) {
+      var de = Number(mFab[1]), ate = mFab[2] != null ? Number(mFab[2]) : null;
+      if (isFinite(de) && de >= 10 && de <= 400) alcanceFab = { de: de, ate: (ate && ate <= 400 ? ate : null) };
+    }
+
     var d = desc.toLowerCase();
     var temDisc = /disc brake/.test(d);
     var temSusp = /suspension|shock|absorb/.test(d);
@@ -120,7 +141,7 @@
     return {
       produto: p,
       volt: volt, ah: ah, wh: wh,
-      watt: watt, pico: pico, vel: vel, pneu: pneu, carga: carga, alcance: alcance,
+      watt: watt, pico: pico, vel: vel, pneu: pneu, carga: carga, alcance: alcance, alcanceFab: alcanceFab,
       temDisc: temDisc, temSusp: temSusp, removivel: removivel, isBike: isBike,
       nota: nota, qtd: qtd == null ? 0 : qtd,
       preco: toNum(p.preco), lista: toNum(p.preco_anterior), desconto: desconto,
@@ -181,7 +202,7 @@
 
     var lead = (f.isBike ? "E-bike" : "E-scooter") + " | " + (f.watt != null ? f.watt + "W motor, " : "") +
       (f.wh != null ? f.volt + "V " + f.ah + "Ah (" + num(f.wh) + "Wh)" : "capacity unlisted") +
-      (f.alcance != null ? ", ~" + f.alcance + " km estimated range" : "") +
+      (f.alcance != null ? ", ~" + miTxt(f.alcance) + " estimated range" : "") +
       " | " + fmtMoeda(f.preco) + " at the retailer" +
       " | scored " + score.toFixed(1) + "/10 on power, battery, build and value.";
 
@@ -216,19 +237,19 @@
     var out = [];
     if (f.watt >= 1000) out.push({ w: 10, t: f.watt + "W motor — genuine torque for hills and loaded climbs" });
     else if (f.watt >= 500) out.push({ w: 7, t: f.watt + "W motor is quick enough for most city inclines" });
-    if (f.wh >= 1000) out.push({ w: 9, t: f.volt + "V " + f.ah + "Ah (" + num(f.wh) + "Wh) pack — around " + f.alcance + " km per charge" });
-    else if (f.wh >= 500) out.push({ w: 7, t: f.volt + "V " + f.ah + "Ah battery — roughly " + f.alcance + " km of real range" });
-    if (f.desconto >= 40) out.push({ w: 9, t: f.desconto + "% off the " + fmtMoeda(f.lista) + " list price right now" });
-    else if (f.desconto >= 15) out.push({ w: 6, t: "Currently " + f.desconto + "% under list price" });
+    if (f.wh >= 1000) out.push({ w: 9, t: f.volt + "V " + f.ah + "Ah (" + num(f.wh) + "Wh) pack — around " + miTxt(f.alcance) + " per charge" });
+    else if (f.wh >= 500) out.push({ w: 7, t: f.volt + "V " + f.ah + "Ah battery — roughly " + miTxt(f.alcance) + " of real range" });
+    if (descVisivel(f) >= 40) out.push({ w: 9, t: descVisivel(f) + "% off the " + fmtMoeda(f.lista) + " list price right now" });
+    else if (descVisivel(f) >= 15) out.push({ w: 6, t: "Currently " + descVisivel(f) + "% under list price" });
     if (f.pneu != null && f.pneu >= 10) out.push({ w: 7, t: f.pneu + (f.isBike ? " wheels" : "\" tires") + " stay composed over cracks and gravel" });
-    if (f.carga != null && f.carga >= 150) out.push({ w: 7, t: "Rated for " + f.carga + "kg — takes a passenger or real cargo" });
-    if (f.vel != null && f.vel >= 40) out.push({ w: 7, t: f.vel + " km/h keeps pace with fast traffic" });
+    if (f.carga != null && f.carga >= 150) out.push({ w: 7, t: "Rated for " + lbsTxt(f.carga) + " — takes a passenger or real cargo" });
+    if (f.vel != null && f.vel >= 40) out.push({ w: 7, t: mphTxt(f.vel) + " keeps pace with fast traffic" });
     if (f.temDisc) out.push({ w: 6, t: "Front and rear disc brakes — short, predictable stops" });
     if (f.temSusp) out.push({ w: 6, t: "Suspension soaks up the bad pavement" });
     if (f.removivel) out.push({ w: 6, t: "Removable battery — charge it indoors instead of in the hallway" });
     if (f.nota != null && f.nota >= 4.7) out.push({ w: 8, t: f.nota.toFixed(1) + "/5 from " + num(f.qtd) + " buyer ratings on the listing" });
     if (f.cupom) out.push({ w: 8, t: "Coupon " + f.cupom + " stacks on top of the sale price" });
-    if (f.alcance != null && f.alcance >= 80) out.push({ w: 6, t: "Estimated " + f.alcance + " km of range — full-day commuting without charging" });
+    if (f.alcance != null && f.alcance >= 80) out.push({ w: 6, t: "Estimated " + miTxt(f.alcance) + " of range — full-day commuting without charging" });
 
     var irmaos = (todos || []).filter(function (x) {
       return x && x.categoria === p.categoria && x.id !== p.id;
@@ -247,10 +268,10 @@
   function cons(p, todos) {
     var f = comMediana(p, todos);
     var out = [];
-    if (f.wh != null && f.wh < 400) out.push({ w: 9, t: "Only " + num(f.wh) + "Wh on board — budget for around " + f.alcance + " km, not the marketing figure" });
+    if (f.wh != null && f.wh < 400) out.push({ w: 9, t: "Only " + num(f.wh) + "Wh on board — budget for around " + miTxt(f.alcance) + ", not the marketing figure" });
     if (f.pneu != null && f.pneu < 9) out.push({ w: 8, t: f.pneu + "\" wheels feel harsh on broken asphalt" });
-    if (f.desconto == null) out.push({ w: 7, t: "No discount against the list price at the moment" });
-    else if (f.desconto < 15) out.push({ w: 5, t: "Only " + f.desconto + "% off list — not a deep deal" });
+    if (descVisivel(f) == null) out.push({ w: 7, t: "No discount against the list price at the moment" });
+    else if (descVisivel(f) < 15) out.push({ w: 5, t: "Only " + descVisivel(f) + "% off list — not a deep deal" });
     if (!f.cupom) out.push({ w: 6, t: "No coupon code on file for this listing" });
     if (f.qtd > 0 && f.qtd < 20) out.push({ w: 7, t: "Just " + f.qtd + " ratings so far — the verdict is still thin" });
     else if (!f.qtd) out.push({ w: 8, t: "No buyer ratings yet on this listing" });
@@ -301,16 +322,50 @@
     var f = fatos(p);
     var out = [];
     if (f.vel != null && f.vel < 30) {
-      out.push("Every " + f.tipo + " in this round-up is capped at " + f.vel + " km/h — fine in town, slow on open roads.");
+      out.push("Every " + f.tipo + " in this round-up is capped at " + mphTxt(f.vel) + " — fine in town, slow on open roads.");
     }
-    out.push("Range figures are E-Ride Deals estimates from the battery capacity, not a measured ride test.");
+    /* Regra local americana: parte do catalogo passa dos limites de rua de
+       muitos estados/cidades (velocidade e potencia). O aviso vale para todo
+       produto e fica mais forte nos motores muito acima do urbano. */
+    out.push("Speed and power limits for " + (f.isBike ? "e-bikes" : "e-scooters") + " vary by state and city. Check your local laws before riding on public roads or bike lanes.");
+    if (!f.isBike && (f.watt >= 2000 || (f.pico && f.pico >= 3000))) {
+      out.push("The motor on this listing (" + (f.pico && f.pico > f.watt ? f.pico + "W peak" : f.watt + "W") + ") is above what many US cities allow for street-legal e-scooters — in several places this class is limited to private property or off-road use.");
+    }
+    out.push("Range figures are E-Ride Deals estimates from the battery capacity, not a measured ride test. When the listing publishes a manufacturer range, we show it next to our estimate.");
     out.push("Weight isn't published by the retailer, so check it fits your storage or stairwell before buying.");
+    out.push("Confirm where the seller ships from: some listings ship overseas with longer delivery and harder returns — prefer US-warehouse stock when it is offered.");
     return out;
   }
 
   function fmtMoeda(n) {
     if (n == null) return "";
     return Number(n).toLocaleString("en-US", { style: "currency", currency: "USD" });
+  }
+
+  /* ---------- Unidades: publico dos EUA ----------
+     Numero imperial em primeiro lugar, metrico original do anuncio entre
+     parenteses - o retailer publica em km/kg, o leitor americano pensa em
+     mi/mph/lbs. Os numeros do feed continuam metricos internamente. */
+  function miTxt(km) { return Math.round(Number(km) * 0.621371) + " mi (" + num(km) + " km)"; }
+  function mphTxt(v) { return Math.round(Number(v) * 0.621371) + " mph (" + num(v) + " km/h)"; }
+  function lbsTxt(k) { return Math.round(Number(k) * 2.20462) + " lbs (" + num(k) + " kg)"; }
+
+  /* Autonomia do fabricante como intervalo quando o anuncio declara dois
+     numeros ("65-85 KM"): "40-53 mi (65-85 km)". */
+  function rangeFabTxt(af) {
+    if (!af) return "";
+    if (af.ate && af.ate !== af.de) {
+      return Math.round(af.de * 0.621371) + "-" + Math.round(af.ate * 0.621371) + " mi (" + af.de + "-" + af.ate + " km)";
+    }
+    return miTxt(af.de);
+  }
+
+  /* Descontos muito altos partem de "preco de lista" inflado do feed, que o
+     Google Ads trata como preco enganoso (Misrepresentation). Acima do teto,
+     o site mostra so o preco atual - sem %, sem "was", sem "save". */
+  var DESCONTO_MAX = 40;
+  function descVisivel(f) {
+    return (f && f.desconto != null && f.desconto > 0 && f.desconto <= DESCONTO_MAX) ? f.desconto : null;
   }
 
   /* ---------- 5. Selos honestos (derivados dos dados) ---------- */
@@ -445,10 +500,13 @@
     var bits = [
       "<span><strong>" + n.score.toFixed(1) + "/10</strong> review score</span>",
       "<span><strong>" + esc(fmtMoeda(f.preco)) + "</strong>" +
-        (f.desconto ? " &middot; " + f.desconto + "% off" : "") + "</span>",
-      "<span><strong>" + (f.nota != null ? f.nota.toFixed(1) : "&mdash;") +
-        "</strong> retailer rating &middot; " + num(f.qtd) + " ratings</span>"
+        (descVisivel(f) ? " &middot; " + descVisivel(f) + "% off" : "") + "</span>"
     ];
+    /* Sem nota real no anuncio nao mostramos "0.0 / 0 ratings": a linha some. */
+    if (f.nota != null && f.nota > 0) {
+      bits.push("<span><strong>" + f.nota.toFixed(1) +
+        "</strong> retailer rating &middot; " + num(f.qtd) + " ratings</span>");
+    }
     if (f.cupom) bits.push("<span><strong>" + esc(f.cupom) + "</strong> coupon on file</span>");
     return '<div class="review-bottom-line">' +
       '<span class="bl-kicker">Bottom line</span>' +
@@ -509,7 +567,7 @@
     return base + " @" + fmtMoeda(notas(p, todos).fatos.preco);
   }
   function titulo(p, todos) {
-    return baseUnica(p, todos) + ": specs, price & spec-based score";
+    return baseUnica(p, todos) + " review: specs, price & score";
   }
   /* O nome do parceiro e um titulo de SEO inflado ("48V 23AH Battery 750W*2
      Dual Motors Recommended Top Speed...") e chega a 153 chars. No h1 ele
@@ -517,7 +575,7 @@
      nomeCurto; as specs que sobraram continuam nos key-specs, na tabela e
      na meta description. */
   function h1(p, todos) {
-    return baseUnica(p, todos) + ": specs, price and our spec-based score";
+    return baseUnica(p, todos) + " Review: Specs, Price & Score";
   }
 
   /* ---------- 8b. Video ----------
@@ -736,25 +794,25 @@
     };
     var medWh = medianaChave("wh"), medWatt = medianaChave("watt"), medCarga = medianaChave("carga");
 
-    if (f.wh && f.wh >= 900) bom.push("You ride more than " + Math.max(15, Math.round((alc || 30) * 0.6)) + " km a day: the " + f.volt + "V " + f.ah + "Ah pack (" + f.wh + " Wh) is the reason.");
+    if (f.wh && f.wh >= 900) bom.push("You ride more than " + miTxt(Math.max(15, Math.round((alc || 30) * 0.6))) + " a day: the " + f.volt + "V " + f.ah + "Ah pack (" + f.wh + " Wh) is the reason.");
     else if (f.wh) bom.push("You want a pack you can charge overnight and ride daily without planning around it (" + f.wh + " Wh).");
 
     if (f.watt && f.watt >= 800) bom.push("You need real hill and acceleration headroom: " + f.watt + "W rated motor.");
-    if (alc && alc >= 45) bom.push("You want one charge to last the week — estimated " + alc + " km of real-world range.");
-    if (f.carga && f.carga >= 110) bom.push("You or your load are heavy: it is listed for up to " + f.carga + " kg.");
+    if (alc && alc >= 45) bom.push("You want one charge to last the week — estimated " + miTxt(alc) + " of real-world range.");
+    if (f.carga && f.carga >= 110) bom.push("You or your load are heavy: it is listed for up to " + lbsTxt(f.carga) + ".");
     if (f.pneu && f.pneu >= 10 && !f.isBike) bom.push("You ride rough streets — " + f.pneu + "-inch tires take cracks and gravel better.");
     if (f.temDisc) bom.push("You brake often in the wet — the listing shows a disc brake.");
     if (f.temSusp) bom.push("Your route is uneven — suspension is listed.");
     if (f.preco && f.medianaCategoria && f.preco < f.medianaCategoria) {
       bom.push("You are comparing on price: it is " + Math.round((1 - f.preco / f.medianaCategoria) * 100) + "% below the " + moeda(f.medianaCategoria) + " median for " + (f.isBike ? "e-bikes" : "e-scooters") + " in our catalog.");
     }
-    if (f.desconto && f.desconto >= 25) bom.push("You want the discount right now — it is " + f.desconto + "% under the listed price.");
+    if (descVisivel(f) && descVisivel(f) >= 25) bom.push("You want the discount right now — it is " + descVisivel(f) + "% under the listed price.");
 
-    if (alc && alc < 30) outro.push("You need more than about " + alc + " km per charge — this pack is on the small side.");
+    if (alc && alc < 30) outro.push("You need more than about " + miTxt(alc) + " per charge — this pack is on the small side.");
     if (f.wh && medWh && f.wh < medWh * 0.85) outro.push("You want more range than this pack gives: the " + (f.isBike ? "e-bikes" : "e-scooters") + " in our catalog average " + Math.round(medWh) + " Wh, this one has " + f.wh + " Wh.");
     if (f.watt && f.watt < 400) outro.push("You want speed and steep-hill performance — " + f.watt + "W is an urban, flat-road motor.");
-    if (f.carga && f.carga < 100) outro.push("You weigh more than " + f.carga + " kg — that is above what this model is listed for.");
-    if (f.carga && medCarga && f.carga < medCarga) outro.push("You routinely carry a heavy load: the average load limit across our catalog is " + Math.round(medCarga) + " kg, this one is listed for " + f.carga + " kg.");
+    if (f.carga && f.carga < 100) outro.push("You weigh more than " + lbsTxt(f.carga) + " — that is above what this model is listed for.");
+    if (f.carga && medCarga && f.carga < medCarga) outro.push("You routinely carry a heavy load: the average load limit across our catalog is " + lbsTxt(Math.round(medCarga)) + ", this one is listed for " + lbsTxt(f.carga) + ".");
     if (f.preco && f.medianaCategoria && f.preco > f.medianaCategoria * 1.1) {
       outro.push("Your budget is tight: it sits above the " + moeda(f.medianaCategoria) + " category median — check the alternatives below.");
     }
@@ -762,7 +820,7 @@
     if (!f.temDisc) outro.push("You ride in heavy rain and want a disc brake — this listing does not mention one.");
     if (!f.temSusp) outro.push("Your route is badly broken and you want suspension — the listing does not mention it.");
     if (!f.removivel) outro.push("You want to charge indoors with a removable battery — this listing does not mention one.");
-    if (f.desconto == null && f.lista) outro.push("You are buying on a deep discount — this one has no meaningful markdown against its listed price.");
+    if (f.desconto == null && f.lista && !(Number(f.preco) < Number(f.lista) && pctDesc(f.preco, f.lista) > DESCONTO_MAX)) outro.push("You are buying on a deep discount — this one has no meaningful markdown against its listed price.");
 
     /* Complemento honesto: o que o anuncio NAO promete. */
     var cautelas = [
@@ -841,8 +899,8 @@
     var linhas = [
       { label: "Battery", valor: function (c) { return celulaSpec(c.f); }, melhor: function (c) { return c.f.wh; } },
       { label: "Motor", valor: function (c) { return c.f.watt ? c.f.watt + "W" : "—"; }, melhor: function (c) { return c.f.watt; } },
-      { label: "Estimated range (calculated)", valor: function (c) { return c.f.alcance ? "~" + c.f.alcance + " km" : "—"; }, melhor: function (c) { return c.f.alcance; } },
-      { label: "Max load", valor: function (c) { return c.f.carga ? c.f.carga + " kg" : "—"; }, melhor: function (c) { return c.f.carga; } },
+      { label: "Estimated range (calculated)", valor: function (c) { return c.f.alcance ? "~" + miTxt(c.f.alcance) : "—"; }, melhor: function (c) { return c.f.alcance; } },
+      { label: "Max load", valor: function (c) { return c.f.carga ? lbsTxt(c.f.carga) : "—"; }, melhor: function (c) { return c.f.carga; } },
       { label: "Price", valor: function (c) { return c.f.preco ? fmt(c.f.preco) : "—"; }, melhor: function (c) { return -c.f.preco; } }
     ];
 
@@ -876,8 +934,8 @@
     };
     cmp("wh", function (a, b) { return "the bigger " + f0.volt + "V " + f0.ah + "Ah pack (" + f0.wh + " Wh vs " + Math.round(b) + " Wh on the alternatives)"; }, true);
     cmp("watt", function (a, b) { return "more power on paper (" + f0.watt + "W vs " + Math.round(b) + "W)"; }, true);
-    cmp("alcance", function (a, b) { return "a longer estimated range (~" + f0.alcance + " km vs ~" + Math.round(b) + " km)"; }, true);
-    cmp("carga", function (a, b) { return "a higher listed load (" + f0.carga + " kg vs " + Math.round(b) + " kg)"; }, true);
+    cmp("alcance", function (a, b) { return "a longer estimated range (~" + miTxt(f0.alcance) + " vs ~" + miTxt(Math.round(b)) + ")"; }, true);
+    cmp("carga", function (a, b) { return "a higher listed load (" + lbsTxt(f0.carga) + " vs " + lbsTxt(Math.round(b)) + ")"; }, true);
     cmp("preco", function (a, b) { return "a lower price than the alternatives (" + fmt(a) + " vs " + fmt(b) + ")"; }, false);
 
     var porque = dif.length
@@ -902,12 +960,12 @@
     if (ps.length < 2) return "";
     var cols = [
       { rot: "Price", val: function (f) { return f.preco > 0 ? fmt(f.preco) : "—"; }, num: function (f) { return f.preco; }, menor: true },
-      { rot: "Was", val: function (f) { return f.desconto != null ? fmt(f.lista) : "—"; }, num: function () { return null; } },
-      { rot: "Discount", val: function (f) { return f.desconto != null ? "-" + f.desconto + "%" : "—"; }, num: function (f) { return f.desconto == null ? null : f.desconto; } },
+      { rot: "Was", val: function (f) { return descVisivel(f) != null ? fmt(f.lista) : "—"; }, num: function () { return null; } },
+      { rot: "Discount", val: function (f) { return descVisivel(f) != null ? "-" + descVisivel(f) + "%" : "—"; }, num: function (f) { return descVisivel(f); } },
       { rot: "Battery", val: function (f) { return f.wh ? f.volt + "V " + f.ah + "Ah (" + f.wh + " Wh)" : "—"; }, num: function (f) { return f.wh; } },
       { rot: "Motor", val: motorTxt, num: function (f) { return Math.max(f.watt || 0, f.pico || 0); } },
-      { rot: "Estimated range (calculated)", val: function (f) { return f.alcance ? "~" + f.alcance + " km" : "—"; }, num: function (f) { return f.alcance; } },
-      { rot: "Max load", val: function (f) { return f.carga ? f.carga + " kg" : "—"; }, num: function (f) { return f.carga; } }
+      { rot: "Estimated range (calculated)", val: function (f) { return f.alcance ? "~" + miTxt(f.alcance) : "—"; }, num: function (f) { return f.alcance; } },
+      { rot: "Max load", val: function (f) { return f.carga ? lbsTxt(f.carga) : "—"; }, num: function (f) { return f.carga; } }
     ];
     var facts = ps.map(fatos);
     /* Melhor de cada coluna: menor quando menor e melhor (preco), maior nos
@@ -959,8 +1017,8 @@
       fatosLinha.push(f);
       var textos = [
         f.preco > 0 ? fmtMoeda(f.preco) : "-",
-        f.desconto != null ? fmtMoeda(f.lista) : "-",
-        f.desconto != null ? "-" + f.desconto + "%" : "-"
+        descVisivel(f) != null ? fmtMoeda(f.lista) : "-",
+        descVisivel(f) != null ? "-" + descVisivel(f) + "%" : "-"
       ];
       textos.forEach(function (txt, j) {
         var td = tr.querySelector('td[data-cmp-col="' + j + '"]');
@@ -1001,9 +1059,10 @@
     if (f.volt && f.ah) partes.push(f.volt + "V " + f.ah + "Ah");
     else if (f.volt) partes.push(f.volt + "V");
     if (f.watt) partes.push(f.watt + "W");
-    if (f.alcance) partes.push("est. range ~" + f.alcance + " km (calculated)");
-    if (f.carga) partes.push(f.carga + " kg");
-    if (f.vel) partes.push("top " + f.vel + " km/h");
+    if (f.alcance) partes.push("est. range ~" + miTxt(f.alcance) + " (calculated)");
+    if (f.alcanceFab) partes.push("manufacturer range " + rangeFabTxt(f.alcanceFab));
+    if (f.carga) partes.push(lbsTxt(f.carga));
+    if (f.vel) partes.push("top " + mphTxt(f.vel));
     if (!partes.length) return "";
     return '<p class="review-specline">' + partes.map(function (t) { return "<span>" + esc(t) + "</span>"; }).join(" &middot; ") + "</p>";
   }
@@ -1033,7 +1092,10 @@
       var r = rotuloAlt(c.p), n = 1;
       while (vistos[r] != null) {
         var f = c.f;
-        var extra = f.alcance ? "~" + f.alcance + "km" : f.carga ? f.carga + "kg" : "$" + Number(c.p.preco).toFixed(0);
+        var extra;
+        if (f.alcance) extra = "~" + Math.round(f.alcance * 0.621371) + "mi";
+        else if (f.carga) extra = Math.round(f.carga * 2.20462) + "lbs";
+        else extra = "$" + Number(c.p.preco).toFixed(0);
         r = rotuloAlt(c.p) + " · " + extra + (n > 1 ? " (" + (n + 1) + ")" : "");
         n++;
       }
