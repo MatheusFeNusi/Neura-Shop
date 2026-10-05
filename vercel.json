@@ -9,9 +9,14 @@
       "permanent": true
     },
     { "source": "/products/gokeep-f5-20ah-52v-1000w-5760", "destination": "/products/gokeep-f5-20ah-52v-1000w", "permanent": true },
+    { "source": "/products/gokeep-f5-20ah-52v-1000w-5760/", "destination": "/products/gokeep-f5-20ah-52v-1000w", "permanent": true },
     { "source": "/products/gokeep-f5-20ah-52v-1000w-5347", "destination": "/products/gokeep-f5-20ah-52v-1000w", "permanent": true },
+    { "source": "/products/gokeep-f5-20ah-52v-1000w-5347/", "destination": "/products/gokeep-f5-20ah-52v-1000w", "permanent": true },
     { "source": "/products/sinohon-em200-48v-12-5ah-1055", "destination": "/products/sinohon-em200-48v-12-5ah", "permanent": true },
+    { "source": "/products/sinohon-em200-48v-12-5ah-1055/", "destination": "/products/sinohon-em200-48v-12-5ah", "permanent": true },
     { "source": "/products/sinohon-em200-48v-12-5ah-1060", "destination": "/products/sinohon-em200-48v-12-5ah", "permanent": true },
-    { "source": "/products/freeboy-j30-38ah-60v-3000w", "destination": "/products/freeboy-j30-60v-38ah-6000w", "permanent": true }
+    { "source": "/products/sinohon-em200-48v-12-5ah-1060/", "destination": "/products/sinohon-em200-48v-12-5ah", "permanent": true },
+    { "source": "/products/freeboy-j30-38ah-60v-3000w", "destination": "/products/freeboy-j30-60v-38ah-6000w", "permanent": true },
+    { "source": "/products/freeboy-j30-38ah-60v-3000w/", "destination": "/products/freeboy-j30-60v-38ah-6000w", "permanent": true }
   ]
 }
