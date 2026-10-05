@@ -331,7 +331,7 @@
     if (!f.isBike && (f.watt >= 2000 || (f.pico && f.pico >= 3000))) {
       out.push("The motor on this listing (" + (f.pico && f.pico > f.watt ? f.pico + "W peak" : f.watt + "W") + ") is above what many US cities allow for street-legal e-scooters — in several places this class is limited to private property or off-road use.");
     }
-    out.push("Range figures are E-Ride Deals estimates from the battery capacity, not a measured ride test. When the listing publishes a manufacturer range, we show it next to our estimate.");
+    out.push("Range figures are Electric Deals estimates from the battery capacity, not a measured ride test. When the listing publishes a manufacturer range, we show it next to our estimate.");
     out.push("Weight isn't published by the retailer, so check it fits your storage or stairwell before buying.");
     out.push("Confirm where the seller ships from: some listings ship overseas with longer delivery and harder returns — prefer US-warehouse stock when it is offered.");
     return out;
@@ -385,7 +385,7 @@
   var ICON_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
 
   /* A nota do retailer e opcional: o admin pode deixar vazio, e nesse caso o
-     site nao mostra nem estrelas nem "0.0" (so a nota editorial do E-Ride Deals). */
+     site nao mostra nem estrelas nem "0.0" (so a nota editorial do Electric Deals). */
   function temNota(p) {
     var r = Number(p && p.rating);
     return isFinite(r) && r > 0;
@@ -484,7 +484,7 @@
     var pr = premio(p, todos);
     if (!pr) return "";
     return '<div class="review-award award-' + pr.classe + '">' +
-      '<span class="award-kicker">E-Ride Deals</span>' +
+      '<span class="award-kicker">Electric Deals</span>' +
       '<span class="award-label">' + esc(pr.rotulo) + "</span></div>";
   }
 
@@ -648,7 +648,7 @@
 
   /* ---------- 9. FAQ curado ----------
      O aviso de afiliado canonico vive no card-warn e no rodape. O FAQ nao
-     repete "E-Ride Deals nao vende" nem "ganhamos comissao" — sao as mesmas
+     repete "Electric Deals nao vende" nem "ganhamos comissao" — sao as mesmas
      frases de novo. Aqui ficam so as 3 perguntas que o leitor ainda nao tem. */
   var FAQ = [
     { p: "Where do the price and rating come from?",

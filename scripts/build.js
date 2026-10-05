@@ -1,5 +1,5 @@
 /* ============================================================
-   E-RIDE DEALS — SSG build (prerender all product/category pages)
+   Electric Deals — SSG build (prerender all product/category pages)
    - Fetches products from Supabase (fallback: products.json)
    - Emits products/<slug>/index.html for every product
    - Emits <category>/index.html pages
@@ -22,7 +22,7 @@ const OUT = ROOT;
    ambiente no build (Vercel -> Project Settings -> Environment Variables) ou
    edite os defaults abaixo. Nenhum outro arquivo precisa mudar. */
 const SITE_URL = (process.env.SITE_URL || "https://eletricdeals.shop").replace(/\/+$/, "");
-const BRAND_NAME = process.env.BRAND_NAME || "E-Ride Deals";
+const BRAND_NAME = process.env.BRAND_NAME || "Electric Deals";
 const SITE_NAME = BRAND_NAME;
 
 /* E-mail de contato real, exigido pelas politicas do Google Ads
@@ -626,6 +626,26 @@ const FOOT = [
   "</body>\n</html>"
 ].join("\n");
 
+/* Card "Our pick": recomendacao unica no topo das deals, 100% derivada dos
+   dados (maior spec-based score entre os produtos em estoque) — nada de
+   rotulo editorial inventado. */
+function topPickHTML(p, todos) {
+  if (!p) return "";
+  const rev = ReviewData.notas(p, todos);
+  const motivo = ReviewData.pros(p, todos)[0] || "";
+  const img = imgProd(p, todos);
+  return '<div class="card-about" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:18px;border:2px solid #111827">' +
+    (img ? '<a href="' + urlProduto(p) + '" style="flex:0 0 140px"><img src="' + img + '" alt="' + esc(ReviewData.baseUnica(p, todos)) + '" loading="lazy" style="width:140px;height:auto;display:block"/></a>' : "") +
+    '<div style="flex:1;min-width:240px">' +
+    '<span style="display:inline-block;background:#111827;color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;margin-bottom:6px">OUR PICK &middot; highest spec-based score</span>' +
+    '<h3 style="margin:0 0 4px;font-size:19px"><a href="' + urlProduto(p) + '" style="color:inherit;text-decoration:none">' + esc(ReviewData.baseUnica(p, todos)) + "</a></h3>" +
+    '<p style="margin:0 0 8px;color:#556070;font-size:14px">' + esc(motivo) + " Score " + rev.score.toFixed(1) + "/10, calculated from the published specs and current price &mdash; we have not physically tested it.</p>" +
+    '<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">' +
+    '<strong style="font-size:20px">' + fmt(p.preco) + "</strong>" +
+    '<a class="btn-buy" href="' + urlProduto(p) + '" style="text-decoration:none">See why it wins &rsaquo;</a>' +
+    "</div></div></div>";
+}
+
 function seedScript(p) {
   return '<script type="application/json" id="produto-seed">' + jsonEmbed(p) + "</" + "script>";
 }
@@ -866,7 +886,7 @@ function pagProduto(p, contexto) {
     '<div class="trust-row"><div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span><strong>Secure checkout</strong>Handled entirely by the partner store.</span></div>' +
     '<div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="15" height="11" rx="2"/><path d="M16 9h3l3 3v5h-6"/><circle cx="6.5" cy="18.5" r="1.5"/><circle cx="17.5" cy="18.5" r="1.5"/></svg><span><strong>Shipping &amp; returns</strong>Terms set by the partner at checkout.</span></div>' +
     '<div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6z"/><path d="m9 12 2 2 4-4"/></svg><span><strong>Price comparison</strong>No extra cost to you. Ever.</span></div></div>' +
-    '<div class="card-warn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><strong>Affiliate disclosure.</strong> E-Ride Deals is an independent product discovery website. We don\u2019t sell or stock products — this item is sold by the retailer shown, and your purchase is completed on the retailer\u2019s site. As an affiliate, we may earn a commission on qualifying purchases, at no additional cost to you. <a href="/affiliate-disclosure/">Read our full disclosure</a>.</span></div>' +
+    '<div class="card-warn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><strong>Affiliate disclosure.</strong> Electric Deals is an independent product discovery website. We don\u2019t sell or stock products — this item is sold by the retailer shown, and your purchase is completed on the retailer\u2019s site. As an affiliate, we may earn a commission on qualifying purchases, at no additional cost to you. <a href="/affiliate-disclosure/">Read our full disclosure</a>.</span></div>' +
     "</aside>" +
     "</div>" +
 
@@ -1071,7 +1091,7 @@ function pagCategoria(slug, cat, produtos) {
   const vs = comPreco.map(p => Number(p.preco)).sort((a, b) => a - b);
   const min = vs[0], max = vs[vs.length - 1], med = vs[Math.floor(vs.length / 2)];
   const comWas = produtos.filter(p => pctVisivel(p.preco, p.preco_anterior) != null).length;
-  const titulo = "Best " + cat.nome + " — Prices, Ratings & Coupons | E-Ride Deals";
+  const titulo = "Best " + cat.nome + " — Prices, Ratings & Coupons | Electric Deals";
   const metadata = cat.descricao || "Electric " + (cat.nome || "") + " compared across partner stores — check prices, ratings and coupons, then buy directly at the retailer.";
   const cards = produtos.map(x => cardHTML(x, produtos)).join("");
   const tabela = ReviewData.htmlComparativo(comPreco.slice(0, Clusters.LIMITE_TABELA), { urlOf: urlProduto });
@@ -1224,6 +1244,11 @@ function patchPaginaEstatica(nome, opts) {
   html = html.replace('<div id="app-footer"></div>', footerHTML());
   /* e-mail de contato real */
   html = html.split("__CONTACT_EMAIL__").join(CONTACT_EMAIL);
+  /* marcadores da home: data da checagem de preco + card "Our pick" */
+  html = html.split("__PRICE_CHECK__").join(BUILD_DATE);
+  if (opts.topPick != null) {
+    html = html.split("__TOP_PICK__").join(opts.topPick ? topPickHTML(opts.topPick, opts.produtos || []) : "");
+  }
   /* banner de consentimento antes dos scripts finais */
   if (html.indexOf("consent-banner") === -1) html = html.replace("</body>", CONSENT_SNIPPET + "</body>");
   /* captura de e-mail: formulario inline + popup de saida */
@@ -1241,7 +1266,10 @@ function patchPaginaEstatica(nome, opts) {
          aninhada — o padrao cobre grid vazia ou ja preenchida. */
       const re = new RegExp('(<div class="grid-cards[^"]*" id="' + id + '">)(?:\\s|<article[\\s\\S]*?</article>)*(</div>)');
       const dentro = lista.length ? lista.map(x => cardHTML(x, produtos)).join("") : "";
-      if (re.test(html)) html = html.replace(re, "$1" + dentro + "$2");
+      /* Reescrever por FUNÇÃO: string de replace interpreta "$1"/"$2" do
+         conteudo dos cards (precos!) como referencia de grupo e comia o
+         cifrao e digitos do "Save" na home. */
+      if (re.test(html)) html = html.replace(re, function (m, g1, g2) { return g1 + dentro + g2; });
     });
   }
   escreverArquivo(nome, html);
@@ -1416,12 +1444,35 @@ async function main() {
   const comDesconto = produtos.filter(p => pctVisivel(p.preco, p.preco_anterior) != null)
     .sort((a, b) => pctVisivel(b.preco, b.preco_anterior) - pctVisivel(a.preco, a.preco_anterior));
   const porRating = produtos.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+  /* Sem repetir produto entre as secoes da home: deal > popular > pick.
+     Produto repetido em duas grids passa impressao de catalogo baguncado. */
+  const jaNaHome = {};
+  const semRepetir = function (lista, n) {
+    const out = [];
+    lista.forEach(function (p) {
+      if (out.length >= n || jaNaHome[p.id]) return;
+      jaNaHome[p.id] = 1;
+      out.push(p);
+    });
+    return out;
+  };
+  const homeDeals = semRepetir(comDesconto, 6);
+  const homePop = semRepetir(porRating, 6);
+  const homePicks = semRepetir(produtos.slice(), 6);
+  /* Our pick: maior spec-based score entre os produtos disponiveis. */
+  let ourPick = null, bestScore = -1;
+  produtos.forEach(function (p) {
+    if (p.disponibilidade === "esgotado" || !(Number(p.preco) > 0)) return;
+    const s = ReviewData.notas(p, produtos).score;
+    if (s > bestScore) { bestScore = s; ourPick = p; }
+  });
   patchPaginaEstatica("index.html", {
     produtos,
+    topPick: ourPick,
     cards: {
-      "deals-grid": () => comDesconto.slice(0, 6),
-      "populares-grid": () => porRating.slice(0, 6),
-      "destaques-grid": () => produtos.slice(0, 6)
+      "deals-grid": () => homeDeals,
+      "populares-grid": () => homePop,
+      "destaques-grid": () => homePicks
     }
   });
   patchPaginaEstatica("catalog.html", { produtos, cards: { "cat-grid": () => produtos.slice(0, 24) } });
