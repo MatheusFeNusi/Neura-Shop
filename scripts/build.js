@@ -382,11 +382,13 @@ function cardHTML(p, todos) {
   const img = imgProd(p, todos);
   return '<article class="pcard" data-pid="' + esc(p.id) + '">' +
     '<a class="media" href="' + urlProduto(p) + '">' + badge +
-    (img ? '<img src="' + img + '" alt="' + esc(p.nome) + '" loading="lazy"/>' : "") +
+    (img ? '<img src="' + img + '" alt="' + esc(ReviewData.baseUnica(p, todos)) + '" loading="lazy"/>' : "") +
     "</a>" +
     '<div class="body">' +
     '<span class="p-brand">' + esc(p.marca) + "</span>" +
-    '<a class="p-name" href="' + urlProduto(p) + '">' + esc(p.nome) + "</a>" +
+    /* Titulo curto/legivel (mesma base do H1) em vez da descricao crua do
+       feed — o nome gigante do fornecedor nunca deve ser o titulo do card. */
+    '<a class="p-name" href="' + urlProduto(p) + '">' + esc(ReviewData.baseUnica(p, todos)) + "</a>" +
     estrelasCard(p) +
     '<div class="price">' +
     (desc != null ? '<span class="was">Was: ' + fmt(p.preco_anterior) + "</span>" : "") +
@@ -551,7 +553,21 @@ const EMAIL_STYLE =
   '.email-pop .email-pop-close{position:absolute;top:8px;right:12px;border:0;background:none;font-size:22px;cursor:pointer;color:#6b7280}' +
   '</style>\n';
 
-function emailFormHTML(idSuffix) {
+function emailFormHTML(idSuffix, produto) {
+  /* produto (opcional) = contexto de price-alert por produto: vai junto no
+     POST p/ tabela "leads" e no evento email_signup/price_alert_signup. */
+  const dataProd = produto ? '" data-produto="' + esc(produto) : "";
+  if (produto) {
+    return '<div class="email-cta" id="email-cta-' + idSuffix + '">' +
+      '<h3>Want to know if this price drops?</h3>' +
+      '<p>Leave your email and we\u2019ll let you know if the tracked price of this model changes.</p>' +
+      '<form class="js-email-form' + dataProd + '" novalidate>' +
+      '<input type="email" name="email" required placeholder="Email address" aria-label="Email address"/>' +
+      '<button type="submit">Alert me</button>' +
+      '</form>' +
+      '<p class="email-cta-fine">No spam, unsubscribe anytime.</p>' +
+      '</div>';
+  }
   return '<div class="email-cta" id="email-cta-' + idSuffix + '">' +
     '<h3>Get price-drop alerts</h3>' +
     '<p>Leave your email and we\u2019ll flag the best e-scooter and e-bike deals of the week. No spam, unsubscribe anytime.</p>' +
@@ -573,9 +589,12 @@ const EMAIL_SNIPPET = EMAIL_STYLE +
   '</div>\n' +
   '<script>(function(){' +
   'function save(email,form){' +
+  'var pid=(form.getAttribute&&form.getAttribute("data-produto"))||"";' +
   'try{localStorage.setItem("ns-email-capture",email);}catch(e){}' +
+  'try{if(typeof gtag==="function"){gtag("event",pid?"price_alert_signup":"email_signup",{product_id:pid,page:location.pathname});}}catch(e){}' +
   'try{var cfg=window.SUPA_CONFIG||{};if(!cfg.url||!cfg.anon)return;' +
-  'fetch(cfg.url+"/rest/v1/leads",{method:"POST",headers:{"apikey":cfg.anon,"Authorization":"Bearer "+cfg.anon,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({email:email,origem:location.pathname})}).catch(function(){});' +
+  'var body={email:email,origem:location.pathname};if(pid)body.produto_id=pid;' +
+  'fetch(cfg.url+"/rest/v1/leads",{method:"POST",headers:{"apikey":cfg.anon,"Authorization":"Bearer "+cfg.anon,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(body)}).catch(function(){});' +
   '}catch(e){}}' +
   'function ok(form){var h=form.parentNode.querySelector("h3");var p=form.parentNode.querySelector("p");if(h)h.textContent="You\\u2019re on the list";if(p)p.textContent="Thanks! We\\u2019ll email you the best deals.";form.remove();}' +
   'document.addEventListener("submit",function(ev){var f=ev.target;if(!f.classList||!f.classList.contains("js-email-form"))return;ev.preventDefault();var inp=f.querySelector("input[type=email]");var v=inp&&inp.value.trim();if(!v||v.indexOf("@")<1)return;save(v,f);ok(f);},true);' +
@@ -880,6 +899,9 @@ function pagProduto(p, contexto) {
     clustersDoProdutoHTML(p, contexto.produtos) +
     '<section class="detail-sec"><h2><span class="bar"></span> Compare similar products</h2>' + simCards + "</section>" +
     '<section class="detail-sec"><h2><span class="bar"></span> Frequently asked questions</h2><div id="faq-lista">' + faqHTML + "</div></section>" +
+    /* Price alert por produto: o submit (delegado no EMAIL_SNIPPET) grava
+       email + produto_id na tabela "leads" do Supabase. */
+    emailFormHTML("prod", p.id) +
     (relCards ? '<section class="section"><div class="container" style="padding-inline:0"><div class="section-head"><h2>You may also like</h2><a class="link-all" href="/catalog.html">View all ›</a></div>' + relCards + "</div></section>" : "") +
     "</main>" +
     seedScript(p) +
@@ -1213,9 +1235,13 @@ function patchPaginaEstatica(nome, opts) {
     const grids = opts.cards;
     Object.keys(grids).forEach(function (id) {
       const lista = grids[id](produtos);
-      if (!lista.length) return;
-      const re = new RegExp('<div class="grid-cards[^"]*" id="' + id + '">\\s*</div>');
-      if (re.test(html)) html = html.replace(re, function (m) { return m.replace("></div>", ">" + lista.map(x => cardHTML(x, produtos)).join("") + "</div>"); });
+      /* Substitui o conteudo da grid SEMPRE (antes so injetava quando ela
+         estava vazia, o que deixava cards antigos congelados no HTML).
+         Os cards sao <article> diretos dentro da grade, sem outra <article>
+         aninhada — o padrao cobre grid vazia ou ja preenchida. */
+      const re = new RegExp('(<div class="grid-cards[^"]*" id="' + id + '">)(?:\\s|<article[\\s\\S]*?</article>)*(</div>)');
+      const dentro = lista.length ? lista.map(x => cardHTML(x, produtos)).join("") : "";
+      if (re.test(html)) html = html.replace(re, "$1" + dentro + "$2");
     });
   }
   escreverArquivo(nome, html);
@@ -1296,8 +1322,33 @@ function copiarAssetsPublic() {
   });
 }
 
+/* ---------- Migracao de imagens do storage pessoal ----------
+   As imagens que vieram do bucket pessoal do Supabase (caminho
+   "Matheus%20Nunes" com token assinado) foram baixadas para
+   img/products/<id>.png. Este rewrite troca a URL assinada pela copia
+   local toda vez que o admin voltar a servir a URL antiga — assim o site
+   nao depende do bucket pessoal nem expoe o caminho no codigo-fonte. */
+function migrarImagensPessoais(produtos) {
+  const dir = path.join(ROOT, "img", "products");
+  (produtos || []).forEach(function (p) {
+    if (!p || !p.id) return;
+    const local = "/img/products/" + p.id + ".png";
+    const existe = fs.existsSync(path.join(dir, p.id + ".png"));
+    const trocar = function (u) {
+      return (existe && /supabase\.co\/storage.*Matheus/i.test(String(u))) ? local : u;
+    };
+    if (p.img) p.img = trocar(p.img);
+    if (Array.isArray(p.fotos)) p.fotos = p.fotos.map(trocar);
+    if (Array.isArray(p.banners)) p.banners = p.banners.map(trocar);
+  });
+  return produtos;
+}
+
 async function main() {
   const { origem, store } = await carregarProdutos();
+  migrarImagensPessoais(store.produtos);
+  /* Persiste a URL local no products.json e no fallback do app */
+  fs.writeFileSync(path.join(ROOT, "products.json"), JSON.stringify(store, null, 2), "utf8");
   const produtos = semDuplicados(store.produtos);
   console.log("[build] origem:", origem, "| produtos:", produtos.length);
   computarSlugs(produtos);
