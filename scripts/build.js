@@ -433,6 +433,15 @@ const TAGS_GOOGLE =
   "</script>\n" +
   '<script async src="https://www.googletagmanager.com/gtag/js?id=' + GOOGLE_AW + '"></script>\n';
 
+const TAGS_CLARITY =
+  '<script type="text/javascript">\n' +
+  '    (function(c,l,a,r,i,t,y){\n' +
+  '        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};\n' +
+  '        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;\n' +
+  '        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);\n' +
+  '    })(window, document, "clarity", "script", "ywlptbl48w");\n' +
+  '</script>\n';
+
 /* Banner de consentimento (Consent Mode v2). Sem ele, trafego da UE/UK fica
    fora de conformidade com a GDPR/ePrivacy para medicao do Google Ads. */
 const CONSENT_SNIPPET =
@@ -515,6 +524,7 @@ function footerHTML() {
 
 const HEAD_COMMON = (title, desc, canonical, ogImg) =>
   '<!DOCTYPE html>\n<html lang="en-US">\n<head>\n' +
+  TAGS_CLARITY +
   '<meta charset="UTF-8"/>\n' +
   '<meta name="viewport" content="width=device-width, initial-scale=1.0"/>\n' +
   "<title>" + esc(title) + "</title>\n" +
@@ -1236,6 +1246,10 @@ function patchPaginaEstatica(nome, opts) {
   const alvo = path.join(OUT, nome);
   if (!fs.existsSync(alvo)) return;
   let html = fs.readFileSync(alvo, "utf8");
+  /* clarity tag */
+  if (html.indexOf("clarity.ms/tag") === -1) {
+    html = html.replace("<head>", "<head>\n" + TAGS_CLARITY);
+  }
   /* gtag + consent: bloco unico, igual ao das paginas geradas */
   if (RE_GTAG.test(html)) html = html.replace(RE_GTAG, TAGS_GOOGLE);
   else if (html.indexOf("googletagmanager.com/gtag") === -1) html = html.replace("</head>", TAGS_GOOGLE + "</head>");
