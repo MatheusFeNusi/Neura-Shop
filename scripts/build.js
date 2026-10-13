@@ -93,6 +93,43 @@ function renomearMarcaLegada(valor) {
 
    Os campos continuam no admin: quem tiver acesso a dado real de nota,
    avaliacao ou cupom cadastra la e o build respeita. */
+/* ---------- Filtro anti-counterfeit (Google Ads) ----------
+   Citar no titulo/descricao/espec o nome de uma marca famosa que NAO e o
+   fabricante do produto (ex.: "...XIAOMI M365", "SamsungBattery") e lido pelo
+   Google como produto falsificado. O filtro abaixo roda em TODO produto que
+   entra no site - banco (Supabase/admin), products.json ou importacao nova -
+   e remove essas marcas de qualquer texto antes de gerar pagina. */
+var MARCAS_TERCEIROS_RE = /samsung(?=\s*battery)|\b(xiaomi|m365|samsung|segway|ninebot|apple|bosch|lg|panasonic|sony|harley(?:\s*davidson)?|specialized|trek|decathlon|rad\s*power|lectric|aventon|gotrax|jetson|razor|tesla|honda|yamaha|bmw|porsche)\b/gi;
+function limparMarcasTexto(s) {
+  return String(s).replace(MARCAS_TERCEIROS_RE, "").replace(/\s{2,}/g, " ").replace(/\s+([,.;:)/])/g, "$1").replace(/([( []\s*)-/g, "$1").trim();
+}
+function limparMarcasProfundo(v) {
+  if (typeof v === "string") return limparMarcasTexto(v);
+  if (Array.isArray(v)) return v.map(limparMarcasProfundo);
+  if (v && typeof v === "object") {
+    const o = {};
+    for (const k of Object.keys(v)) o[k] = limparMarcasProfundo(v[k]);
+    return o;
+  }
+  return v;
+}
+/* Produtos banidos/duplicados — nunca mais publicar, mesmo se a linha ainda
+   existir no banco. A exclusao definitiva no admin/Supabase requer login do
+   painel: tools/remover-counterfeit.sql.
+   ww-1991948: WQ-W4 "...XIAOMI M365" (counterfeit — marca Xiaomi no titulo)
+   ww-2055760 / ww-2041055: duplicatas mais caras de GOKEEP F5 / SINOHON EM200
+   (a listagem mais barata do mesmo modelo e a canonica; 301 no vercel.json). */
+var PRODUTOS_REMOVIDOS = { "ww-1991948": 1, "ww-2055760": 1, "ww-2041055": 1 };
+function higienizarCatalogo(produtos) {
+  const limpos = [];
+  (produtos || []).forEach(p => {
+    if (!p || !p.id) return;
+    if (PRODUTOS_REMOVIDOS[p.id]) { console.log("[build] produto bloqueado (politica): " + p.id); return; }
+    limpos.push(limparMarcasProfundo(p));
+  });
+  return limpos;
+}
+
 function semDadosFabricados(produtos) {
   (produtos || []).forEach(p => {
     /* Produto que chegou com review de autor ficticio teve a nota e a
@@ -138,10 +175,10 @@ async function carregarProdutos() {
     produtos: local.produtos || []
   };
   const cfg = supaConfig();
-  if (process.env.SEM_SUPABASE === "1") return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: semDadosFabricados(renomearMarcaLegada(base.produtos)) } };
+  if (process.env.SEM_SUPABASE === "1") return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: semDadosFabricados(higienizarCatalogo(renomearMarcaLegada(base.produtos))) } };
   if (!cfg.url || !cfg.anon) {
     console.warn("[build] js/config.js sem url/anon do Supabase -> usando products.json");
-    return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: semDadosFabricados(renomearMarcaLegada(base.produtos)) } };
+    return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: semDadosFabricados(higienizarCatalogo(renomearMarcaLegada(base.produtos))) } };
   }
   try {
     const rows = await fetchPaginas(cfg);
@@ -156,14 +193,14 @@ async function carregarProdutos() {
       todos.push(d);
     });
     if (!todos.length) throw new Error("admin sem produtos");
-    const produtos = semDadosFabricados(limparUrlDasLojas(ordenarComoLocal(renomearMarcaLegada(todos), base.produtos)));
+    const produtos = semDadosFabricados(higienizarCatalogo(limparUrlDasLojas(ordenarComoLocal(renomearMarcaLegada(todos), base.produtos))));
     const store = { marca: base.marca, categorias: base.categorias, produtos };
     fs.writeFileSync(arquivo, JSON.stringify(store, null, 2), "utf8");
     console.log("[build] products.json sincronizado com o admin (" + produtos.length + " produtos)");
     return { origem: "supabase", store };
   } catch (e) {
     console.warn("[build] admin indisponivel (" + e.message + ") -> usando products.json");
-    return { origem: "json", store: base };
+    return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: semDadosFabricados(higienizarCatalogo(renomearMarcaLegada(base.produtos))) } };
   }
 }
 

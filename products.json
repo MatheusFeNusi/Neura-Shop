@@ -16,100 +16,6 @@
   ],
   "produtos": [
     {
-      "id": "ww-1991948",
-      "faq": [
-        {
-          "a": "No. Electric Deals is an independent product discovery platform: the button takes you to the retailer's page, where the item is sold and processed by that retailer.",
-          "p": "Does Electric Deals sell this product?"
-        },
-        {
-          "a": "Directly from the current retailer listing. Confirm price, rating and availability on the retailer page before buying.",
-          "p": "Where do the price and rating come from?"
-        },
-        {
-          "a": "If you buy through the button, this independent product discovery site may receive a small commission from the retailer, at no additional cost to you. Coupons and discounts are applied by the retailer on its official page.",
-          "p": "Does Electric Deals earn a commission?"
-        }
-      ],
-      "img": "/img/products/ww-1991948.png",
-      "nome": "WQ-W4 Pro Electric Scooter 36V 10Ah Battery 350W Motor Recommended Top Speed 25KM/H 8.5inch Tires 25KM/H Top Speed 25-30KM Max Mileage Range 120KG Max Load Folding E-Scooter XIAOMI M365",
-      "fotos": [],
-      "icone": "caixa",
-      "marca": "WQ-W4",
-      "preco": 259.99,
-      "specs": [
-        {
-          "valor": "WQ-W4",
-          "rotulo": "Brand"
-        },
-        {
-          "valor": "Electric Scooters",
-          "rotulo": "Category"
-        },
-        {
-          "valor": "New",
-          "rotulo": "Condition"
-        },
-        {
-          "valor": "36V",
-          "rotulo": "Voltage"
-        },
-        {
-          "valor": "10Ah",
-          "rotulo": "Battery"
-        },
-        {
-          "valor": "25KM/H",
-          "rotulo": "Top speed"
-        },
-        {
-          "valor": "8.5inch",
-          "rotulo": "Size"
-        },
-        {
-          "valor": "4.91 / 5",
-          "rotulo": "Rating"
-        },
-        {
-          "valor": "152",
-          "rotulo": "Reviews"
-        },
-        {
-          "valor": "US$ 259.99",
-          "rotulo": "Price"
-        },
-        {
-          "valor": "US$ 579.99",
-          "rotulo": "List price"
-        },
-        {
-          "valor": "In stock",
-          "rotulo": "Availability"
-        }
-      ],
-      "video": "https://www.youtube.com/results?search_query=WQ-W4%20WQ-W4%20Pro%20Electric%20Scooter",
-      "rating": 0,
-      "banners": [],
-      "comissao": 3,
-      "destaque": true,
-      "merchant": "partner-store",
-      "categoria": "scooters-eletricos",
-      "descricao": "🛴 【36V 10Ah Removable Lithium Battery】\nEnjoy long-distance rides with the high-capacity 36V 10Ah lithium battery. The removable design makes charging simple and convenient at home, work, or wherever you have access to power. Under optimal riding conditions, it provides reliable energy for extended daily commutes.\n\n🛴 【350W High-Torque Motor】\nExperience responsive acceleration with the powerful 350W motor system. Engineered to deliver impressive torque, this electric scooter easily navigates steep inclines, city streets, and rugged paths with smooth, consistent power output.\n\n🛴 【Extended Riding Range & Smart Power】\nThe 36V 10Ah battery system is optimized for maximum efficiency, offering up to 25KM per full charge. Intelligent energy management balances throttle control and pedal/power assist for longer trips.\n\n🛴 【All-Terrain Design & Robust Frame】\nBuilt with a durable, high-strength frame paired with 8.5inch tires for maximum stability and traction. Designed to cushion shocks on uneven pavement, gravel, and dirt roads. Supports a maximum payload capacity of 120KG Max Load.\n\n🛴 【Dual Disc Brakes & Night Safety Lighting】\nFeatures high-precision front and rear disc brakes for strong, predictable stopping power. Integrated ultra-bright LED headlights and rear brake lights ensure maximum visibility during night commutes.\n\n🛴 【Quick Assembly & Warranty Support】\nArrives 85%–90% pre-assembled with setup tools and clear instructions included. Backed by dedicated customer support and standard warranty coverage for total peace of mind.",
-      "avaliacoes": 0,
-      "product_id": "WW-1991948",
-      "url_afiliado": "https://usa.banggood.com/custlink/Dmmlr1DHPT",
-      "lojas_compare": [
-        {
-          "nome": "Amazon",
-          "preco": 422
-        }
-      ],
-      "merchant_nome": "Partner store",
-      "categoria_nome": "Electric Scooters",
-      "preco_anterior": 579.99,
-      "disponibilidade": "em_estoque"
-    },
-    {
       "id": "ww-2045406",
       "faq": [
         {
@@ -701,91 +607,6 @@
       "disponibilidade": "em_estoque"
     },
     {
-      "id": "ww-2055760",
-      "faq": [
-        {
-          "a": "No. Electric Deals is an independent product discovery platform: the button takes you to the retailer's page, where the item is sold and processed by that retailer.",
-          "p": "Does Electric Deals sell this product?"
-        },
-        {
-          "a": "Directly from the current retailer listing. Confirm price, rating and availability on the retailer page before buying.",
-          "p": "Where do the price and rating come from?"
-        },
-        {
-          "a": "If you buy through the button, this independent product discovery site may receive a small commission from the retailer, at no additional cost to you. Coupons and discounts are applied by the retailer on its official page.",
-          "p": "Does Electric Deals earn a commission?"
-        }
-      ],
-      "img": "https://imgaz.staticbg.com/thumb/gallery/oaupload/banggood/images/18/99/f3937ed6-0aab-4a6b-bb7b-0232b1af5048.png.webp",
-      "nome": "GOKEEP F5 Electric Scooter 20Ah 52V 1000W Recommended Top Speed 25KM/H 11 Inches Folding Electric Scooter 43km Mileage Max Load 120Kg",
-      "fotos": [],
-      "icone": "caixa",
-      "marca": "GOKEEP",
-      "preco": 659,
-      "specs": [
-        {
-          "valor": "GOKEEP",
-          "rotulo": "Brand"
-        },
-        {
-          "valor": "Electric Scooters",
-          "rotulo": "Category"
-        },
-        {
-          "valor": "New",
-          "rotulo": "Condition"
-        },
-        {
-          "valor": "52V",
-          "rotulo": "Voltage"
-        },
-        {
-          "valor": "20Ah",
-          "rotulo": "Battery"
-        },
-        {
-          "valor": "25KM/H",
-          "rotulo": "Top speed"
-        },
-        {
-          "valor": "11 Inch",
-          "rotulo": "Size"
-        },
-        {
-          "valor": "0",
-          "rotulo": "Reviews"
-        },
-        {
-          "valor": "US$ 634.00",
-          "rotulo": "Price"
-        },
-        {
-          "valor": "US$ 1599.99",
-          "rotulo": "List price"
-        },
-        {
-          "valor": "In stock",
-          "rotulo": "Availability"
-        }
-      ],
-      "video": null,
-      "rating": 0,
-      "banners": [],
-      "comissao": 3,
-      "destaque": false,
-      "merchant": "partner-store",
-      "categoria": "scooters-eletricos",
-      "descricao": "An electric scooter curated from the retailer catalog with live price and real ratings. Sold by the retailer, where the final price is confirmed at checkout.",
-      "avaliacoes": 0,
-      "product_id": "WW-2055760",
-      "url_afiliado": "https://usa.banggood.com/custlink/DKvaCfmH8S",
-      "lojas_compare": [],
-      "merchant_nome": "Partner store",
-      "categoria_nome": "Electric Scooters",
-      "preco_anterior": 1599.99,
-      "disponibilidade": "em_estoque"
-    },
-    {
       "id": "ww-2054347",
       "faq": [
         {
@@ -914,7 +735,7 @@
           "rotulo": "Top speed"
         },
         {
-          "valor": "4.70 / 5",
+          "valor": "4.70/ 5",
           "rotulo": "Rating"
         },
         {
@@ -1003,7 +824,7 @@
           "rotulo": "Size"
         },
         {
-          "valor": "4.93 / 5",
+          "valor": "4.93/ 5",
           "rotulo": "Rating"
         },
         {
@@ -1177,7 +998,7 @@
           "rotulo": "Size"
         },
         {
-          "valor": "4.82 / 5",
+          "valor": "4.82/ 5",
           "rotulo": "Rating"
         },
         {
@@ -1346,7 +1167,7 @@
           "rotulo": "Size"
         },
         {
-          "valor": "4.50 / 5",
+          "valor": "4.50/ 5",
           "rotulo": "Rating"
         },
         {
@@ -1432,7 +1253,7 @@
           "rotulo": "Size"
         },
         {
-          "valor": "5.00 / 5",
+          "valor": "5.00/ 5",
           "rotulo": "Rating"
         },
         {
@@ -1486,7 +1307,7 @@
         }
       ],
       "img": "https://imgaz2.staticbg.com/thumb/gallery/oaupload/banggood/images/E0/60/1ff07ec5-e5d7-4f1e-a4d5-eb462956a277.jpg.webp",
-      "nome": "Shengmilo S600 Electric Bike 48V 17.5AH SamsungBattery 1000W*2 Dual Motors Recommended Top Speed 25KM/H 26inch Tires 90KM Max Mileage 150KG Max Load Electric Bicycle",
+      "nome": "Shengmilo S600 Electric Bike 48V 17.5AH Battery 1000W*2 Dual Motors Recommended Top Speed 25KM/H 26inch Tires 90KM Max Mileage 150KG Max Load Electric Bicycle",
       "fotos": [],
       "icone": "caixa",
       "marca": "Shengmilo",
@@ -1552,91 +1373,6 @@
       "merchant_nome": "Partner store",
       "categoria_nome": "Electric Bikes",
       "preco_anterior": 2879.99,
-      "disponibilidade": "em_estoque"
-    },
-    {
-      "id": "ww-2041055",
-      "faq": [
-        {
-          "a": "No. Electric Deals is an independent product discovery platform: the button takes you to the retailer's page, where the item is sold and processed by that retailer.",
-          "p": "Does Electric Deals sell this product?"
-        },
-        {
-          "a": "Directly from the current retailer listing. Confirm price, rating and availability on the retailer page before buying.",
-          "p": "Where do the price and rating come from?"
-        },
-        {
-          "a": "If you buy through the button, this independent product discovery site may receive a small commission from the retailer, at no additional cost to you. Coupons and discounts are applied by the retailer on its official page.",
-          "p": "Does Electric Deals earn a commission?"
-        }
-      ],
-      "img": "https://imgaz1.staticbg.com/thumb/gallery/oaupload/banggood/images/D5/07/ce371e96-d096-426a-b867-cebdfe389d21.jpg.webp",
-      "nome": "SINOHON EM200 Electric Bike 48V 12.5AH Battery 500W Recommended Top Speed 25KM/H Motor 26 Inch Electric Bicycle 65-85 KM Mileage Range Max Load 150KG SINOHON EM200",
-      "fotos": [],
-      "icone": "caixa",
-      "marca": "SINOHON",
-      "preco": 474,
-      "specs": [
-        {
-          "valor": "SINOHON",
-          "rotulo": "Brand"
-        },
-        {
-          "valor": "Electric Bikes",
-          "rotulo": "Category"
-        },
-        {
-          "valor": "New",
-          "rotulo": "Condition"
-        },
-        {
-          "valor": "48V",
-          "rotulo": "Voltage"
-        },
-        {
-          "valor": "12.5Ah",
-          "rotulo": "Battery"
-        },
-        {
-          "valor": "25KM/H",
-          "rotulo": "Top speed"
-        },
-        {
-          "valor": "26 Inch",
-          "rotulo": "Size"
-        },
-        {
-          "valor": "0",
-          "rotulo": "Reviews"
-        },
-        {
-          "valor": "US$ 474.00",
-          "rotulo": "Price"
-        },
-        {
-          "valor": "US$ 499.00",
-          "rotulo": "List price"
-        },
-        {
-          "valor": "In stock",
-          "rotulo": "Availability"
-        }
-      ],
-      "video": null,
-      "rating": 0,
-      "banners": [],
-      "comissao": 3,
-      "destaque": false,
-      "merchant": "partner-store",
-      "categoria": "bicicletas-eletricas",
-      "descricao": "An electric bike curated from the retailer catalog with live price and real ratings. Sold by the retailer, where the final price is confirmed at checkout.",
-      "avaliacoes": 0,
-      "product_id": "WW-2041055",
-      "url_afiliado": "https://usa.banggood.com/custlink/v3vOJ1G5oj",
-      "lojas_compare": [],
-      "merchant_nome": "Partner store",
-      "categoria_nome": "Electric Bikes",
-      "preco_anterior": 499,
       "disponibilidade": "em_estoque"
     },
     {
@@ -3228,7 +2964,7 @@
       "destaque": false,
       "merchant": "partner-store",
       "categoria": "bicicletas-eletricas",
-      "descricao": "🚲 【48V 23Ah Removable Lithium Battery】\nEnjoy long-distance rides with the high-capacity 48V 23Ah lithium battery. The removable design makes charging simple and convenient at home, work, or wherever you have access to power. Under optimal riding conditions, it provides reliable energy for extended daily commutes.\n\n🚲 【750W*2 High-Torque Motor】\nExperience responsive acceleration with the powerful 750W*2 motor system. Engineered to deliver impressive torque, this electric bike easily navigates steep inclines, city streets, and rugged paths with smooth, consistent power output.\n\n🚲 【Extended Riding Range & Smart Power】\nThe 48V 23Ah battery system is optimized for maximum efficiency, offering up to 25KM per full charge. Intelligent energy management balances throttle control and pedal/power assist for longer trips.\n\n🚲 【All-Terrain Design & Robust Frame】\nBuilt with a durable, high-strength frame paired with 20inch tires for maximum stability and traction. Designed to cushion shocks on uneven pavement, gravel, and dirt roads. Supports a maximum payload capacity of 150KG Max Load.\n\n🚲 【Dual Disc Brakes & Night Safety Lighting】\nFeatures high-precision front and rear disc brakes for strong, predictable stopping power. Integrated ultra-bright LED headlights and rear brake lights ensure maximum visibility during night commutes.\n\n🚲 【Quick Assembly & Warranty Support】\nArrives 85%–90% pre-assembled with setup tools and clear instructions included. Backed by dedicated customer support and standard warranty coverage for total peace of mind.",
+      "descricao": "🚲 【48V 23Ah Removable Lithium Battery】\nEnjoy long-distance rides with the high-capacity 48V 23Ah lithium battery. The removable design makes charging simple and convenient at home, work, or wherever you have access to power. Under optimal riding conditions, it provides reliable energy for extended daily commutes. 🚲 【750W*2 High-Torque Motor】\nExperience responsive acceleration with the powerful 750W*2 motor system. Engineered to deliver impressive torque, this electric bike easily navigates steep inclines, city streets, and rugged paths with smooth, consistent power output. 🚲 【Extended Riding Range & Smart Power】\nThe 48V 23Ah battery system is optimized for maximum efficiency, offering up to 25KM per full charge. Intelligent energy management balances throttle control and pedal/power assist for longer trips. 🚲 【All-Terrain Design & Robust Frame】\nBuilt with a durable, high-strength frame paired with 20inch tires for maximum stability and traction. Designed to cushion shocks on uneven pavement, gravel, and dirt roads. Supports a maximum payload capacity of 150KG Max Load. 🚲 【Dual Disc Brakes & Night Safety Lighting】\nFeatures high-precision front and rear disc brakes for strong, predictable stopping power. Integrated ultra-bright LED headlights and rear brake lights ensure maximum visibility during night commutes. 🚲 【Quick Assembly & Warranty Support】\nArrives 85%–90% pre-assembled with setup tools and clear instructions included. Backed by dedicated customer support and standard warranty coverage for total peace of mind.",
       "avaliacoes": 0,
       "product_id": "WW-2032209",
       "url_afiliado": "https://usa.banggood.com/custlink/vG3LJwv3e0",
