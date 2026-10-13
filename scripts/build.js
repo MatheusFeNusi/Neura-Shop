@@ -67,8 +67,10 @@ function supaConfig() {
    linhas no banco ele troca o nome na copia gerada. Tocar no texto do produto
    no admin nao desfaz isso. */
 const MARCA_LEGADA = "WattWheel";
+const LOJA_PARCEIRA = "Partner store";
+const LOJA_PARCEIRA_NOVA = "Banggood";
 function renomearMarcaLegada(valor) {
-  if (typeof valor === "string") return valor.split(MARCA_LEGADA).join(SITE_NAME);
+  if (typeof valor === "string") return valor.split(MARCA_LEGADA).join(SITE_NAME).split(LOJA_PARCEIRA).join(LOJA_PARCEIRA_NOVA);
   if (Array.isArray(valor)) return valor.map(renomearMarcaLegada);
   if (valor && typeof valor === "object") {
     const out = {};
@@ -555,7 +557,7 @@ function footerHTML() {
     '<li><a href="contact/">Contact</a></li>' +
     "</ul></div>" +
     "</div>" +
-    '<div class="foot-bottom"><span>© ' + BUILD_YEAR + " " + esc(BRAND_NAME) + " — independent product discovery for electric scooters &amp; electric bikes. We do not sell or ship products; purchases are completed at the retailer.</span></div>" +
+    '<div class="foot-bottom"><span>© ' + BUILD_YEAR + " " + esc(BRAND_NAME) + " — independent product discovery for electric scooters &amp; electric bikes. Independent affiliate of Banggood. We do not sell or ship products.</span></div>" +
     "</div></footer>";
 }
 
@@ -1249,7 +1251,7 @@ function paginasLegais() {
       desc: BRAND_NAME + " earns commissions from qualifying purchases made through affiliate links, at no additional cost to you. Full FTC disclosure.",
       corpo:
         '<div class="card-about"><h2>FTC affiliate disclosure</h2>' +
-        "<p>" + aff + " is an independent product discovery website. Some links on this site are affiliate links, which means we may earn a commission when you make a qualifying purchase through them, <strong>at no additional cost to you</strong>.</p>" +
+        "<p>" + aff + " is an independent product discovery website. Some links on this site are affiliate links — <strong>If you buy through our links to Banggood, we may earn a commission at no additional cost to you.</strong></p>" +
         "<p style=\"margin-top:10px\">When you click <strong>Check price</strong> or <strong>View deal</strong>, you leave " + aff + " and land on the product's page at the retailer, where payment, checkout, shipping, returns, warranty, and customer service are handled entirely by that retailer. We only curate and present products and prices published by retailers.</p>" +
         "<p style=\"margin-top:10px\">Affiliate links on this site are marked with <code>rel=\"sponsored\"</code> and carry the note \"Affiliate link — we may earn a commission at no extra cost to you\" next to the purchase buttons.</p>" +
         "<p style=\"margin-top:10px\">Our selection is independent of our affiliate relationship, and affiliate status never changes the price you pay. We do not physically test products, and scores on this site are calculated from published specifications and prices, not from hands-on testing.</p>" +
@@ -1291,8 +1293,11 @@ function patchPaginaEstatica(nome, opts) {
   if (RE_GTAG.test(html)) html = html.replace(RE_GTAG, TAGS_GOOGLE);
   else if (html.indexOf("googletagmanager.com/gtag") === -1) html = html.replace("</head>", TAGS_GOOGLE + "</head>");
   /* header/footer estaticos */
-  html = html.replace('<div id="app-header"></div>', headerHTML());
-  html = html.replace('<div id="app-footer"></div>', footerHTML());
+  if (html.indexOf('<div id="app-header"></div>') !== -1) html = html.replace('<div id="app-header"></div>', headerHTML());
+  if (html.indexOf('<div id="app-footer"></div>') !== -1) html = html.replace('<div id="app-footer"></div>', footerHTML());
+  /* Paginas estaticas que ja tem header/footer materializado: reescrever o
+     bloco inteiro para o texto novo (Banggood) chegar a elas tambem. */
+  if (html.indexOf('<footer class="site-footer">') !== -1) html = html.replace(/<footer class="site-footer">[\s\S]*?<\/footer>/, function () { return footerHTML(); });
   /* e-mail de contato real */
   html = html.split("__CONTACT_EMAIL__").join(CONTACT_EMAIL);
   /* marcadores da home: data da checagem de preco + card "Our pick" */
