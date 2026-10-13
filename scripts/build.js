@@ -1,5 +1,5 @@
-/* ============================================================
-   Electric Deals — SSG build (prerender all product/category pages)
+﻿/* ============================================================
+   Electric Deals â€” SSG build (prerender all product/category pages)
    - Fetches products from Supabase (fallback: products.json)
    - Emits products/<slug>/index.html for every product
    - Emits <category>/index.html pages
@@ -115,17 +115,23 @@ function limparMarcasProfundo(v) {
   }
   return v;
 }
-/* Produtos banidos/duplicados — nunca mais publicar, mesmo se a linha ainda
+/* Produtos banidos/duplicados â€” nunca mais publicar, mesmo se a linha ainda
    existir no banco. A exclusao definitiva no admin/Supabase requer login do
    painel: tools/remover-counterfeit.sql.
-   ww-1991948: WQ-W4 "...XIAOMI M365" (counterfeit — marca Xiaomi no titulo)
+   ww-1991948: WQ-W4 "...XIAOMI M365" (counterfeit â€” marca Xiaomi no titulo)
    ww-2055760 / ww-2041055: duplicatas mais caras de GOKEEP F5 / SINOHON EM200
    (a listagem mais barata do mesmo modelo e a canonica; 301 no vercel.json). */
 var PRODUTOS_REMOVIDOS = { "ww-1991948": 1, "ww-2055760": 1, "ww-2041055": 1 };
+/* Catalogo reduzido temporariamente (reducao controlada do catalogo -
+    Google Ads Misrepresentation): produtos com "oculto": true no products.json
+    ficam fora de TODA saida publica (catalogo, listas, guias via dados,
+    sitemap e paginas de produto), mas os dados completos continuam no
+    products.json e no admin para reativacao. higienizarCatalogo os retira. */
 function higienizarCatalogo(produtos) {
   const limpos = [];
   (produtos || []).forEach(p => {
     if (!p || !p.id) return;
+    if (p.oculto === true) { console.log("[build] produto oculto (catalogo reduzido): " + p.id); return; }
     if (PRODUTOS_REMOVIDOS[p.id]) { console.log("[build] produto bloqueado (politica): " + p.id); return; }
     limpos.push(limparMarcasProfundo(p));
   });
@@ -177,46 +183,73 @@ async function carregarProdutos() {
     produtos: local.produtos || []
   };
   const cfg = supaConfig();
-  if (process.env.SEM_SUPABASE === "1") return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: semDadosFabricados(higienizarCatalogo(renomearMarcaLegada(base.produtos))) } };
+  function retornoJson() {
+    const todos = semDadosFabricados(renomearMarcaLegada(base.produtos));
+    return {
+      origem: "json",
+      completa: { marca: base.marca, categorias: base.categorias, produtos: todos },
+      store: { marca: base.marca, categorias: base.categorias, produtos: higienizarCatalogo(todos) }
+    };
+  }
+  if (process.env.SEM_SUPABASE === "1") return retornoJson();
   if (!cfg.url || !cfg.anon) {
     console.warn("[build] js/config.js sem url/anon do Supabase -> usando products.json");
-    return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: semDadosFabricados(higienizarCatalogo(renomearMarcaLegada(base.produtos))) } };
+    return retornoJson();
   }
   try {
     const rows = await fetchPaginas(cfg);
     const vistos = {};
+    const ocultosLocal = {};
+    base.produtos.forEach(p => { ocultosLocal[p.id] = !!p.oculto; });
     const todos = [];
     rows.forEach(r => {
       const d = (r && r.dados) ? Object.assign({}, r.dados) : r;
       if (!d || !d.id) return;
       d.id = r.id || d.id;
+      /* O banco nao conhece o campo oculto (RLS impede corrigi-lo com a anon
+         key): o products.json e a fonte. Mescla aqui para a saida publica e
+         para o fallback embutido respeitarem o catalogo reduzido. */
+      if (ocultosLocal[d.id]) d.oculto = true;
       if (vistos[d.id]) return;
       vistos[d.id] = 1;
       todos.push(d);
     });
     if (!todos.length) throw new Error("admin sem produtos");
-    const produtos = semDadosFabricados(higienizarCatalogo(limparUrlDasLojas(ordenarComoLocal(renomearMarcaLegada(todos), base.produtos))));
+    const ordenados = semDadosFabricados(limparUrlDasLojas(ordenarComoLocal(renomearMarcaLegada(todos), base.produtos)));
+    /* products.json guarda TODOS os produtos (incl. ocultos; reativacao sem
+       perda de dado); apenas a saida publica (store) recebe o filtro. */
+    fs.writeFileSync(arquivo, JSON.stringify({ marca: base.marca, categorias: base.categorias, produtos: ordenados }, null, 2), "utf8");
+    const produtos = higienizarCatalogo(ordenados);
     const store = { marca: base.marca, categorias: base.categorias, produtos };
-    fs.writeFileSync(arquivo, JSON.stringify(store, null, 2), "utf8");
-    console.log("[build] products.json sincronizado com o admin (" + produtos.length + " produtos)");
-    return { origem: "supabase", store };
+    console.log("[build] products.json sincronizado com o admin (" + ordenados.length + " produtos, " + (ordenados.length - produtos.length) + " ocultos/bloqueados no site)");
+    return { origem: "supabase", completa: { marca: base.marca, categorias: base.categorias, produtos: ordenados }, store };
   } catch (e) {
     console.warn("[build] admin indisponivel (" + e.message + ") -> usando products.json");
-    return { origem: "json", store: { marca: base.marca, categorias: base.categorias, produtos: semDadosFabricados(higienizarCatalogo(renomearMarcaLegada(base.produtos))) } };
+    return retornoJson();
   }
 }
 
-/* Mantem o fallback embutido do app (file://) igual ao products.json */
+/* Mantem o fallback embutido do app (file://) igual ao products.json e injeta
+   a lista de ids ocultos: no navegador os dados vem ao vivo do Supabase (que nao
+   conhece o campo oculto), entao o app precisa dessa lista para filtrar. */
 function sincronizarFallback(store) {
   const alvo = path.join(ROOT, "js", "app.js");
-  const src = fs.readFileSync(alvo, "utf8");
+  let src = fs.readFileSync(alvo, "utf8");
   const linha = "var STORE_FALLBACK = " + JSON.stringify(store) + ";";
   const re = /^var STORE_FALLBACK = .*;$/m;
   if (!re.test(src)) { console.warn("[build] STORE_FALLBACK nao encontrado em js/app.js"); return; }
-  const novo = src.replace(re, linha);
-  if (novo === src) { console.log("[build] fallback embutido ja estava atualizado"); return; }
-  fs.writeFileSync(alvo, novo, "utf8");
-  console.log("[build] fallback embutido de js/app.js atualizado");
+  src = src.replace(re, linha);
+  const ocultos = {};
+  try {
+    const loc = JSON.parse(fs.readFileSync(path.join(ROOT, "products.json"), "utf8"));
+    (loc.produtos || []).forEach(p => { if (p && p.oculto === true) ocultos[p.id] = 1; });
+  } catch (e) { console.warn("[build] nao foi possivel ler products.json p/ ocultos:", e.message); }
+  const reOcc = /^var OCULTOS_IDS = .*;$/m;
+  const linhaOcc = "var OCULTOS_IDS = " + JSON.stringify(ocultos) + ";";
+  if (reOcc.test(src)) src = src.replace(reOcc, linhaOcc);
+  else src = src.replace("var STORE_FALLBACK", linhaOcc + "\nvar STORE_FALLBACK");
+  fs.writeFileSync(alvo, src, "utf8");
+  console.log("[build] fallback embutido de js/app.js atualizado (ocultos: " + Object.keys(ocultos).length + ")");
 }
 
 /* SKUs duplicados do mesmo modelo (duas listagens do feed com o mesmo slug
@@ -272,7 +305,7 @@ function pctDesc(a, b) {
   if (!a || !b || a >= b) return null;
   return Math.round((1 - a / b) * 100);
 }
-/* Descontos acima do teto partem de "preco de lista" inflado do feed — o
+/* Descontos acima do teto partem de "preco de lista" inflado do feed â€” o
    Google Ads trata como preco enganoso (Misrepresentation). Acima de 40% a
    pagina mostra so o preco atual: sem %, sem "was", sem "save". */
 var DESCONTO_MAX = 40;
@@ -426,7 +459,7 @@ function cardHTML(p, todos) {
     '<div class="body">' +
     '<span class="p-brand">' + esc(p.marca) + "</span>" +
     /* Titulo curto/legivel (mesma base do H1) em vez da descricao crua do
-       feed — o nome gigante do fornecedor nunca deve ser o titulo do card. */
+       feed â€” o nome gigante do fornecedor nunca deve ser o titulo do card. */
     '<a class="p-name" href="' + urlProduto(p) + '">' + esc(ReviewData.baseUnica(p, todos)) + "</a>" +
     estrelasCard(p) +
     '<div class="price">' +
@@ -509,7 +542,7 @@ function headerHTML() {
     '</a>' +
     '<form class="search-box" id="busca-form" role="search">' +
     '<label class="visually-hidden" for="busca-input">Search products</label>' +
-    '<input id="busca-input" type="search" placeholder="Search gear… (e.g. e-scooter, e-bike, battery, charger, motor, tire)" autocomplete="off"/>' +
+    '<input id="busca-input" type="search" placeholder="Search gearâ€¦ (e.g. e-scooter, e-bike, battery, charger, motor, tire)" autocomplete="off"/>' +
     '<button class="search-btn" type="submit" aria-label="Search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>' +
     '<div class="sugest" id="busca-sugest"></div>' +
     "</form>" +
@@ -518,7 +551,7 @@ function headerHTML() {
     '<a href="about.html">About</a>' +
     '<a href="contact/">Contact</a>' +
     "</nav>" +
-    '<button class="menu-btn" id="menu-btn" aria-label="Menu">☰</button>' +
+    '<button class="menu-btn" id="menu-btn" aria-label="Menu">â˜°</button>' +
     "</div>" +
     '<nav class="cats">' +
     '<a href="index.html">Home</a>' +
@@ -535,7 +568,7 @@ function footerHTML() {
     '<div class="foot-top">' +
     '<div class="foot-brand">' +
     '<span class="brand"><img class="brand-logo" src="img/logo.png" alt="' + esc(BRAND_NAME) + ' logo"/></span>' +
-    "<p>Independent product discovery and curation for electric scooters and electric bikes. We research and organize products, deals and coupons from partner retailers — purchases are completed directly with the retailer, never with us.</p>" +
+    "<p>Independent product discovery and curation for electric scooters and electric bikes. We research and organize products, deals and coupons from partner retailers â€” purchases are completed directly with the retailer, never with us.</p>" +
     "</div>" +
     '<div class="foot-col"><h4>Explore</h4><ul>' +
     '<li><a href="catalog.html?cat=scooters-eletricos">Electric Scooters</a></li>' +
@@ -557,7 +590,7 @@ function footerHTML() {
     '<li><a href="contact/">Contact</a></li>' +
     "</ul></div>" +
     "</div>" +
-    '<div class="foot-bottom"><span>© ' + BUILD_YEAR + " " + esc(BRAND_NAME) + " — independent product discovery for electric scooters &amp; electric bikes. Independent affiliate of Banggood. We do not sell or ship products.</span></div>" +
+    '<div class="foot-bottom"><span>Â© ' + BUILD_YEAR + " " + esc(BRAND_NAME) + " â€” independent product discovery for electric scooters &amp; electric bikes. Independent affiliate of Banggood. We do not sell or ship products.</span></div>" +
     "</div></footer>";
 }
 
@@ -585,7 +618,7 @@ const BODY_OPEN = '<body data-page="produto">\n' + headerHTML() + '\n';
 /* ---------- Captura de e-mail ----------
    Formulario inline no rodape de toda pagina + popup de saida (exit-intent
    no desktop, 50% de rolagem apos 25s no mobile). O envio grava na tabela
-   "leads" do Supabase (INSERT anon — criar a tabela e a policy no projeto).
+   "leads" do Supabase (INSERT anon â€” criar a tabela e a policy no projeto).
    Nunca bloqueia a navegacao: falha silenciosa quando a tabela nao existe. */
 const EMAIL_STYLE =
   '<style>' +
@@ -632,7 +665,7 @@ const EMAIL_SNIPPET = EMAIL_STYLE +
   emailFormHTML("rodape") +
   '<div class="email-pop" id="email-pop" hidden>' +
   '  <div class="email-pop-box" role="dialog" aria-modal="true" aria-label="Price drop alerts">' +
-  '    <button class="email-pop-close" id="email-pop-close" aria-label="Close">×</button>' +
+  '    <button class="email-pop-close" id="email-pop-close" aria-label="Close">Ã—</button>' +
   emailFormHTML("pop") +
   '  </div>' +
   '</div>\n' +
@@ -663,7 +696,7 @@ const FOOT = [
   '<div class="modal-video" id="modal-video" hidden>',
   '  <div class="modal-video-overlay" id="modal-video-fechar" data-fechar></div>',
   '  <div class="modal-video-box" role="dialog" aria-modal="true" aria-label="Product video">',
-  '    <button class="modal-video-close" id="modal-video-close" data-fechar aria-label="Close">×</button>',
+  '    <button class="modal-video-close" id="modal-video-close" data-fechar aria-label="Close">Ã—</button>',
   '    <div class="modal-video-frame" id="modal-video-frame"></div>',
   "  </div>",
   "</div>",
@@ -676,7 +709,7 @@ const FOOT = [
 ].join("\n");
 
 /* Card "Our pick": recomendacao unica no topo das deals, 100% derivada dos
-   dados (maior spec-based score entre os produtos em estoque) — nada de
+   dados (maior spec-based score entre os produtos em estoque) â€” nada de
    rotulo editorial inventado. */
 function topPickHTML(p, todos) {
   if (!p) return "";
@@ -784,7 +817,7 @@ function pagProduto(p, contexto) {
   const metadata = esc(
     (p.nome || "").split(/\s+(?=[A-Z])/)[0] + " " + (rf.isBike ? "e-bike" : "e-scooter") +
     ": specs, current price and a spec-based score of " + rev.score.toFixed(1) + "/10. " + ReviewData.pros(p, contexto.produtos)[0] +
-    " Score calculated from listing specs and price — we have not physically tested this product."
+    " Score calculated from listing specs and price â€” we have not physically tested this product."
   );
   const disp = { em_estoque: ["In stock", "stock"], poucas_unidades: ["Only a few left", "soon"], esgotado: ["Currently unavailable", "out"] }[p.disponibilidade] || ["In stock", "stock"];
   const pct = pctDesc(p.preco, p.preco_anterior);
@@ -799,15 +832,15 @@ function pagProduto(p, contexto) {
         '<span class="pct">-' + pricesBlocoPct + "%</span>" +
         '<span class="save">You save ' + fmt(p.preco_anterior - p.preco) + "</span></div>"
       : '<div class="row"><span class="now">' + fmt(p.preco) + "</span></div>") +
-    '<div class="cash">Price at ' + esc(p.merchant_nome || p.merchant) + " as of " + esc(BUILD_DATE) + ". Prices may change — the final price is confirmed at checkout.</div>";
+    '<div class="cash">Price at ' + esc(p.merchant_nome || p.merchant) + " as of " + esc(BUILD_DATE) + ". Prices may change â€” the final price is confirmed at checkout.</div>";
 
   const keySpecItems = [
     rf.watt != null ? [rf.isBike ? "Motor" : "Peak motor", rf.watt + "W"] : null,
-    rf.wh != null ? ["Battery", rf.volt + "V " + rf.ah + "Ah · " + num(rf.wh) + "Wh"] : null,
+    rf.wh != null ? ["Battery", rf.volt + "V " + rf.ah + "Ah Â· " + num(rf.wh) + "Wh"] : null,
     rf.alcance != null ? ["Estimated range (calculated)", "~" + miTxt(rf.alcance)] : null,
     rf.alcanceFab ? ["Manufacturer range (as listed)", rangeFabTxtB(rf.alcanceFab)] : null,
     rf.vel != null ? ["Top speed", mphTxt(rf.vel)] : null,
-    rf.pneu != null ? [rf.isBike ? "Wheel size" : "Tire size", rf.pneu + "″"] : null,
+    rf.pneu != null ? [rf.isBike ? "Wheel size" : "Tire size", rf.pneu + "â€³"] : null,
     rf.carga != null ? ["Max load", lbsTxt(rf.carga)] : null
   ].filter(Boolean);
 
@@ -856,9 +889,9 @@ function pagProduto(p, contexto) {
     HEAD_COMMON(title, metadata, canonical, fotos[0]) +
     BODY_OPEN +
     '<main class="container review-page">' +
-    '<nav class="crumb"><a href="/">Home</a><span class="sep">›</span>' +
+    '<nav class="crumb"><a href="/">Home</a><span class="sep">â€º</span>' +
     '<a href="/catalog.html?cat=' + esc(p.categoria) + '">' + esc(p.categoria_nome || p.categoria) + "</a>" +
-    '<span class="sep">›</span><span>' + esc(p.marca) + "</span></nav>" +
+    '<span class="sep">â€º</span><span>' + esc(p.marca) + "</span></nav>" +
 
         /* ---------- Comparacao de precos: topo da pagina, acima do hero ----------
            So sai quando ha loja com preco REAL cadastrado; sem dado verificado
@@ -894,7 +927,7 @@ function pagProduto(p, contexto) {
     ReviewData.htmlBottomLine(p, contexto.produtos) +
     "</header>" +
 
-    /* ---------- Imagem + botão de revelar cupom, logo abaixo do título ---------- */
+    /* ---------- Imagem + botÃ£o de revelar cupom, logo abaixo do tÃ­tulo ---------- */
     '<div class="pg-layout">' +
     '<div class="pg-col-galeria">' +
     '<div class="gallery-img">' + (fotos[0] ? '<img id="foto-main" src="' + fotos[0] + '" alt="' + esc(p.nome) + '"/>' : "") + "</div>" +
@@ -920,14 +953,14 @@ function pagProduto(p, contexto) {
     '<div class="buybox-price"><div id="preco-bloco">' + precoBloco + "</div></div>" +
     '<div class="buybox-sec">' +
     '<button class="btn-buy-big" id="btn-comprar" data-outbound>' + (esgotado ? "Currently unavailable" : (temCupom ? "GET COUPON CODE" : "Check price at " + esc(p.merchant_nome))) + "</button>" +
-    '<p class="aff-note" style="font-size:12px;color:#6b7280;margin:6px 0 0">Affiliate link — we may earn a commission at no extra cost to you.</p>' +
-    (ReviewData.videoBusca(p) ? '<div class="video-row" id="video-row"><button class="btn-video" id="btn-video" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> <span class="video-label">' + esc(ReviewData.videoRotulo(p)) + '</span> <span class="video-ext">↗</span></button></div>' : "") +
+    '<p class="aff-note" style="font-size:12px;color:#6b7280;margin:6px 0 0">Affiliate link â€” we may earn a commission at no extra cost to you.</p>' +
+    (ReviewData.videoBusca(p) ? '<div class="video-row" id="video-row"><button class="btn-video" id="btn-video" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> <span class="video-label">' + esc(ReviewData.videoRotulo(p)) + '</span> <span class="video-ext">â†—</span></button></div>' : "") +
     (temCupom
-      ? '<div class="coupon-box" id="cupom-box"><div class="coupon-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 0-4h20a2 2 0 0 1 0 4 2 2 0 0 0 0 4 2 2 0 0 1 0 4H2a2 2 0 0 1 0-4 2 2 0 0 0 0-4z"/><path d="M13 5v14M16 12h.01M10 12h.01"/></svg> Your coupon is ready — <strong>copy it</strong> and apply at checkout</div>' +
-        '<p class="coupon-compare">This code comes from the ' + esc(p.merchant_nome) + " listing — apply it at checkout there.</p>" +
+      ? '<div class="coupon-box" id="cupom-box"><div class="coupon-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 0-4h20a2 2 0 0 1 0 4 2 2 0 0 0 0 4 2 2 0 0 1 0 4H2a2 2 0 0 1 0-4 2 2 0 0 0 0-4z"/><path d="M13 5v14M16 12h.01M10 12h.01"/></svg> Your coupon is ready â€” <strong>copy it</strong> and apply at checkout</div>' +
+        '<p class="coupon-compare">This code comes from the ' + esc(p.merchant_nome) + " listing â€” apply it at checkout there.</p>" +
         '<div class="coupon-row"><button class="coupon-code" id="cupom-codigo" type="button" data-codigo="' + esc(p.cupom) + '">' + esc(p.cupom) + "</button></div>" +
         '<p class="coupon-note" id="cupom-nota">Apply code at checkout on ' + esc(p.merchant_nome) + ".</p>" +
-        '<button class="btn-buy-big" id="btn-comprar-cupom" data-outbound>Go to retailer with coupon ↗</button></div>'
+        '<button class="btn-buy-big" id="btn-comprar-cupom" data-outbound>Go to retailer with coupon â†—</button></div>'
       : "") +
     '<p class="redirect-note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>You\u2019ll be redirected to <strong id="parceiro-nome">' + esc(p.merchant_nome) + "</strong>, where this product is listed, sold and shipped.</span></p>" +
     (temCupom ? "" : '<a class="btn-partner" id="btn-parceiro" href="' + esc(p.url_afiliado) + '" target="_blank" rel="sponsored nofollow noopener" data-outbound>See product at retailer \u2197</a>') +
@@ -935,7 +968,7 @@ function pagProduto(p, contexto) {
     '<div class="trust-row"><div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span><strong>Secure checkout</strong>Handled entirely by the partner store.</span></div>' +
     '<div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="15" height="11" rx="2"/><path d="M16 9h3l3 3v5h-6"/><circle cx="6.5" cy="18.5" r="1.5"/><circle cx="17.5" cy="18.5" r="1.5"/></svg><span><strong>Shipping &amp; returns</strong>Terms set by the partner at checkout.</span></div>' +
     '<div class="trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6z"/><path d="m9 12 2 2 4-4"/></svg><span><strong>Price comparison</strong>No extra cost to you. Ever.</span></div></div>' +
-    '<div class="card-warn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><strong>Affiliate disclosure.</strong> Electric Deals is an independent product discovery website. We don\u2019t sell or stock products — this item is sold by the retailer shown, and your purchase is completed on the retailer\u2019s site. As an affiliate, we may earn a commission on qualifying purchases, at no additional cost to you. <a href="/affiliate-disclosure/">Read our full disclosure</a>.</span></div>' +
+    '<div class="card-warn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><strong>Affiliate disclosure.</strong> Electric Deals is an independent product discovery website. We don\u2019t sell or stock products â€” this item is sold by the retailer shown, and your purchase is completed on the retailer\u2019s site. As an affiliate, we may earn a commission on qualifying purchases, at no additional cost to you. <a href="/affiliate-disclosure/">Read our full disclosure</a>.</span></div>' +
     "</aside>" +
     "</div>" +
 
@@ -971,7 +1004,7 @@ function pagProduto(p, contexto) {
     /* Price alert por produto: o submit (delegado no EMAIL_SNIPPET) grava
        email + produto_id na tabela "leads" do Supabase. */
     emailFormHTML("prod", p.id) +
-    (relCards ? '<section class="section"><div class="container" style="padding-inline:0"><div class="section-head"><h2>You may also like</h2><a class="link-all" href="/catalog.html">View all ›</a></div>' + relCards + "</div></section>" : "") +
+    (relCards ? '<section class="section"><div class="container" style="padding-inline:0"><div class="section-head"><h2>You may also like</h2><a class="link-all" href="/catalog.html">View all â€º</a></div>' + relCards + "</div></section>" : "") +
     "</main>" +
     seedScript(p) +
     schemaProduto(p, canonical, contexto) +
@@ -1052,7 +1085,7 @@ function ressalvasHTML(c, ps, todos) {
     linhas.push("We list what the listing states. Your own weight, terrain and riding style decide whether that number works for you.");
   }
   linhas.push("Estimated range is calculated from battery size, not copied from a manufacturer claim. Real range depends on weight, speed, terrain and temperature; when a listing publishes a manufacturer range, we show it on the product page next to our estimate.");
-  linhas.push("Speed and power limits for e-scooters and e-bikes vary by state and city in the US — high-power models may be limited to private property or off-road use. Check your local laws before riding on public roads.");
+  linhas.push("Speed and power limits for e-scooters and e-bikes vary by state and city in the US â€” high-power models may be limited to private property or off-road use. Check your local laws before riding on public roads.");
   if (semAltura) linhas.push(semAltura + " of the " + ps.length + " listings do not publish a load limit at all.");
   if (semAutonomia) linhas.push(semAutonomia + " of the " + ps.length + " listings do not publish enough battery data to estimate range.");
   linhas.push("We have not test-ridden these models. Every figure here comes from the published specification and the current price.");
@@ -1073,8 +1106,8 @@ function pagCluster(c, todos) {
     HEAD_COMMON(titulo, metaDesc, canonical, "") +
     '<body data-page="cluster">\n' + headerHTML() + '\n' +
     '<main class="container review-page">' +
-    '<nav class="crumb"><a href="/">Home</a><span class="sep">›</span>' +
-    '<a href="/catalog.html">Best lists</a><span class="sep">›</span>' +
+    '<nav class="crumb"><a href="/">Home</a><span class="sep">â€º</span>' +
+    '<a href="/catalog.html">Best lists</a><span class="sep">â€º</span>' +
     "<span>" + esc(c.curto) + "</span></nav>" +
 
     '<header class="review-hero-head">' +
@@ -1140,8 +1173,8 @@ function pagCategoria(slug, cat, produtos) {
   const vs = comPreco.map(p => Number(p.preco)).sort((a, b) => a - b);
   const min = vs[0], max = vs[vs.length - 1], med = vs[Math.floor(vs.length / 2)];
   const comWas = produtos.filter(p => pctVisivel(p.preco, p.preco_anterior) != null).length;
-  const titulo = "Best " + cat.nome + " — Prices, Ratings & Coupons | Electric Deals";
-  const metadata = cat.descricao || "Electric " + (cat.nome || "") + " compared across partner stores — check prices, ratings and coupons, then buy directly at the retailer.";
+  const titulo = "Best " + cat.nome + " â€” Prices, Ratings & Coupons | Electric Deals";
+  const metadata = cat.descricao || "Electric " + (cat.nome || "") + " compared across partner stores â€” check prices, ratings and coupons, then buy directly at the retailer.";
   const cards = produtos.map(x => cardHTML(x, produtos)).join("");
   const tabela = ReviewData.htmlComparativo(comPreco.slice(0, Clusters.LIMITE_TABELA), { urlOf: urlProduto });
   const listas = Clusters.DEFINICOES
@@ -1150,14 +1183,14 @@ function pagCategoria(slug, cat, produtos) {
     HEAD_COMMON(titulo, metadata, canonical, "") +
     '<body data-page="cat-static">\n' + headerHTML() + '\n' +
     '<main class="container">' +
-    '<nav class="crumb"><a href="/">Home</a><span class="sep">›</span><span>' + esc(cat.nome) + "</span></nav>" +
+    '<nav class="crumb"><a href="/">Home</a><span class="sep">â€º</span><span>' + esc(cat.nome) + "</span></nav>" +
     '<div class="page-head"><p class="kicker">' + esc(cat.nome) + "</p>" +
     '<h1>' + esc(cat.nome) + "</h1>" +
     "<p>" + esc(metadata) + "</p>" +
-    '<p class="count" style="margin-top:10px" data-cat-slug="' + esc(cat.slug || "") + '">' + produtos.length + " products · " +
+    '<p class="count" style="margin-top:10px" data-cat-slug="' + esc(cat.slug || "") + '">' + produtos.length + " products Â· " +
     "from <span data-preco-resumo=\"min\">" + fmt(min) + "</span> to <span data-preco-resumo=\"max\">" + fmt(max) +
     "</span> (median <span data-preco-resumo=\"med\">" + fmt(med) + "</span>)" +
-    (comWas ? " · " + comWas + " below list price" : "") + " · prices checked " + esc(BUILD_MONTH) + "</p></div>" +
+    (comWas ? " Â· " + comWas + " below list price" : "") + " Â· prices checked " + esc(BUILD_MONTH) + "</p></div>" +
 
     (listas.length ? '<section class="detail-sec" id="sub-listas"><h2><span class="bar"></span> Narrow it down</h2>' +
       '<ul class="link-list">' + listas.map(o =>
@@ -1208,7 +1241,7 @@ function pagLegal(slug, titulo, desc, corpo) {
   return HEAD_COMMON(titulo + " | " + BRAND_NAME, desc, "/" + slug + "/", "") +
     '<body data-page="' + slug + '">\n' + headerHTML() + "\n" +
     '<main class="container prose">' +
-    '<nav class="crumb"><a href="/">Home</a><span class="sep">›</span><span>' + esc(titulo) + "</span></nav>" +
+    '<nav class="crumb"><a href="/">Home</a><span class="sep">â€º</span><span>' + esc(titulo) + "</span></nav>" +
     '<div class="page-head"><h1>' + esc(titulo) + "</h1></div>" +
     corpo +
     "</main>\n" +
@@ -1251,9 +1284,9 @@ function paginasLegais() {
       desc: BRAND_NAME + " earns commissions from qualifying purchases made through affiliate links, at no additional cost to you. Full FTC disclosure.",
       corpo:
         '<div class="card-about"><h2>FTC affiliate disclosure</h2>' +
-        "<p>" + aff + " is an independent product discovery website. Some links on this site are affiliate links — <strong>If you buy through our links to Banggood, we may earn a commission at no additional cost to you.</strong></p>" +
+        "<p>" + aff + " is an independent product discovery website. Some links on this site are affiliate links â€” <strong>If you buy through our links to Banggood, we may earn a commission at no additional cost to you.</strong></p>" +
         "<p style=\"margin-top:10px\">When you click <strong>Check price</strong> or <strong>View deal</strong>, you leave " + aff + " and land on the product's page at the retailer, where payment, checkout, shipping, returns, warranty, and customer service are handled entirely by that retailer. We only curate and present products and prices published by retailers.</p>" +
-        "<p style=\"margin-top:10px\">Affiliate links on this site are marked with <code>rel=\"sponsored\"</code> and carry the note \"Affiliate link — we may earn a commission at no extra cost to you\" next to the purchase buttons.</p>" +
+        "<p style=\"margin-top:10px\">Affiliate links on this site are marked with <code>rel=\"sponsored\"</code> and carry the note \"Affiliate link â€” we may earn a commission at no extra cost to you\" next to the purchase buttons.</p>" +
         "<p style=\"margin-top:10px\">Our selection is independent of our affiliate relationship, and affiliate status never changes the price you pay. We do not physically test products, and scores on this site are calculated from published specifications and prices, not from hands-on testing.</p>" +
         "<p style=\"margin-top:10px\">Questions: <a href=\"mailto:" + esc(CONTACT_EMAIL) + "\">" + esc(CONTACT_EMAIL) + "</a>.</p></div>"
     },
@@ -1262,7 +1295,7 @@ function paginasLegais() {
       desc: "How to contact " + BRAND_NAME + ".",
       corpo:
         '<div class="card-about"><h2>Questions?</h2>' +
-        "<p>Start with the <em>Frequently asked questions</em> section on each product page. For anything else — corrections, partnership requests, or privacy questions — write to us at:</p>" +
+        "<p>Start with the <em>Frequently asked questions</em> section on each product page. For anything else â€” corrections, partnership requests, or privacy questions â€” write to us at:</p>" +
         '<p style="margin-top:10px"><a href="mailto:' + esc(CONTACT_EMAIL) + '" style="color:var(--brand);font-weight:700">' + esc(CONTACT_EMAIL) + "</a></p>" +
         "<p style=\"margin-top:10px\">We only use your email address to reply to your message. See our <a href=\"/privacy/\">Privacy &amp; cookie policy</a>.</p></div>"
     }
@@ -1310,7 +1343,7 @@ function patchPaginaEstatica(nome, opts) {
   /* captura de e-mail: formulario inline + popup de saida */
   if (html.indexOf("js-email-form") === -1) html = html.replace("</body>", EMAIL_SNIPPET + "</body>");
   /* SSR: primeiros cards de produto no HTML estatico (home + catalogo). O app
-     re-renderiza as grades quando os dados chegam — melhoria progressiva. */
+     re-renderiza as grades quando os dados chegam â€” melhoria progressiva. */
   if (opts.cards) {
     const produtos = opts.produtos || [];
     const grids = opts.cards;
@@ -1319,10 +1352,10 @@ function patchPaginaEstatica(nome, opts) {
       /* Substitui o conteudo da grid SEMPRE (antes so injetava quando ela
          estava vazia, o que deixava cards antigos congelados no HTML).
          Os cards sao <article> diretos dentro da grade, sem outra <article>
-         aninhada — o padrao cobre grid vazia ou ja preenchida. */
+         aninhada â€” o padrao cobre grid vazia ou ja preenchida. */
       const re = new RegExp('(<div class="grid-cards[^"]*" id="' + id + '">)(?:\\s|<article[\\s\\S]*?</article>)*(</div>)');
       const dentro = lista.length ? lista.map(x => cardHTML(x, produtos)).join("") : "";
-      /* Reescrever por FUNÇÃO: string de replace interpreta "$1"/"$2" do
+      /* Reescrever por FUNÃ‡ÃƒO: string de replace interpreta "$1"/"$2" do
          conteudo dos cards (precos!) como referencia de grupo e comia o
          cifrao e digitos do "Save" na home. */
       if (re.test(html)) html = html.replace(re, function (m, g1, g2) { return g1 + dentro + g2; });
@@ -1410,7 +1443,7 @@ function copiarAssetsPublic() {
    As imagens que vieram do bucket pessoal do Supabase (caminho
    "Matheus%20Nunes" com token assinado) foram baixadas para
    img/products/<id>.png. Este rewrite troca a URL assinada pela copia
-   local toda vez que o admin voltar a servir a URL antiga — assim o site
+   local toda vez que o admin voltar a servir a URL antiga â€” assim o site
    nao depende do bucket pessoal nem expoe o caminho no codigo-fonte. */
 function migrarImagensPessoais(produtos) {
   const dir = path.join(ROOT, "img", "products");
@@ -1429,10 +1462,13 @@ function migrarImagensPessoais(produtos) {
 }
 
 async function main() {
-  const { origem, store } = await carregarProdutos();
+  const { origem, store, completa } = await carregarProdutos();
   migrarImagensPessoais(store.produtos);
-  /* Persiste a URL local no products.json e no fallback do app */
-  fs.writeFileSync(path.join(ROOT, "products.json"), JSON.stringify(store, null, 2), "utf8");
+  /* Persiste a URL local no products.json (lista COMPLETA, incl. ocultos, para
+     reativacao sem perda de dado) e no fallback do app (so visiveis) */
+  const jsonFinal = completa || store;
+  /* migrarImagensPessoais altera as mesmas referencias presentes em completa */
+  fs.writeFileSync(path.join(ROOT, "products.json"), JSON.stringify(jsonFinal, null, 2), "utf8");
   const produtos = semDuplicados(store.produtos);
   console.log("[build] origem:", origem, "| produtos:", produtos.length);
   computarSlugs(produtos);
@@ -1460,17 +1496,17 @@ async function main() {
     escreverArquivo("products/" + slug + "/index.html", pagProduto(p, { produtos }));
     n++;
   });
-  console.log("[build] páginas de produto geradas:", n);
+  console.log("[build] pÃ¡ginas de produto geradas:", n);
   /* Todo produto do admin tem de ter a URL /products/<slug>/. Sem pagina o
      link do admin cairia em product.html?id= e o visitante veria a versao
      dinamica, sem o HTML do build. */
   const semPagina = produtos.filter(p => p && p.nome && !fs.existsSync(path.join(OUT, "products", SLUG_FINAL[p.id] || slugProduto(p), "index.html")));
   if (semPagina.length) {
-    console.error("[build] ATENÇÃO: " + semPagina.length + " produto(s) sem página estática (remova do admin ou corrija o nome): " +
+    console.error("[build] ATENÃ‡ÃƒO: " + semPagina.length + " produto(s) sem pÃ¡gina estÃ¡tica (remova do admin ou corrija o nome): " +
       semPagina.map(p => p.id).join(", "));
   }
   const orfas = podarPaginasProdutos(produtos);
-  if (orfas.length) console.log("[build] páginas orfãs removidas (slug mudou no admin):", orfas.join(", "));
+  if (orfas.length) console.log("[build] pÃ¡ginas orfÃ£s removidas (slug mudou no admin):", orfas.join(", "));
 
   let nc = 0;
   catArray.forEach(c => {
@@ -1478,7 +1514,7 @@ async function main() {
     escreverArquivo(catPubl(c.slug) + "/index.html", pagCategoria(c.slug, c, c.produtos));
     nc++;
   });
-  console.log("[build] páginas de categoria geradas:", nc);
+  console.log("[build] pÃ¡ginas de categoria geradas:", nc);
 
   /* Clusters: so entra o que passa do minimo de produtos. O que fica de fora
      aparece no log com o numero -- assim da para ver a regra apertando sem
@@ -1488,13 +1524,13 @@ async function main() {
   cl.ok.forEach(x => {
     escreverArquivo(x.cluster.slug + "/index.html", pagCluster(x.cluster, produtos));
   });
-  console.log("[build] páginas de cluster geradas:", cl.ok.length, "->", cl.ok.map(x => "/" + x.cluster.slug + "/").join(" "));
+  console.log("[build] pÃ¡ginas de cluster geradas:", cl.ok.length, "->", cl.ok.map(x => "/" + x.cluster.slug + "/").join(" "));
   const podsProntos = podarPaginasCluster(cl.ok.map(x => x.cluster.slug));
-  if (podsProntos.length) console.log("[build] clusters orfãos removidos:", podsProntos.join(", "));
+  if (podsProntos.length) console.log("[build] clusters orfÃ£os removidos:", podsProntos.join(", "));
 
   /* Paginas legais estaticas (/privacy/, /terms/, /affiliate-disclosure/, /contact/) */
   paginasLegais();
-  console.log("[build] páginas legais geradas: /privacy/ /terms/ /affiliate-disclosure/ /contact/ (contato: " + CONTACT_EMAIL + ")");
+  console.log("[build] pÃ¡ginas legais geradas: /privacy/ /terms/ /affiliate-disclosure/ /contact/ (contato: " + CONTACT_EMAIL + ")");
 
   /* Paginas estaticas da raiz: header/footer, gtag+consent, email e cards SSR */
   const comDesconto = produtos.filter(p => pctVisivel(p.preco, p.preco_anterior) != null)
@@ -1533,12 +1569,12 @@ async function main() {
   });
   patchPaginaEstatica("catalog.html", { produtos, cards: { "cat-grid": () => produtos.slice(0, 24) } });
   ["about.html", "store.html", "product.html"].forEach(nome => patchPaginaEstatica(nome, { produtos }));
-  console.log("[build] páginas estáticas da raiz atualizadas (header/footer/gtag/cards)");
+  console.log("[build] pÃ¡ginas estÃ¡ticas da raiz atualizadas (header/footer/gtag/cards)");
 
   escreverArquivo("sitemap.xml", sitemapXML(produtos, catArray, cl.ok.map(x => x.cluster)));
   escreverArquivo("robots.txt", robotsTxt());
   console.log("[build] sitemap.xml + robots.txt atualizados");
-  console.log("[build] saída: raiz (preview local) + public/ (deploy Vercel)");
+  console.log("[build] saÃ­da: raiz (preview local) + public/ (deploy Vercel)");
   console.log("[build] done");
 }
 
