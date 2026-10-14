@@ -362,7 +362,7 @@ function cardHTML(p) {
   var badge = pct != null ? '<span class="badge">-' + pct + "%</span>" : "";
   var btn = esgotado
     ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>'
-    : '<button class="btn-buy" onclick="abrirOferta(\'' + p.id + '\')">View deal</button>';
+    : '<button class="btn-buy" onclick="abrirOferta(\'' + p.id + '\')">Read the review</button>';
   var hasRating = p.rating != null && isFinite(p.rating) && p.rating > 0 && p.avaliacoes > 0;
   var ratingHTML = hasRating
     ? '<div class="rating">' + starsHTML(p.rating) + ' <span class="reviews">' + Number(p.rating).toFixed(1) + ' (' + num(p.avaliacoes) + ')</span></div>'

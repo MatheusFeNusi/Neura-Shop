@@ -470,7 +470,7 @@ function cardHTML(p, todos) {
     '<a class="merchant" href="/store.html?loja=' + encodeURIComponent(p.merchant || "x") + '">' + esc(p.merchant_nome || p.merchant) + "</a>" +
     (esgotado
       ? '<button class="btn-buy buy-out" disabled>Currently unavailable</button>'
-      : '<a class="btn-buy" href="' + urlProduto(p) + '">View deal</a>') +
+      : '<a class="btn-buy" href="' + urlProduto(p) + '">Read the review</a>') +
     "</div></article>";
 }
 
