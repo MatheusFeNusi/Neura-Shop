@@ -567,7 +567,7 @@
     return base + " @" + fmtMoeda(notas(p, todos).fatos.preco);
   }
   function titulo(p, todos) {
-    return baseUnica(p, todos) + " review: specs, price & score";
+    return baseUnica(p, todos) + " review: specs, price & coupon";
   }
   /* O nome do parceiro e um titulo de SEO inflado ("48V 23AH Battery 750W*2
      Dual Motors Recommended Top Speed...") e chega a 153 chars. No h1 ele
@@ -575,7 +575,7 @@
      nomeCurto; as specs que sobraram continuam nos key-specs, na tabela e
      na meta description. */
   function h1(p, todos) {
-    return baseUnica(p, todos) + " Review: Specs, Price & Score";
+    return baseUnica(p, todos) + " Review: Specs, Price & Coupon";
   }
 
   /* ---------- 8b. Video ----------

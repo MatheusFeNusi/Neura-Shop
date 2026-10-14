@@ -1173,7 +1173,7 @@ function pagCategoria(slug, cat, produtos) {
   const vs = comPreco.map(p => Number(p.preco)).sort((a, b) => a - b);
   const min = vs[0], max = vs[vs.length - 1], med = vs[Math.floor(vs.length / 2)];
   const comWas = produtos.filter(p => pctVisivel(p.preco, p.preco_anterior) != null).length;
-  const titulo = "Best " + cat.nome + " â€” Prices, Ratings & Coupons | Electric Deals";
+  const titulo = "Best " + cat.nome + " â€” Coupons, Prices & Reviews | Electric Deals";
   const metadata = cat.descricao || "Electric " + (cat.nome || "") + " compared across partner stores â€” check prices, ratings and coupons, then buy directly at the retailer.";
   const cards = produtos.map(x => cardHTML(x, produtos)).join("");
   const tabela = ReviewData.htmlComparativo(comPreco.slice(0, Clusters.LIMITE_TABELA), { urlOf: urlProduto });
@@ -1185,7 +1185,7 @@ function pagCategoria(slug, cat, produtos) {
     '<main class="container">' +
     '<nav class="crumb"><a href="/">Home</a><span class="sep">â€º</span><span>' + esc(cat.nome) + "</span></nav>" +
     '<div class="page-head"><p class="kicker">' + esc(cat.nome) + "</p>" +
-    '<h1>' + esc(cat.nome) + "</h1>" +
+    '<h1>' + esc(cat.nome) + ": coupon codes, deals & reviews</h1>" +
     "<p>" + esc(metadata) + "</p>" +
     '<p class="count" style="margin-top:10px" data-cat-slug="' + esc(cat.slug || "") + '">' + produtos.length + " products Â· " +
     "from <span data-preco-resumo=\"min\">" + fmt(min) + "</span> to <span data-preco-resumo=\"max\">" + fmt(max) +
